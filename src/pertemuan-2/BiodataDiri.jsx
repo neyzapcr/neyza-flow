@@ -109,7 +109,7 @@ function Quote() {
 function SosialMedia() {
   return (
     <div className="section">
-      <h2>🌐 Sosial Media</h2>
+      <h2>🌐 Sosial Media & Kontak</h2>
       <div className="sosmed-list">
         <a href="https://instagram.com/neza.sha" target="_blank" rel="noreferrer">
           <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"/>
