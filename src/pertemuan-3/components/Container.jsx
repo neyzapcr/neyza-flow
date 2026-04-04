@@ -1,12 +1,12 @@
 export function Header() {
   return (
-    <div className="bg-gradient-to-r from-blue-600 via-violet-600 to-fuchsia-600 px-8 py-6 text-white">
+    <div className="bg-gradient-to-r from-blue-600  to-sky-700 px-8 py-6 text-white">
       <div className="flex flex-col items-center justify-center gap-4 text-center">
         
 
         <div className="text-center">
-          <h1 className="text-3xl font-extrabold">
-            Formulir Pendaftaran Beasiswa
+          <h1 className="text-2xl font-extrabold">
+            📝 Formulir Pendaftaran Beasiswa 🎓
           </h1>
           <p className="text-sm text-white/85">
             Politeknik Caltex Riau - Tahun Akademik 2025/2026

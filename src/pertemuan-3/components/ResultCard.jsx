@@ -4,7 +4,7 @@ export default function ResultCard({ data, onReset }) {
   return (
     <div className="mt-6 overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-lg">
       <div className="bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-4 text-white text-center">
-  <h2 className="text-lg font-bold">Data Berhasil Dikirim</h2>
+  <h2 className="text-lg font-bold">✅ Data Berhasil Dikirim ✅</h2>
   <p className="mt-1 text-sm text-white/90">
     Berikut ringkasan data pendaftaran kamu.
   </p>
