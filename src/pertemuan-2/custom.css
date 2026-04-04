@@ -1,0 +1,251 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:'Times New Roman', Times, serif;
+  background: linear-gradient(135deg, #dbe9f4, #eef4fa);
+  color: #223865;
+}
+
+.page-wrap {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px 15px;
+}
+
+.biodata-card {
+  width: 100%;
+  max-width: 760px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 12px 30px rgba(34, 56, 101, 0.15);
+  border: 1px solid rgba(92, 143, 181, 0.25);
+}
+
+.header-judul {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.header-judul h1 {
+  margin: 0;
+  font-size: 25px;
+  color: #223865;
+}
+
+.header-judul p {
+  margin-top: 8px;
+  color: #5c8fb5;
+  font-size: 14px;
+}
+
+.main-layout {
+  display: flex;
+  gap: 22px;
+  align-items: flex-start;
+}
+
+.profil-kiri {
+  width: 32%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.foto-bulat {
+  width: 180px;
+  height: 180px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5c8fb5, #7aa6c7);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+  font-weight: bold;
+  box-shadow: 0 8px 18px rgba(92, 143, 181, 0.25);
+}
+
+.info-box {
+  background: #f4f8fc;
+  border: 1px solid #d7e5f0;
+  border-radius: 16px;
+  padding: 14px;
+  text-align: center;
+}
+
+.nama-box {
+  font-size: 16px;
+  font-weight: bold;
+  color: #223865;
+}
+
+.info-dua {
+  display: flex;
+  gap: 12px;
+}
+
+.mini-box {
+  flex: 1;
+}
+
+.mini-box span {
+  display: block;
+  font-size: 10px;
+  color: #5c8fb5;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.mini-box p {
+  margin: 0;
+  font-size: 12px;
+  color: #223865;
+  font-weight: 600;
+}
+
+.prodi-box {
+  font-size: 14px;
+  line-height: 1;
+  color: #223865;
+}
+
+.konten-kanan {
+  width: 68%;
+  background: linear-gradient(180deg, #f8fbfe, #eef5fb);
+  border: 1px solid #d7e5f0;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.section {
+  margin-bottom: 10px;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.section h2 {
+  margin: 0 0 10px;
+  font-size: 17px;
+  color: #223865;
+}
+
+.section p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #223865;
+}
+
+.section ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.section li {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #223865;
+}
+
+.sosmed-list {
+  display: flex;
+  gap: 10px;
+}
+
+.sosmed-list a {
+  width: 38px;
+  height: 38px;
+  background: #f4f8fc;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #d7e5f0;
+  transition: 0.3s ease;
+}
+
+.sosmed-list img {
+  width: 20px;
+  height: 20px;
+}
+
+.sosmed-list a:hover {
+  background: #5c8fb5;
+  transform: scale(1.1);
+}
+
+.footer-bawah {
+  text-align: center;
+  margin-top: 10px;
+  color: #5c8fb5;
+  font-size: 14px;
+}
+
+@media (max-width: 800px) {
+  .main-layout {
+    flex-direction: column;
+  }
+
+  .profil-kiri,
+  .konten-kanan {
+    width: 100%;
+  }
+
+  .foto-bulat {
+    width: 150px;
+    height: 150px;
+    font-size: 18px;
+  }
+
+  .info-dua {
+    flex-direction: column;
+  }
+}
+.foto-bulat img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.pengalaman-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+.item {
+  background: #ffffff;
+  border: 1px solid #d7e5f0;
+  border-radius: 12px;
+  padding: 8px 10px;
+}
+
+.item .judul {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #223865;
+}
+
+.item span {
+  font-size: 12px;
+  color: #5c8fb5;
+}
+
+.row-dua {
+  display: flex;
+  gap: 20px;
+}
+
+.row-dua .section {
+  flex: 1;
+}
