@@ -36,6 +36,8 @@ export default function ResultCard({ data, onReset }) {
   );
 }
 
+// test
+
 function Row({ label, value }) {
   return (
     <div className="flex items-start justify-between gap-3 border-b border-slate-200 pb-2 last:border-b-0 last:pb-0">
