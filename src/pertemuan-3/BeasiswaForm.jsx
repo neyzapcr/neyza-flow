@@ -123,14 +123,13 @@ function handleSubmit(e) {
     nim.length >= 8;
 
   const isValidEmail =
-    email.trim() &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
-    email.endsWith("@gmail.com") || email.endsWith(".ac.id");
+  email.trim() &&
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
+  (email.endsWith("@gmail.com") || email.endsWith(".ac.id"));
 
-  const isValidJurusan =
-    jurusan &&
-    jurusan.length >= 5 &&
-    jurusan !== "Akuntansi";
+ const isValidJurusan =
+  jurusan &&
+  jurusanOptions.some((opt) => opt.value === jurusan);
 
   const isValidSemester =
     semester &&

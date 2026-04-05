@@ -40,7 +40,7 @@ function Row({ label, value }) {
   return (
     <div className="flex items-start justify-between gap-3 border-b border-slate-200 pb-2 last:border-b-0 last:pb-0">
       <span className="text-sm text-slate-500">{label}</span>
-      <span className="max-w-[58%] break-words text-right text-sm font-semibold text-slate-800">
+      <span className="max-w-[58%] wrap-break-word text-right text-sm font-semibold text-slate-800">
         {value}
       </span>
     </div>
