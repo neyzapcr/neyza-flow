@@ -1,6 +1,5 @@
 export default function ResultCard({ data, onReset }) {
   if (!data) return null;
-
   return (
     <div className="mt-6 overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-lg">
       <div className="bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-4 text-white text-center">
