@@ -10,7 +10,7 @@ export default function EventGuestPage({
     status === "Open"
       ? "bg-green-100 text-green-700"
       : "bg-red-100 text-red-700";
-
+// nahh
   const getTagClass = (tag) => {
     const colorMap = {
       Design: "bg-pink-100 text-pink-700",
