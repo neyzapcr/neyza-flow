@@ -26,6 +26,7 @@ export default function EventGuestPage({
 
     return colorMap[tag] || "bg-gray-100 text-gray-700";
   };
+//   tes
 
   return (
     <div className="min-h-screen bg-slate-100">
