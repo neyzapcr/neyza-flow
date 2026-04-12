@@ -4,66 +4,106 @@ export default function EventGuestPage({
   handleChange,
   allTags,
   allStatuses,
-  setShowLoginModal
+  setShowLoginModal,
 }) {
   const getStatusClass = (status) =>
     status === "Open"
-      ? "bg-green-100 text-green-700"
-      : "bg-red-100 text-red-700";
-// nahh
+      ? "bg-lime-100 text-lime-700 border border-lime-200"
+      : "bg-rose-100 text-rose-700 border border-rose-200";
+
   const getTagClass = (tag) => {
     const colorMap = {
-      Design: "bg-pink-100 text-pink-700",
-      Data: "bg-blue-100 text-blue-700",
-      Programming: "bg-indigo-100 text-indigo-700",
-      Technology: "bg-cyan-100 text-cyan-700",
-      "Soft Skill": "bg-yellow-100 text-yellow-700",
-      Business: "bg-emerald-100 text-emerald-700",
-      Creative: "bg-purple-100 text-purple-700",
-      Language: "bg-orange-100 text-orange-700",
-      Finance: "bg-lime-100 text-lime-700"
+      Design: "bg-pink-100 text-pink-700 border border-pink-200",
+      Data: "bg-sky-100 text-sky-700 border border-sky-200",
+      Programming: "bg-indigo-100 text-indigo-700 border border-indigo-200",
+      Technology: "bg-cyan-100 text-cyan-700 border border-cyan-200",
+      "Soft Skill": "bg-yellow-100 text-yellow-700 border border-yellow-200",
+      Business: "bg-emerald-100 text-emerald-700 border border-emerald-200",
+      Creative: "bg-purple-100 text-purple-700 border border-purple-200",
+      Language: "bg-orange-100 text-orange-700 border border-orange-200",
+      Finance: "bg-lime-100 text-lime-700 border border-lime-200",
     };
 
-    return colorMap[tag] || "bg-gray-100 text-gray-700";
+    return colorMap[tag] || "bg-gray-100 text-gray-700 border border-gray-200";
   };
-//   tes
+
+  const Sticker = ({ children, className = "" }) => (
+    <div
+      className={`pointer-events-none absolute flex h-8 w-8 items-center justify-center rounded-full border border-white/60 bg-white/70 text-sm shadow-md backdrop-blur-sm ${className}`}
+    >
+      {children}
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <div className="mx-auto max-w-7xl px-4 py-6 overflow-x-hidden">
-        <div className="mb-6 rounded-3xl bg-gradient-to-r from-indigo-600 to-cyan-500 p-5 text-white shadow-lg">
-          <div className="flex items-center justify-between gap-3">
-            <h1 className="text-lg font-bold sm:text-2xl lg:text-4xl">
-              Event Guest
-            </h1>
+    <div className="min-h-screen bg-gradient-to-b from-[#c9f76f] via-[#d8c8ff] to-[#f4f4f4]">
+      <div className="mx-auto max-w-7xl px-4 py-6">
+        {/* Header */}
+        <div className="relative mb-6 overflow-hidden rounded-[36px] border-[3px] border-black/10 bg-white/55 p-6 shadow-xl backdrop-blur-md">
+          <div className="absolute left-1 top-2 -rotate-12 text-lg sm:text-xl">
+            ✨
+          </div>
+          <div className="absolute bottom-2 left-1 -rotate-6 text-xl sm:text-2xl">
+            🐰
+          </div>
+          <div className="absolute bottom-4 right-8 text-xl sm:text-2xl">
+            📱
+          </div>
+          <div className="absolute right-4 top-4 text-[12px] sm:text-[16px]">
+            💙🩷💛💚💜
+          </div>
+
+          <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-lime-300/40 blur-2xl" />
+          <div className="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-violet-300/40 blur-2xl" />
+
+          <div className="relative flex items-center justify-between gap-4">
+            <div>
+            <p className="mb-2 inline-block rounded-full bg-violet-100 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.25em] text-violet-700">
+                Guest - Pertemuan 4
+              </p>
+              <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+                Event 💫
+              </h1>
+            </div>
 
             <button
               onClick={() => setShowLoginModal(true)}
-              className="shrink-0 rounded-lg bg-white px-4 py-2 text-xs font-semibold text-indigo-700 shadow hover:bg-slate-100 sm:text-sm"
+              className="shrink-0 rounded-full border-2 border-black/10 bg-white px-5 py-2 text-xs font-extrabold text-violet-700 shadow-md transition hover:-translate-y-0.5 hover:bg-violet-50 sm:text-sm"
             >
-              Login
+              Login 🔐
             </button>
           </div>
         </div>
 
-        <div className="mb-6 rounded-xl bg-white p-3 shadow">
-          <div className="flex gap-2 overflow-x-auto">
+        {/* Filter */}
+        <div className="relative mb-6 rounded-[30px] border-[2px] border-black/10 bg-white/70 p-4 shadow-lg backdrop-blur-md">
+          <Sticker className="left-3 top-3 rotate-[-10deg]">💚</Sticker>
+          <Sticker className="right-5 top-3 rotate-[12deg]">🐰</Sticker>
+
+          <div className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-700">
+            <span>💚</span>
+            <span>Filter Event</span>
+            <span>✨</span>
+            <span>🎶</span>
+          </div>
+
+          <div className="flex flex-nowrap items-center gap-2 overflow-x-auto sm:gap-3">
             <input
               type="text"
               name="searchTerm"
               value={dataForm.searchTerm}
               onChange={handleChange}
-              placeholder="Search..."
-              className="min-w-[120px] flex-1 rounded border p-2 text-xs sm:text-sm"
+              placeholder="Search event... 🔎"
+              className="min-w-[170px] flex-1 rounded-full border-2 border-lime-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-lime-400 focus:ring-4 focus:ring-lime-100"
             />
 
             <select
               name="selectedTag"
               value={dataForm.selectedTag}
               onChange={handleChange}
-              className="w-[90px] rounded border p-2 text-xs sm:w-[120px]"
+              className="min-w-[130px] rounded-full border-2 border-violet-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100"
             >
-              <option value="">Tag</option>
+              <option value="">All Tag 🏷️</option>
               {allTags.map((tag, i) => (
                 <option key={i} value={tag}>
                   {tag}
@@ -75,9 +115,9 @@ export default function EventGuestPage({
               name="selectedStatus"
               value={dataForm.selectedStatus}
               onChange={handleChange}
-              className="w-[90px] rounded border p-2 text-xs sm:w-[120px]"
+              className="min-w-[140px] rounded-full border-2 border-cyan-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100"
             >
-              <option value="">Status</option>
+              <option value="">All Status 📌</option>
               {allStatuses.map((status, i) => (
                 <option key={i} value={status}>
                   {status}
@@ -87,56 +127,84 @@ export default function EventGuestPage({
           </div>
         </div>
 
+        {/* Cards */}
+        {/* Cards */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {filteredEvents.map((item) => (
+          {filteredEvents.map((item, index) => (
             <div
               key={item.id}
-              className="w-full overflow-hidden rounded-2xl bg-white shadow-md transition duration-300 hover:shadow-xl"
+              className="group relative overflow-hidden rounded-[32px] border-[2px] border-black/10 bg-white/80 shadow-lg transition duration-300 hover:-translate-y-1 hover:shadow-2xl"
             >
+              <div className="pointer-events-none absolute inset-0 opacity-[0.16]">
+                <div className="h-full w-full bg-[linear-gradient(to_bottom,rgba(255,255,255,0.45)_0px,rgba(255,255,255,0.45)_1px,transparent_1px,transparent_12px)]"></div>
+              </div>
+
+              <Sticker className="right-3 top-3 z-20 rotate-[8deg]">
+                {index % 4 === 0
+                  ? "💚"
+                  : index % 4 === 1
+                    ? "✨"
+                    : index % 4 === 2
+                      ? "🐰"
+                      : "📼"}
+              </Sticker>
+
+              <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-lime-300/40 blur-2xl" />
+              <div className="absolute -bottom-10 -left-10 h-24 w-24 rounded-full bg-violet-300/40 blur-2xl" />
+
               <img
                 src={item.image}
                 alt={item.title}
-                className="h-40 w-full object-cover"
+                className="h-44 w-full object-cover transition duration-300 group-hover:scale-105"
               />
 
               <div className="p-4">
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <h3 className="text-sm font-bold leading-snug text-slate-800 sm:text-base">
+                <div className="mb-3 flex items-start justify-between gap-2">
+                  <h3 className="text-sm font-black leading-snug text-slate-800 sm:text-base">
                     {item.title}
                   </h3>
-
                   <span
-                    className={`shrink-0 rounded-lg px-3 py-2 text-xs font-semibold ${getStatusClass(
-                      item.status
-                    )}`}
+                    className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-extrabold ${getStatusClass(item.status)}`}
                   >
                     {item.status}
                   </span>
                 </div>
 
-
                 <div className="mb-3 flex flex-wrap gap-2">
                   <span
-                    className={`rounded-lg px-3 py-1 text-xs font-medium ${getTagClass(
-                      item.tag
-                    )}`}
+                    className={`rounded-full px-3 py-1 text-[10px] font-bold ${getTagClass(item.tag)}`}
                   >
-                    {item.tag}
+                    #{item.tag}
                   </span>
-                  
-
-                  <span className="rounded-lg bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                    {item.mode}
+                  <span className="rounded-full border border-violet-200 bg-violet-100 px-3 py-1 text-[10px] font-bold text-violet-700">
+                    {item.mode} 🎧
                   </span>
-                <p className="mb-3 text-sm text-slate-500">{item.desc}</p>
-
                 </div>
 
-                <p className="text-sm text-slate-500">{item.date}</p>
+                <p className="mb-4 min-h-[60px] text-sm leading-relaxed text-slate-600">
+                  {item.desc}
+                </p>
+
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-semibold text-slate-500">
+                    📅 {item.date}
+                  </p>
+                  <button className="rounded-full border-2 border-black/10 bg-gradient-to-r from-[#c9f76f] to-[#d8c8ff] px-4 py-2 text-[11px] font-black text-slate-800 shadow transition hover:scale-105">
+                    View 💌
+                  </button>
+                </div>
               </div>
             </div>
           ))}
         </div>
+
+        {filteredEvents.length === 0 && (
+          <div className="mt-8 rounded-[28px] border-2 border-dashed border-violet-200 bg-white/70 p-8 text-center shadow-md">
+            <p className="text-sm font-bold text-slate-600">
+              Event tidak ditemukan 🥹
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
