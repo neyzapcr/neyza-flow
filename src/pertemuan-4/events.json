@@ -1,0 +1,205 @@
+{
+  "component": "events",
+  "data": [
+    {
+      "id": 1,
+      "title": "UI/UX Design Bootcamp",
+      "desc": "Belajar dasar UI/UX dari nol hingga prototyping.",
+      "tag": "Design",
+      "status": "Open",
+      "mode": "Online",
+      "date": "2026-05-10",
+      "image": "https://picsum.photos/200?1"
+    },
+    {
+      "id": 2,
+      "title": "Data Science Seminar",
+      "desc": "Pengenalan analisis data dan machine learning.",
+      "tag": "Data",
+      "status": "Closed",
+      "mode": "Offline",
+      "date": "2026-04-20",
+      "image": "https://picsum.photos/200?2"
+    },
+    {
+      "id": 3,
+      "title": "Mobile App Development",
+      "desc": "Membangun aplikasi mobile dari awal sampai publish.",
+      "tag": "Programming",
+      "status": "Open",
+      "mode": "Online",
+      "date": "2026-06-01",
+      "image": "https://picsum.photos/200?3"
+    },
+    {
+      "id": 4,
+      "title": "AI Basics Workshop",
+      "desc": "Memahami konsep dasar artificial intelligence.",
+      "tag": "Technology",
+      "status": "Open",
+      "mode": "Offline",
+      "date": "2026-05-15",
+      "image": "https://picsum.photos/200?4"
+    },
+    {
+      "id": 5,
+      "title": "Public Speaking Class",
+      "desc": "Melatih kepercayaan diri saat berbicara di depan umum.",
+      "tag": "Soft Skill",
+      "status": "Closed",
+      "mode": "Offline",
+      "date": "2026-04-18",
+      "image": "https://picsum.photos/200?5"
+    },
+    {
+      "id": 6,
+      "title": "Digital Marketing Talk",
+      "desc": "Belajar strategi promosi digital untuk bisnis modern.",
+      "tag": "Business",
+      "status": "Open",
+      "mode": "Online",
+      "date": "2026-05-22",
+      "image": "https://picsum.photos/200?6"
+    },
+    {
+      "id": 7,
+      "title": "Cyber Security Awareness",
+      "desc": "Pengenalan keamanan siber dan perlindungan data pribadi.",
+      "tag": "Technology",
+      "status": "Open",
+      "mode": "Offline",
+      "date": "2026-06-05",
+      "image": "https://picsum.photos/200?7"
+    },
+    {
+      "id": 8,
+      "title": "Photography Masterclass",
+      "desc": "Teknik fotografi kreatif untuk pemula dan menengah.",
+      "tag": "Creative",
+      "status": "Open",
+      "mode": "Offline",
+      "date": "2026-05-28",
+      "image": "https://picsum.photos/200?8"
+    },
+    {
+      "id": 9,
+      "title": "Cloud Computing Essentials",
+      "desc": "Mengenal layanan cloud computing dan penggunaannya.",
+      "tag": "Technology",
+      "status": "Closed",
+      "mode": "Online",
+      "date": "2026-04-30",
+      "image": "https://picsum.photos/200?9"
+    },
+    {
+      "id": 10,
+      "title": "Startup Pitching Session",
+      "desc": "Belajar menyusun pitch deck dan presentasi startup.",
+      "tag": "Business",
+      "status": "Open",
+      "mode": "Offline",
+      "date": "2026-06-10",
+      "image": "https://picsum.photos/200?10"
+    },
+    {
+      "id": 11,
+      "title": "Front-End Web Workshop",
+      "desc": "Praktik HTML, CSS, JavaScript, dan framework frontend.",
+      "tag": "Programming",
+      "status": "Open",
+      "mode": "Online",
+      "date": "2026-05-12",
+      "image": "https://picsum.photos/200?11"
+    },
+    {
+      "id": 12,
+      "title": "Machine Learning Talk",
+      "desc": "Pembahasan dasar machine learning dan contoh implementasi.",
+      "tag": "Data",
+      "status": "Open",
+      "mode": "Offline",
+      "date": "2026-06-15",
+      "image": "https://picsum.photos/200?12"
+    },
+    {
+      "id": 13,
+      "title": "English for Career Development",
+      "desc": "Meningkatkan kemampuan bahasa Inggris untuk dunia kerja.",
+      "tag": "Language",
+      "status": "Closed",
+      "mode": "Online",
+      "date": "2026-04-25",
+      "image": "https://picsum.photos/200?13"
+    },
+    {
+      "id": 14,
+      "title": "Video Editing Intensive",
+      "desc": "Belajar editing video untuk konten kreatif dan promosi.",
+      "tag": "Creative",
+      "status": "Open",
+      "mode": "Offline",
+      "date": "2026-05-30",
+      "image": "https://picsum.photos/200?14"
+    },
+    {
+      "id": 15,
+      "title": "Financial Planning Seminar",
+      "desc": "Mengelola keuangan pribadi dan perencanaan masa depan.",
+      "tag": "Finance",
+      "status": "Open",
+      "mode": "Offline",
+      "date": "2026-06-07",
+      "image": "https://picsum.photos/200?15"
+    },
+    {
+      "id": 16,
+      "title": "Content Creator Meetup",
+      "desc": "Diskusi strategi konten, branding, dan monetisasi digital.",
+      "tag": "Creative",
+      "status": "Open",
+      "mode": "Online",
+      "date": "2026-05-18",
+      "image": "https://picsum.photos/200?16"
+    },
+    {
+      "id": 17,
+      "title": "Entrepreneurship Bootcamp",
+      "desc": "Dasar-dasar kewirausahaan untuk membangun bisnis baru.",
+      "tag": "Business",
+      "status": "Closed",
+      "mode": "Offline",
+      "date": "2026-04-27",
+      "image": "https://picsum.photos/200?17"
+    },
+    {
+      "id": 18,
+      "title": "Python for Data Analysis",
+      "desc": "Analisis data menggunakan Python dan library populer.",
+      "tag": "Programming",
+      "status": "Open",
+      "mode": "Online",
+      "date": "2026-06-12",
+      "image": "https://picsum.photos/200?18"
+    },
+    {
+      "id": 19,
+      "title": "Leadership Training Camp",
+      "desc": "Melatih jiwa kepemimpinan dan komunikasi tim yang efektif.",
+      "tag": "Soft Skill",
+      "status": "Open",
+      "mode": "Offline",
+      "date": "2026-05-25",
+      "image": "https://picsum.photos/200?19"
+    },
+    {
+      "id": 20,
+      "title": "Blockchain Insight Forum",
+      "desc": "Mengenal teknologi blockchain dan peluang penerapannya.",
+      "tag": "Technology",
+      "status": "Open",
+      "mode": "Offline",
+      "date": "2026-06-20",
+      "image": "https://picsum.photos/200?20"
+    }
+  ]
+}
