@@ -8,17 +8,13 @@ export default function MainLayout() {
 
   return (
     <div className="bg-gray-50 min-h-screen flex">
-      {/* Sidebar — fixed di mobile, relative di desktop */}
+      {/* Sidebar */}
       <Sidebar
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
       />
 
-      {/* Spacer desktop: mendorong konten agar tidak tertimpa sidebar fixed.
-          Di desktop sidebar relative jadi spacer ini tidak dibutuhkan (hidden). */}
-      <div className="hidden lg:block w-[68px] flex-shrink-0" />
-
-      {/* Main content */}
+      {/* Main content — langsung di sebelah sidebar, tidak perlu spacer */}
       <div className="flex flex-col flex-1 min-w-0">
         <Header onMenuClick={() => setMobileOpen(true)} />
         <main className="flex-1 p-6 overflow-auto">

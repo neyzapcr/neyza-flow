@@ -10,7 +10,7 @@
     "totalSpent": 480000,
     "points": 240,
     "segment": "Loyal",
-    "lastTransaction": "2025-04-20",
+    "lastTransaction": "2026-04-20",
     "status": "active"
   },
   {
@@ -24,7 +24,7 @@
     "totalSpent": 175000,
     "points": 87,
     "segment": "Regular",
-    "lastTransaction": "2025-03-10",
+    "lastTransaction": "2026-03-10",
     "status": "active"
   },
   {
@@ -38,7 +38,7 @@
     "totalSpent": 860000,
     "points": 430,
     "segment": "VIP",
-    "lastTransaction": "2025-04-28",
+    "lastTransaction": "2026-04-28",
     "status": "active"
   },
   {
@@ -52,7 +52,7 @@
     "totalSpent": 60000,
     "points": 30,
     "segment": "New",
-    "lastTransaction": "2025-01-15",
+    "lastTransaction": "2026-01-15",
     "status": "inactive"
   },
   {
@@ -66,7 +66,7 @@
     "totalSpent": 320000,
     "points": 160,
     "segment": "Regular",
-    "lastTransaction": "2025-04-15",
+    "lastTransaction": "2026-04-15",
     "status": "active"
   },
   {
@@ -80,7 +80,7 @@
     "totalSpent": 625000,
     "points": 312,
     "segment": "Loyal",
-    "lastTransaction": "2025-04-25",
+    "lastTransaction": "2026-04-25",
     "status": "active"
   },
   {
@@ -108,7 +108,7 @@
     "totalSpent": 1050000,
     "points": 525,
     "segment": "VIP",
-    "lastTransaction": "2025-04-30",
+    "lastTransaction": "2026-04-30",
     "status": "active"
   }
 ]

@@ -37,7 +37,7 @@ async function exportPDF({ totalRevenue, activeCustomers, newCustomers, retentio
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text("LaundryPro CRM", 14, 13);
+  doc.text("Netto Laundry ", 14, 13);
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.text(`Laporan CRM — Periode: ${period}`, 14, 22);
@@ -110,7 +110,7 @@ async function exportPDF({ totalRevenue, activeCustomers, newCustomers, retentio
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150);
-    doc.text(`LaundryPro CRM — Halaman ${i} dari ${pageCount}`, 14, 290);
+    doc.text(`Netto Laundry — Halaman ${i} dari ${pageCount}`, 14, 290);
   }
 
   doc.save(`Laporan-CRM-${period}-${now.replace(/ /g, "-")}.pdf`);
@@ -146,7 +146,7 @@ function exportWord({ totalRevenue, activeCustomers, newCustomers, retentionRate
       .meta { color: #6b7280; font-size: 10pt; margin-bottom: 16pt; }
     </style>
     </head><body>
-    <h1>LaundryPro CRM</h1>
+    <h1>Netto Laundry CRM</h1>
     <p class="meta">Laporan CRM — Periode: ${period} &nbsp;|&nbsp; Dicetak: ${now}</p>
 
     <h2>Ringkasan KPI</h2>

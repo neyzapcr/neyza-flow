@@ -5,7 +5,10 @@ import {
 } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import customersData from "../data/customers.json";
-import { useToast } from "../context/ToastContext";
+
+// Helper — kirim toast tanpa import context
+const toast = (type, title, desc) =>
+  window.dispatchEvent(new CustomEvent("addToast", { detail: { type, title, desc } }));
 
 const segmentColors = {
   VIP:     "bg-purple-100 text-purple-700",
@@ -205,7 +208,6 @@ export default function Customers() {
   const [editCustomer,  setEditCustomer]  = useState(null);
   const [viewCustomer,  setViewCustomer]  = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const { addToast } = useToast();
 
   const filtered = customers.filter((c) => {
     const matchSearch  = c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search);
@@ -217,14 +219,14 @@ export default function Customers() {
   const handleSave = (form) => {
     if (editCustomer) {
       setCustomers(customers.map((c) => c.id === editCustomer.id ? { ...c, ...form } : c));
-      addToast({ type: "success", title: "Pelanggan Diperbarui", desc: `Data ${form.name} berhasil disimpan.` });
+      toast("success", "Pelanggan Diperbarui", `Data ${form.name} berhasil disimpan.`);
     } else {
       setCustomers([...customers, {
         ...form, id: Date.now(),
         totalTransactions: 0, totalSpent: 0, points: 0,
         joinDate: new Date().toISOString().split("T")[0], lastTransaction: "-",
       }]);
-      addToast({ type: "success", title: "Pelanggan Ditambahkan", desc: `${form.name} berhasil didaftarkan.` });
+      toast("success", "Pelanggan Ditambahkan", `${form.name} berhasil didaftarkan.`);
     }
     setShowModal(false);
     setEditCustomer(null);
@@ -234,7 +236,7 @@ export default function Customers() {
     const c = customers.find((x) => x.id === id);
     setCustomers(customers.filter((c) => c.id !== id));
     setDeleteConfirm(null);
-    addToast({ type: "warning", title: "Pelanggan Dihapus", desc: `${c?.name} telah dihapus dari sistem.` });
+    toast("warning", "Pelanggan Dihapus", `${c?.name} telah dihapus dari sistem.`);
   };
 
   const stats = [

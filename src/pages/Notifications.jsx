@@ -10,7 +10,7 @@ const TEMPLATES = [
     category: "status",
     description: "Dikirim otomatis saat status laundry berubah menjadi selesai",
     trigger: "Otomatis — Status Selesai",
-    defaultMessage: "Halo {nama}, cucian Anda sudah selesai dan siap diambil di LaundryPro. Terima kasih telah mempercayakan cucian Anda kepada kami.",
+    defaultMessage: "Halo {nama}, cucian Anda sudah selesai dan siap diambil di Netto Laundry. Terima kasih telah mempercayakan cucian Anda kepada kami.",
     active: true,
   },
   {
@@ -19,7 +19,7 @@ const TEMPLATES = [
     category: "reminder",
     description: "Dikirim otomatis 2 hari setelah cucian selesai jika belum diambil",
     trigger: "Otomatis — 2 hari setelah selesai",
-    defaultMessage: "Halo {nama}, cucian Anda sudah selesai sejak 2 hari lalu dan belum diambil. Segera ambil cucian Anda di LaundryPro sebelum dikenakan biaya penyimpanan.",
+    defaultMessage: "Halo {nama}, cucian Anda sudah selesai sejak 2 hari lalu dan belum diambil. Segera ambil cucian Anda di Netto Laundry sebelum dikenakan biaya penyimpanan.",
     active: true,
   },
   {
@@ -28,7 +28,7 @@ const TEMPLATES = [
     category: "retensi",
     description: "Dikirim ke pelanggan yang tidak bertransaksi lebih dari 30 hari",
     trigger: "Otomatis — 30 hari tidak aktif",
-    defaultMessage: "Halo {nama}, kami kangen dengan Anda! Sudah lama tidak bertransaksi di LaundryPro. Kunjungi kami kembali dan dapatkan diskon 10% untuk transaksi berikutnya.",
+    defaultMessage: "Halo {nama}, kami kangen dengan Anda! Sudah lama tidak bertransaksi di Netto Laundry. Kunjungi kami kembali dan dapatkan diskon 10% untuk transaksi berikutnya.",
     active: false,
   },
   {
@@ -37,7 +37,7 @@ const TEMPLATES = [
     category: "promosi",
     description: "Dikirim manual untuk menyebarkan informasi promo",
     trigger: "Manual",
-    defaultMessage: "Halo {nama}, ada promo spesial dari LaundryPro! Dapatkan diskon 20% untuk semua layanan cuci setrika. Promo berlaku hingga akhir bulan ini. Jangan sampai terlewat!",
+    defaultMessage: "Halo {nama}, ada promo spesial dari Netto Laundry! Dapatkan diskon 20% untuk semua layanan cuci setrika. Promo berlaku hingga akhir bulan ini. Jangan sampai terlewat!",
     active: true,
   },
 ];

@@ -6,10 +6,13 @@ import {
 } from "recharts";
 import { DollarSign, Users, ClipboardList, Star, Plus, X, Check } from "lucide-react";
 import PageHeader from "../components/PageHeader";
-import { useToast } from "../context/ToastContext";
 import customers from "../data/customers.json";
 import transactions from "../data/transactions.json";
 import feedback from "../data/feedback.json";
+
+// Helper — kirim toast tanpa import context
+const toast = (type, title, desc, duration) =>
+  window.dispatchEvent(new CustomEvent("addToast", { detail: { type, title, desc, duration } }));
 
 // ── Chart data ────────────────────────────────────────────────────────────────
 const revenueData = [
@@ -214,7 +217,6 @@ function TambahCucianModal({ onClose, onSuccess }) {
 export default function Dashboard() {
   const [period, setPeriod] = useState("minggu");
   const [showTambah, setShowTambah] = useState(false);
-  const { addToast } = useToast();
 
   const totalRevenue = transactions.reduce((s, t) => s + t.total, 0);
   const activeCustomers = customers.filter((c) => c.status === "active").length;
@@ -222,12 +224,8 @@ export default function Dashboard() {
   const pendingOrders = transactions.filter((t) => t.status !== "selesai").length;
 
   const handleCucianSuccess = ({ customerName, service, weight, total }) => {
-    addToast({
-      type: "laundry",
-      title: "Cucian Baru Ditambahkan!",
-      desc: `${customerName} · ${service} · ${weight} kg · Rp ${total.toLocaleString("id-ID")}`,
-      duration: 6000,
-    });
+    toast("laundry", "Cucian Baru Ditambahkan!",
+      `${customerName} · ${service} · ${weight} kg · Rp ${total.toLocaleString("id-ID")}`, 6000);
   };
 
   return (

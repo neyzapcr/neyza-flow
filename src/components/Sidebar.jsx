@@ -51,7 +51,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         className={`
-          fixed lg:relative z-30 lg:z-auto
+          fixed lg:static inset-y-0 left-0 z-30 lg:z-auto
           min-h-screen bg-white border-r border-gray-100 flex flex-col shadow-sm
           font-lagusans transition-all duration-300 ease-in-out flex-shrink-0
           ${expanded ? "w-60" : "w-[68px]"}
@@ -59,16 +59,12 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }) {
         `}
       >
         {/* ── Logo ── */}
-        <div className={`flex items-center border-b border-gray-100 transition-all duration-300 h-16 ${expanded ? "gap-3 px-5" : "justify-center px-0"}`}>
-          <div className="w-9 h-9 rounded-xl bg-[#1A667A] flex items-center justify-center shadow flex-shrink-0">
-            <span className="text-white font-extrabold text-base">N</span>
-          </div>
-          <div className={`overflow-hidden transition-all duration-300 ${expanded ? "w-auto opacity-100" : "w-0 opacity-0"}`}>
-            <p className="font-extrabold text-gray-800 text-sm leading-tight whitespace-nowrap">
-              Netto<span className="text-[#3ABDE8]">Ops</span>
-            </p>
-            <p className="text-xs text-gray-400 whitespace-nowrap">Admin Panel</p>
-          </div>
+        <div className={`flex items-center border-b border-gray-100 transition-all duration-300 h-16 ${expanded ? "px-4" : "justify-center px-0"}`}>
+          <img
+            src="/img/logo Netto Dark.png"
+            alt="NettoOps"
+            className={`object-contain transition-all duration-300 ${expanded ? "h-10 w-auto" : "h-9 w-9"}`}
+          />
         </div>
 
         {/* ── Navigation ── */}
@@ -118,7 +114,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }) {
           <NavLink
             to="/login"
             title={!expanded ? "Keluar" : undefined}
-            onClick={mobileOpen ? onMobileClose : undefined}
+            onClick={() => { localStorage.removeItem("netto_auth"); if (mobileOpen) onMobileClose?.(); }}
             className={`flex items-center rounded-xl text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all
               ${expanded ? "gap-3 px-3 py-2.5" : "justify-center px-0 py-2.5 mx-1"}`}
           >

@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Loading from "./components/Loading";
 
-// Layouts — tidak di-lazy karena ringan dan selalu dibutuhkan
+// Layouts
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
 
@@ -11,7 +11,7 @@ const Login    = lazy(() => import("./pages/auth/Login"));
 const Register = lazy(() => import("./pages/auth/Register"));
 const Forgot   = lazy(() => import("./pages/auth/Forgot"));
 
-// Lazy-loaded pages — Admin (sesuai modul: hanya /pages yang di-lazy)
+// Lazy-loaded pages — Admin
 const Dashboard     = lazy(() => import("./pages/Dashboard"));
 const Customers     = lazy(() => import("./pages/Customers"));
 const Transactions  = lazy(() => import("./pages/Transactions"));
@@ -22,21 +22,44 @@ const Segmentation  = lazy(() => import("./pages/Segmentation"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const Reports       = lazy(() => import("./pages/Reports"));
 const Settings      = lazy(() => import("./pages/Settings"));
+const NotFound      = lazy(() => import("./pages/NotFound"));
+
+// ── Cek status login dari localStorage ───────────────────────────────────
+const isLoggedIn = () => localStorage.getItem("netto_auth") === "true";
+
+// ── Guard: halaman admin — redirect ke /login kalau belum login ───────────
+function ProtectedRoute({ children }) {
+  return isLoggedIn() ? children : <Navigate to="/login" replace />;
+}
+
+// ── Guard: halaman auth — redirect ke /dashboard kalau sudah login ────────
+function GuestRoute({ children }) {
+  return isLoggedIn() ? <Navigate to="/dashboard" replace /> : children;
+}
 
 export default function App() {
   return (
-    // Suspense membungkus Routes — fallback Loading tampil saat lazy load
     <Suspense fallback={<Loading />}>
       <Routes>
-        {/* ── Auth Routes (dibungkus AuthLayout) ── */}
-        <Route element={<AuthLayout />}>
+
+        {/* ── Root: / → dashboard kalau login, login kalau belum ── */}
+        <Route
+          path="/"
+          element={isLoggedIn()
+            ? <Navigate to="/dashboard" replace />
+            : <Navigate to="/login" replace />
+          }
+        />
+
+        {/* ── Auth Routes — tidak bisa diakses kalau sudah login ── */}
+        <Route element={<GuestRoute><AuthLayout /></GuestRoute>}>
           <Route path="/login"    element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot"   element={<Forgot />} />
         </Route>
 
-        {/* ── Admin Routes (dibungkus MainLayout) ── */}
-        <Route element={<MainLayout />}>
+        {/* ── Admin Routes — harus login dulu ── */}
+        <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
           <Route path="/dashboard"     element={<Dashboard />} />
           <Route path="/customers"     element={<Customers />} />
           <Route path="/transactions"  element={<Transactions />} />
@@ -49,9 +72,9 @@ export default function App() {
           <Route path="/settings"      element={<Settings />} />
         </Route>
 
-        {/* ── Default & 404 ── */}
-        <Route path="/"  element={<Navigate to="/login" replace />} />
-        <Route path="*"  element={<Navigate to="/dashboard" replace />} />
+        {/* ── 404 — URL tidak dikenal ── */}
+        <Route path="*" element={<NotFound />} />
+
       </Routes>
     </Suspense>
   );

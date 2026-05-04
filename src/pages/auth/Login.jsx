@@ -39,6 +39,8 @@ export default function Login() {
         dataForm.email    === VALID_EMAIL &&
         dataForm.password === VALID_PASSWORD
       ) {
+        // Simpan status login ke localStorage
+        localStorage.setItem("netto_auth", "true");
         navigate("/dashboard");
       } else {
         setError("Email atau password salah. Silakan coba lagi.");

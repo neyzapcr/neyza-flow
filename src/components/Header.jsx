@@ -394,7 +394,7 @@ export default function Header({ onMenuClick }) {
                 </div>
                 <div className="border-t border-gray-100 py-1.5">
                   <button
-                    onClick={() => { setProfileOpen(false); navigate("/login"); }}
+                    onClick={() => { setProfileOpen(false); localStorage.removeItem("netto_auth"); navigate("/login"); }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
                   >
                     <LogOut size={15} /> Keluar

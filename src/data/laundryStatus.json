@@ -5,13 +5,13 @@
     "phone": "088901234567",
     "service": "Cuci + Setrika + Parfum",
     "weight": 4.0,
-    "receivedDate": "2025-04-30",
-    "estimatedDate": "2025-05-02",
+    "receivedDate": "2026-04-30",
+    "estimatedDate": "2026-05-02",
     "currentStatus": "diproses",
     "steps": [
-      { "step": "Diterima", "done": true, "time": "2025-04-30 09:00" },
-      { "step": "Dicuci", "done": true, "time": "2025-04-30 11:00" },
-      { "step": "Dikeringkan", "done": true, "time": "2025-04-30 14:00" },
+      { "step": "Diterima", "done": true, "time": "2026-04-30 09:00" },
+      { "step": "Dicuci", "done": true, "time": "2026-04-30 11:00" },
+      { "step": "Dikeringkan", "done": true, "time": "2026-04-30 14:00" },
       { "step": "Disetrika", "done": false, "time": null },
       { "step": "Selesai", "done": false, "time": null }
     ]
@@ -22,11 +22,11 @@
     "phone": "083456789012",
     "service": "Cuci + Setrika + Parfum",
     "weight": 7.0,
-    "receivedDate": "2025-05-01",
-    "estimatedDate": "2025-05-03",
+    "receivedDate": "2026-05-01",
+    "estimatedDate": "2026-05-03",
     "currentStatus": "menunggu",
     "steps": [
-      { "step": "Diterima", "done": true, "time": "2025-05-01 10:00" },
+      { "step": "Diterima", "done": true, "time": "2026-05-01 10:00" },
       { "step": "Dicuci", "done": false, "time": null },
       { "step": "Dikeringkan", "done": false, "time": null },
       { "step": "Disetrika", "done": false, "time": null },
@@ -39,12 +39,12 @@
     "phone": "081234567890",
     "service": "Cuci Kering",
     "weight": 4.5,
-    "receivedDate": "2025-05-02",
-    "estimatedDate": "2025-05-04",
+    "receivedDate": "2026-05-02",
+    "estimatedDate": "2026-05-04",
     "currentStatus": "diproses",
     "steps": [
-      { "step": "Diterima", "done": true, "time": "2025-05-02 08:30" },
-      { "step": "Dicuci", "done": true, "time": "2025-05-02 10:30" },
+      { "step": "Diterima", "done": true, "time": "2026-05-02 08:30" },
+      { "step": "Dicuci", "done": true, "time": "2026-05-02 10:30" },
       { "step": "Dikeringkan", "done": false, "time": null },
       { "step": "Disetrika", "done": false, "time": null },
       { "step": "Selesai", "done": false, "time": null }
@@ -56,15 +56,15 @@
     "phone": "081234567890",
     "service": "Cuci + Setrika",
     "weight": 3.5,
-    "receivedDate": "2025-04-19",
-    "estimatedDate": "2025-04-21",
+    "receivedDate": "2026-04-19",
+    "estimatedDate": "2026-04-21",
     "currentStatus": "selesai",
     "steps": [
-      { "step": "Diterima", "done": true, "time": "2025-04-19 09:00" },
-      { "step": "Dicuci", "done": true, "time": "2025-04-19 12:00" },
-      { "step": "Dikeringkan", "done": true, "time": "2025-04-19 15:00" },
-      { "step": "Disetrika", "done": true, "time": "2025-04-20 09:00" },
-      { "step": "Selesai", "done": true, "time": "2025-04-20 11:00" }
+      { "step": "Diterima", "done": true, "time": "2026-04-19 09:00" },
+      { "step": "Dicuci", "done": true, "time": "2026-04-19 12:00" },
+      { "step": "Dikeringkan", "done": true, "time": "2026-04-19 15:00" },
+      { "step": "Disetrika", "done": true, "time": "2026-04-20 09:00" },
+      { "step": "Selesai", "done": true, "time": "2026-04-20 11:00" }
     ]
   }
 ]
