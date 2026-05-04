@@ -145,8 +145,8 @@ export default function Header({ onMenuClick }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [editOpen,    setEditOpen]    = useState(false);
   const [adminName,   setAdminName]   = useState("Admin");
-  const [adminRole,   setAdminRole]   = useState("NettoOps");
-  const [editForm,    setEditForm]    = useState({ name: "Admin", role: "NettoOps" });
+  const [adminRole,   setAdminRole]   = useState("Netto Laundry");
+  const [editForm,    setEditForm]    = useState({ name: "Admin", role: "Netto Laundry" });
   const profileRef                    = useRef(null);
 
   // ── Close panels on outside click ──
@@ -352,7 +352,6 @@ export default function Header({ onMenuClick }) {
             )}
           </div>
 
-          {/* ── Profile dropdown ── */}
           <div ref={profileRef} className="relative">
             <button
               onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}
@@ -429,7 +428,7 @@ export default function Header({ onMenuClick }) {
               </div>
               <div>
                 <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Jabatan / Role</label>
-                <input type="text" value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })} placeholder="Contoh: NettoOps"
+                <input type="text" value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })} placeholder="Contoh: Netto Laundry"
                   className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#3ABDE8] focus:ring-2 focus:ring-[#3ABDE8]/20 transition-all" />
               </div>
             </div>

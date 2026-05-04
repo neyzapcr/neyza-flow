@@ -16,7 +16,7 @@ export default function NotFound() {
             <div className="w-20 h-20 bg-[#3ABDE8]/10 rounded-2xl flex items-center justify-center">
               <img
                 src="/img/logo Netto Dark.png"
-                alt="NettoOps"
+                alt="Netto Laundry"
                 className="h-10 w-auto object-contain opacity-60"
               />
             </div>

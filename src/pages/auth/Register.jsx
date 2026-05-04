@@ -55,7 +55,7 @@ export default function Register() {
   return (
     <div className="font-lagusans">
       <h2 className="text-2xl font-bold text-gray-800 mb-1">Buat Akun Baru</h2>
-      <p className="text-sm text-gray-400 mb-6">Daftar untuk mengakses NettoOps CRM</p>
+      <p className="text-sm text-gray-400 mb-6">Daftar untuk mengakses Netto Laundry CRM</p>
 
       {errorInfo}
       {loadingInfo}

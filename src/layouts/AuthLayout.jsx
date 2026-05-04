@@ -20,7 +20,7 @@ export default function AuthLayout() {
             <div className="w-56 xl:w-64">
               <img
                 src="/img/logo Netto light.png"
-                alt="NettoOps Logo"
+                alt="Netto Laundry Logo"
                 className="w-full h-auto object-contain drop-shadow-lg"
               />
             </div>
@@ -28,7 +28,7 @@ export default function AuthLayout() {
               Selamat Datang!
             </h1>
             <p className="font-lagusans text-white/80 text-base xl:text-lg leading-relaxed mt-1">
-              Masuk ke panel Admin <span className="font-bold text-white">NettoOps</span>
+              Masuk ke panel Admin <span className="font-bold text-white">Netto Laundry</span>
             </p>
           </div>
 
@@ -47,7 +47,7 @@ export default function AuthLayout() {
         <div className="lg:hidden flex flex-col items-center mb-8">
           <img
             src="/img/logo Netto Dark.png"
-            alt="NettoOps Logo"
+            alt="Netto Laundry Logo"
             className="h-12 w-auto object-contain mb-2"
           />
           <p className="font-lagusans text-xs text-gray-400">Customer Relationship Management</p>

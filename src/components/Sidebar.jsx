@@ -62,7 +62,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }) {
         <div className={`flex items-center border-b border-gray-100 transition-all duration-300 h-16 ${expanded ? "px-4" : "justify-center px-0"}`}>
           <img
             src="/img/logo Netto Dark.png"
-            alt="NettoOps"
+            alt="Netto Laundry"
             className={`object-contain transition-all duration-300 ${expanded ? "h-10 w-auto" : "h-9 w-9"}`}
           />
         </div>

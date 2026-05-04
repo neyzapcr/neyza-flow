@@ -67,7 +67,7 @@ export default function Login() {
   return (
     <div className="font-lagusans">
       <h2 className="text-2xl font-bold text-gray-800 mb-1">Selamat Datang</h2>
-      <p className="text-sm text-gray-400 mb-6">Masuk ke panel admin NettoOps CRM</p>
+      <p className="text-sm text-gray-400 mb-6">Masuk ke panel admin Netto Laundry CRM</p>
 
       {errorInfo}
       {loadingInfo}

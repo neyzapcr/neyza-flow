@@ -40,7 +40,7 @@ async function exportPDF({ totalRevenue, activeCustomers, newCustomers, retentio
   doc.text("Netto Laundry ", 14, 13);
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text(`Laporan CRM — Periode: ${period}`, 14, 22);
+  doc.text(`Laporan CRM - Periode: ${period}`, 14, 22);
   doc.text(`Dicetak: ${now}`, 150, 22);
 
   // KPI Summary
@@ -110,7 +110,7 @@ async function exportPDF({ totalRevenue, activeCustomers, newCustomers, retentio
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150);
-    doc.text(`Netto Laundry — Halaman ${i} dari ${pageCount}`, 14, 290);
+    doc.text(`Netto Laundry - Halaman ${i} dari ${pageCount}`, 14, 290);
   }
 
   doc.save(`Laporan-CRM-${period}-${now.replace(/ /g, "-")}.pdf`);
@@ -147,7 +147,7 @@ function exportWord({ totalRevenue, activeCustomers, newCustomers, retentionRate
     </style>
     </head><body>
     <h1>Netto Laundry CRM</h1>
-    <p class="meta">Laporan CRM — Periode: ${period} &nbsp;|&nbsp; Dicetak: ${now}</p>
+    <p class="meta">Laporan CRM - Periode: ${period} &nbsp;|&nbsp; Dicetak: ${now}</p>
 
     <h2>Ringkasan KPI</h2>
     <table>
