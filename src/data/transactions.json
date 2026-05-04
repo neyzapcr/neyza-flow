@@ -1,0 +1,122 @@
+[
+  {
+    "id": "TRX-001",
+    "customerId": 1,
+    "customerName": "Rina Marlina",
+    "date": "2025-04-20",
+    "service": "Cuci + Setrika",
+    "weight": 3.5,
+    "pricePerKg": 8000,
+    "total": 28000,
+    "status": "selesai",
+    "paymentMethod": "Transfer"
+  },
+  {
+    "id": "TRX-002",
+    "customerId": 3,
+    "customerName": "Siti Nurhaliza",
+    "date": "2025-04-28",
+    "service": "Cuci Kering",
+    "weight": 5.0,
+    "pricePerKg": 7000,
+    "total": 35000,
+    "status": "selesai",
+    "paymentMethod": "Cash"
+  },
+  {
+    "id": "TRX-003",
+    "customerId": 8,
+    "customerName": "Fajar Nugroho",
+    "date": "2025-04-30",
+    "service": "Cuci + Setrika + Parfum",
+    "weight": 4.0,
+    "pricePerKg": 12000,
+    "total": 48000,
+    "status": "diproses",
+    "paymentMethod": "QRIS"
+  },
+  {
+    "id": "TRX-004",
+    "customerId": 5,
+    "customerName": "Ani Rahayu",
+    "date": "2025-04-15",
+    "service": "Cuci + Setrika",
+    "weight": 2.5,
+    "pricePerKg": 8000,
+    "total": 20000,
+    "status": "selesai",
+    "paymentMethod": "Cash"
+  },
+  {
+    "id": "TRX-005",
+    "customerId": 6,
+    "customerName": "Hendra Wijaya",
+    "date": "2025-04-25",
+    "service": "Cuci Kering",
+    "weight": 6.0,
+    "pricePerKg": 7000,
+    "total": 42000,
+    "status": "selesai",
+    "paymentMethod": "Transfer"
+  },
+  {
+    "id": "TRX-006",
+    "customerId": 2,
+    "customerName": "Budi Santoso",
+    "date": "2025-03-10",
+    "service": "Cuci + Setrika",
+    "weight": 3.0,
+    "pricePerKg": 8000,
+    "total": 24000,
+    "status": "selesai",
+    "paymentMethod": "Cash"
+  },
+  {
+    "id": "TRX-007",
+    "customerId": 3,
+    "customerName": "Siti Nurhaliza",
+    "date": "2025-05-01",
+    "service": "Cuci + Setrika + Parfum",
+    "weight": 7.0,
+    "pricePerKg": 12000,
+    "total": 84000,
+    "status": "menunggu",
+    "paymentMethod": "QRIS"
+  },
+  {
+    "id": "TRX-008",
+    "customerId": 1,
+    "customerName": "Rina Marlina",
+    "date": "2025-05-02",
+    "service": "Cuci Kering",
+    "weight": 4.5,
+    "pricePerKg": 7000,
+    "total": 31500,
+    "status": "diproses",
+    "paymentMethod": "Transfer"
+  },
+  {
+    "id": "TRX-009",
+    "customerId": 8,
+    "customerName": "Fajar Nugroho",
+    "date": "2025-04-18",
+    "service": "Cuci + Setrika",
+    "weight": 5.5,
+    "pricePerKg": 8000,
+    "total": 44000,
+    "status": "selesai",
+    "paymentMethod": "Cash"
+  },
+  {
+    "id": "TRX-010",
+    "customerId": 6,
+    "customerName": "Hendra Wijaya",
+    "date": "2025-04-10",
+    "service": "Cuci + Setrika + Parfum",
+    "weight": 3.0,
+    "pricePerKg": 12000,
+    "total": 36000,
+    "status": "selesai",
+    "paymentMethod": "QRIS"
+  }
+]

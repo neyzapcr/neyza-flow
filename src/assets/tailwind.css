@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+/* ── Font Face ── */
+@font-face {
+  font-family: 'LaguSans';
+  src: url('/fonts/Lagu Sans Regular.otf');
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'LaguSans';
+  src: url('/fonts/Lagu Sans SemiBold.otf');
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: 'LaguSans';
+  src: url('/fonts/Lagu Sans Bold.otf');
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: 'LaguSans';
+  src: url('/fonts/Lagu Sans ExtraBold.otf');
+  font-weight: 800;
+}
+
+/* ── Tailwind Theme ── */
+@theme {
+  --font-lagusans: 'LaguSans', sans-serif;
+
+  /* Brand colors */
+  --color-primary:     #3ABDE8;
+  --color-primary-dark: #1A667A;
+}
+
+/* ── Apply font globally ── */
+body {
+  @apply font-lagusans;
+}
+
+/* ── Custom animations ── */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+}

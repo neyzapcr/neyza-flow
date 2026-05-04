@@ -9,7 +9,10 @@
       "status": "Open",
       "mode": "Online",
       "date": "2026-05-10",
-      "image": "https://picsum.photos/200?1"
+      "image": "https://loremflickr.com/640/400/ui,ux,design",
+      "location": { "city": "Pekanbaru", "platform": "Zoom" },
+      "organizer": { "name": "Tech Academy", "contact": "tech@mail.com" },
+      "speaker": { "name": "Andi Wijaya", "expertise": "UI/UX Designer" }
     },
     {
       "id": 2,
@@ -19,7 +22,10 @@
       "status": "Closed",
       "mode": "Offline",
       "date": "2026-04-20",
-      "image": "https://picsum.photos/200?2"
+      "image": "https://loremflickr.com/640/400/data,science,analytics",
+      "location": { "city": "Pekanbaru", "venue": "Aula PCR" },
+      "organizer": { "name": "Data Community", "contact": "data@mail.com" },
+      "speaker": { "name": "Budi Santoso", "expertise": "Data Scientist" }
     },
     {
       "id": 3,
@@ -29,7 +35,10 @@
       "status": "Open",
       "mode": "Online",
       "date": "2026-06-01",
-      "image": "https://picsum.photos/200?3"
+      "image": "https://loremflickr.com/640/400/mobile,app,development",
+      "location": { "city": "Online", "platform": "Google Meet" },
+      "organizer": { "name": "Dev Academy", "contact": "dev@mail.com" },
+      "speaker": { "name": "Rizky Pratama", "expertise": "Android Developer" }
     },
     {
       "id": 4,
@@ -39,7 +48,10 @@
       "status": "Open",
       "mode": "Offline",
       "date": "2026-05-15",
-      "image": "https://picsum.photos/200?4"
+      "image": "https://loremflickr.com/640/400/artificial,intelligence,technology",
+      "location": { "city": "Pekanbaru", "venue": "Lab Komputer" },
+      "organizer": { "name": "AI Hub", "contact": "ai@mail.com" },
+      "speaker": { "name": "Dina Putri", "expertise": "AI Engineer" }
     },
     {
       "id": 5,
@@ -49,7 +61,10 @@
       "status": "Closed",
       "mode": "Offline",
       "date": "2026-04-18",
-      "image": "https://picsum.photos/200?5"
+      "image": "https://loremflickr.com/640/400/public,speaking,presentation",
+      "location": { "city": "Pekanbaru", "venue": "Ruang Seminar" },
+      "organizer": { "name": "Skill Center", "contact": "skill@mail.com" },
+      "speaker": { "name": "Siti Rahma", "expertise": "Trainer" }
     },
     {
       "id": 6,
@@ -59,7 +74,10 @@
       "status": "Open",
       "mode": "Online",
       "date": "2026-05-22",
-      "image": "https://picsum.photos/200?6"
+      "image": "https://loremflickr.com/640/400/digital,marketing,business",
+      "location": { "city": "Online", "platform": "Zoom" },
+      "organizer": { "name": "Marketing Hub", "contact": "market@mail.com" },
+      "speaker": { "name": "Fajar Nugroho", "expertise": "Digital Marketer" }
     },
     {
       "id": 7,
@@ -69,7 +87,10 @@
       "status": "Open",
       "mode": "Offline",
       "date": "2026-06-05",
-      "image": "https://picsum.photos/200?7"
+      "image": "https://loremflickr.com/640/400/cyber,security,technology",
+      "location": { "city": "Pekanbaru", "venue": "Auditorium" },
+      "organizer": { "name": "Security Team", "contact": "secure@mail.com" },
+      "speaker": { "name": "Agus Saputra", "expertise": "Cyber Security" }
     },
     {
       "id": 8,
@@ -79,7 +100,10 @@
       "status": "Open",
       "mode": "Offline",
       "date": "2026-05-28",
-      "image": "https://picsum.photos/200?8"
+      "image": "https://loremflickr.com/640/400/photography,camera,creative",
+      "location": { "city": "Pekanbaru", "venue": "Studio Foto" },
+      "organizer": { "name": "Creative Space", "contact": "creative@mail.com" },
+      "speaker": { "name": "Rina Lestari", "expertise": "Photographer" }
     },
     {
       "id": 9,
@@ -89,7 +113,10 @@
       "status": "Closed",
       "mode": "Online",
       "date": "2026-04-30",
-      "image": "https://picsum.photos/200?9"
+      "image": "https://loremflickr.com/640/400/cloud,computing,server",
+      "location": { "city": "Online", "platform": "Zoom" },
+      "organizer": { "name": "Cloud Team", "contact": "cloud@mail.com" },
+      "speaker": { "name": "Hendra Wijaya", "expertise": "Cloud Engineer" }
     },
     {
       "id": 10,
@@ -99,7 +126,10 @@
       "status": "Open",
       "mode": "Offline",
       "date": "2026-06-10",
-      "image": "https://picsum.photos/200?10"
+      "image": "https://loremflickr.com/640/400/startup,business,pitch",
+      "location": { "city": "Pekanbaru", "venue": "Hall Utama" },
+      "organizer": { "name": "Startup Hub", "contact": "startup@mail.com" },
+      "speaker": { "name": "Kevin Tan", "expertise": "Entrepreneur" }
     },
     {
       "id": 11,
@@ -109,7 +139,10 @@
       "status": "Open",
       "mode": "Online",
       "date": "2026-05-12",
-      "image": "https://picsum.photos/200?11"
+      "image": "https://loremflickr.com/640/400/frontend,web,code",
+      "location": { "city": "Online", "platform": "Meet" },
+      "organizer": { "name": "Web Dev Club", "contact": "web@mail.com" },
+      "speaker": { "name": "Dika Prasetyo", "expertise": "Frontend Dev" }
     },
     {
       "id": 12,
@@ -119,7 +152,10 @@
       "status": "Open",
       "mode": "Offline",
       "date": "2026-06-15",
-      "image": "https://picsum.photos/200?12"
+      "image": "https://loremflickr.com/640/400/machine,learning,data",
+      "location": { "city": "Pekanbaru", "venue": "Lab AI" },
+      "organizer": { "name": "ML Community", "contact": "ml@mail.com" },
+      "speaker": { "name": "Nadia Putri", "expertise": "ML Engineer" }
     },
     {
       "id": 13,
@@ -129,7 +165,10 @@
       "status": "Closed",
       "mode": "Online",
       "date": "2026-04-25",
-      "image": "https://picsum.photos/200?13"
+      "image": "https://loremflickr.com/640/400/english,learning,study",
+      "location": { "city": "Online", "platform": "Zoom" },
+      "organizer": { "name": "Language Center", "contact": "lang@mail.com" },
+      "speaker": { "name": "Sarah Lee", "expertise": "English Coach" }
     },
     {
       "id": 14,
@@ -139,7 +178,10 @@
       "status": "Open",
       "mode": "Offline",
       "date": "2026-05-30",
-      "image": "https://picsum.photos/200?14"
+      "image": "https://loremflickr.com/640/400/video,editing,creative",
+      "location": { "city": "Pekanbaru", "venue": "Studio Multimedia" },
+      "organizer": { "name": "Media Lab", "contact": "media@mail.com" },
+      "speaker": { "name": "Arif Rahman", "expertise": "Video Editor" }
     },
     {
       "id": 15,
@@ -149,7 +191,10 @@
       "status": "Open",
       "mode": "Offline",
       "date": "2026-06-07",
-      "image": "https://picsum.photos/200?15"
+      "image": "https://loremflickr.com/640/400/finance,money,planning",
+      "location": { "city": "Pekanbaru", "venue": "Ruang Meeting" },
+      "organizer": { "name": "Finance Club", "contact": "finance@mail.com" },
+      "speaker": { "name": "Tono Wijaya", "expertise": "Financial Planner" }
     },
     {
       "id": 16,
@@ -159,7 +204,10 @@
       "status": "Open",
       "mode": "Online",
       "date": "2026-05-18",
-      "image": "https://picsum.photos/200?16"
+      "image": "https://loremflickr.com/640/400/content,creator,socialmedia",
+      "location": { "city": "Online", "platform": "Zoom" },
+      "organizer": { "name": "Creator Hub", "contact": "creator@mail.com" },
+      "speaker": { "name": "Rafi Ahmad", "expertise": "Content Creator" }
     },
     {
       "id": 17,
@@ -169,7 +217,10 @@
       "status": "Closed",
       "mode": "Offline",
       "date": "2026-04-27",
-      "image": "https://picsum.photos/200?17"
+      "image": "https://loremflickr.com/640/400/entrepreneurship,business,startup",
+      "location": { "city": "Pekanbaru", "venue": "Hall Bisnis" },
+      "organizer": { "name": "Biz Academy", "contact": "biz@mail.com" },
+      "speaker": { "name": "Daniel Hartono", "expertise": "Entrepreneur" }
     },
     {
       "id": 18,
@@ -179,7 +230,10 @@
       "status": "Open",
       "mode": "Online",
       "date": "2026-06-12",
-      "image": "https://picsum.photos/200?18"
+      "image": "https://loremflickr.com/640/400/python,programming,code",
+      "location": { "city": "Online", "platform": "Meet" },
+      "organizer": { "name": "Code Lab", "contact": "code@mail.com" },
+      "speaker": { "name": "Yoga Pratama", "expertise": "Python Developer" }
     },
     {
       "id": 19,
@@ -189,7 +243,10 @@
       "status": "Open",
       "mode": "Offline",
       "date": "2026-05-25",
-      "image": "https://picsum.photos/200?19"
+      "image": "https://loremflickr.com/640/400/leadership,teamwork,training",
+      "location": { "city": "Pekanbaru", "venue": "Outdoor Camp" },
+      "organizer": { "name": "Leadership Hub", "contact": "leader@mail.com" },
+      "speaker": { "name": "Bambang Setiawan", "expertise": "Leadership Coach" }
     },
     {
       "id": 20,
@@ -199,7 +256,10 @@
       "status": "Open",
       "mode": "Offline",
       "date": "2026-06-20",
-      "image": "https://picsum.photos/200?20"
+      "image": "https://loremflickr.com/640/400/blockchain,technology,crypto",
+      "location": { "city": "Pekanbaru", "venue": "Tech Hall" },
+      "organizer": { "name": "Blockchain Community", "contact": "block@mail.com" },
+      "speaker": { "name": "Eko Saputra", "expertise": "Blockchain Dev" }
     }
   ]
 }

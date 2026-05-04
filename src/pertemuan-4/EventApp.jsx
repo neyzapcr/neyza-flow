@@ -65,13 +65,26 @@ export default function EventApp() {
   const filteredEvents = events.filter((item) => {
     const search = dataForm.searchTerm.toLowerCase();
 
-    const matchSearch =
-      item.title.toLowerCase().includes(search) ||
-      item.desc.toLowerCase().includes(search) ||
-      item.tag.toLowerCase().includes(search) ||
-      item.mode.toLowerCase().includes(search) ||
-      item.status.toLowerCase().includes(search) ||
-      item.date.toLowerCase().includes(search);
+    const searchableText = [
+      item.title,
+      item.desc,
+      item.tag,
+      item.mode,
+      item.status,
+      item.date,
+      item.location?.city,
+      item.location?.venue,
+      item.location?.platform,
+      item.organizer?.name,
+      item.organizer?.contact,
+      item.speaker?.name,
+      item.speaker?.expertise
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    const matchSearch = searchableText.includes(search);
 
     const matchTag = dataForm.selectedTag
       ? item.tag === dataForm.selectedTag

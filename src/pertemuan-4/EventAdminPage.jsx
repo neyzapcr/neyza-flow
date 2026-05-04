@@ -26,7 +26,6 @@ export default function EventAdminPage({
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#c9f76f] via-[#d8c8ff] to-[#f4f4f4]">
       <div className="mx-auto max-w-7xl p-4">
-        {/* Header */}
         <div className="relative mb-6 overflow-hidden rounded-[36px] border-[3px] border-black/10 bg-white/55 p-6 shadow-xl backdrop-blur-md">
           <div className="absolute left-1 top-2 -rotate-12 text-lg sm:text-xl"> ✨ </div>
           <div className="absolute bottom-2 left-1 -rotate-6 text-xl sm:text-2xl"> 🐰 </div>
@@ -42,18 +41,19 @@ export default function EventAdminPage({
                 Dashboard - Pertemuan 4
               </p>
               <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
-                Event Admin 💻 </h1>
+                Event Admin 💻
+              </h1>
             </div>
 
             <button
               onClick={handleLogout}
-              className="shrink-0 rounded-full border-2 border-black/10 bg-white px-5 py-2 text-xs font-extrabold 
-              text-violet-700 shadow-md transition hover:-translate-y-0.5 hover:bg-violet-50 sm:text-sm">
-              Logout 🚪</button>
+              className="shrink-0 rounded-full border-2 border-black/10 bg-white px-5 py-2 text-xs font-extrabold text-violet-700 shadow-md transition hover:-translate-y-0.5 hover:bg-violet-50 sm:text-sm"
+            >
+              Logout 🚪
+            </button>
           </div>
         </div>
 
-        {/* Filter */}
         <div className="relative mb-5 rounded-[30px] border-[2px] border-black/10 bg-white/70 p-4 shadow-lg backdrop-blur-md">
           <div className="pointer-events-none absolute left-3 top-3 rotate-[-10deg] text-sm"> 💚 </div>
           <div className="pointer-events-none absolute right-5 top-3 rotate-[12deg] text-sm"> 🐰 </div>
@@ -67,14 +67,20 @@ export default function EventAdminPage({
 
           <div className="flex flex-nowrap items-center gap-2 overflow-x-auto sm:gap-3">
             <input
-              type="text" name="searchTerm" value={dataForm.searchTerm} onChange={handleChange} placeholder="Search event... 🔎" 
-              className="min-w-[170px] flex-1 rounded-full border-2 border-lime-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition 
-              focus:border-lime-400 focus:ring-4 focus:ring-lime-100" />
+              type="text"
+              name="searchTerm"
+              value={dataForm.searchTerm}
+              onChange={handleChange}
+              placeholder="Search event... 🔎"
+              className="min-w-[170px] flex-1 rounded-full border-2 border-lime-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-lime-400 focus:ring-4 focus:ring-lime-100"
+            />
+
             <select
               name="selectedTag"
               value={dataForm.selectedTag}
               onChange={handleChange}
-              className="min-w-[130px] rounded-full border-2 border-violet-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100" >
+              className="min-w-[130px] rounded-full border-2 border-violet-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100"
+            >
               <option value="">Tag 🏷️</option>
               {allTags.map((tag, i) => (
                 <option key={i} value={tag}>
@@ -87,7 +93,8 @@ export default function EventAdminPage({
               name="selectedStatus"
               value={dataForm.selectedStatus}
               onChange={handleChange}
-              className="min-w-[140px] rounded-full border-2 border-cyan-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100" >
+              className="min-w-[140px] rounded-full border-2 border-cyan-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100"
+            >
               <option value="">Status 📌</option>
               {allStatuses.map((status, i) => (
                 <option key={i} value={status}>
@@ -98,26 +105,29 @@ export default function EventAdminPage({
           </div>
         </div>
 
-        {/* Table */}
         <div className="overflow-x-auto rounded-[30px] border-[2px] border-black/10 bg-white/85 shadow-xl">
-          <table className="min-w-[900px] w-full text-left text-sm">
+          <table className="min-w-[1100px] w-full text-left text-sm">
             <thead className="bg-gradient-to-r from-[#d8c8ff] to-[#c9f76f] text-slate-800">
               <tr>
-                <th className="px-4 py-4 font-black">ID</th>
-                <th className="px-4 py-4 font-black">Image</th>
-                <th className="px-4 py-4 font-black">Title</th>
-                <th className="px-4 py-4 font-black">Description</th>
-                <th className="px-4 py-4 font-black">Tag</th>
-                <th className="px-4 py-4 font-black">Status</th>
-                <th className="px-4 py-4 font-black">Mode</th>
-                <th className="px-4 py-4 font-black">Date</th>
+                <th className="px-4 py-4 text-[12px] font-black">ID</th>
+                <th className="px-4 py-4 text-[12px] font-black">Image</th>
+                <th className="px-4 py-4 text-[12px] font-black">Title & Speaker</th>
+                <th className="px-4 py-4 text-[12px] font-black">Description & Organizer</th>
+                <th className="px-4 py-4 text-[12px] font-black">Tag</th>
+                <th className="px-4 py-4 text-[12px] font-black">Status</th>
+                <th className="px-4 py-4 text-[12px] font-black">Mode</th>
+                <th className="px-4 py-4 text-[12px] font-black">Location & Date</th>
               </tr>
             </thead>
 
             <tbody>
               {filteredEvents.map((item, index) => (
                 <EventRow
-                  key={item.id} item={item} index={index} getTagClass={getTagClass} />
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  getTagClass={getTagClass}
+                />
               ))}
             </tbody>
           </table>

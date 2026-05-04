@@ -1,0 +1,68 @@
+[
+  {
+    "id": 1,
+    "customerId": 1,
+    "customerName": "Rina Marlina",
+    "transactionId": "TRX-001",
+    "date": "2025-04-21",
+    "rating": 5,
+    "category": "Kebersihan",
+    "comment": "Cucian sangat bersih dan wangi, pelayanan cepat!",
+    "status": "dibalas"
+  },
+  {
+    "id": 2,
+    "customerId": 3,
+    "customerName": "Siti Nurhaliza",
+    "transactionId": "TRX-002",
+    "date": "2025-04-29",
+    "rating": 4,
+    "category": "Kecepatan",
+    "comment": "Cukup cepat, tapi ada sedikit noda yang belum hilang.",
+    "status": "menunggu"
+  },
+  {
+    "id": 3,
+    "customerId": 5,
+    "customerName": "Ani Rahayu",
+    "transactionId": "TRX-004",
+    "date": "2025-04-16",
+    "rating": 5,
+    "category": "Pelayanan",
+    "comment": "Staf sangat ramah dan profesional!",
+    "status": "dibalas"
+  },
+  {
+    "id": 4,
+    "customerId": 6,
+    "customerName": "Hendra Wijaya",
+    "transactionId": "TRX-005",
+    "date": "2025-04-26",
+    "rating": 3,
+    "category": "Kebersihan",
+    "comment": "Lumayan, tapi harapannya bisa lebih bersih lagi.",
+    "status": "menunggu"
+  },
+  {
+    "id": 5,
+    "customerId": 8,
+    "customerName": "Fajar Nugroho",
+    "transactionId": "TRX-009",
+    "date": "2025-04-19",
+    "rating": 5,
+    "category": "Kecepatan",
+    "comment": "Selesai lebih cepat dari estimasi, sangat puas!",
+    "status": "dibalas"
+  },
+  {
+    "id": 6,
+    "customerId": 2,
+    "customerName": "Budi Santoso",
+    "transactionId": "TRX-006",
+    "date": "2025-03-11",
+    "rating": 4,
+    "category": "Pelayanan",
+    "comment": "Pelayanan baik, harga terjangkau.",
+    "status": "dibalas"
+  }
+]
