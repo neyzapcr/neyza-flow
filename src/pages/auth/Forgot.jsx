@@ -66,7 +66,7 @@ export default function Forgot() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@netto.com"
+            placeholder="namaemail@gmail.com"
             className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#3ABDE8] focus:ring-2 focus:ring-[#3ABDE8]/20 transition-all"
           />
         </div>
