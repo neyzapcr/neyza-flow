@@ -4,15 +4,12 @@ export default function AuthLayout() {
   return (
     <div className="min-h-screen flex">
 
-      {/* ── Kiri: Panel branding ── */}
       <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] bg-gradient-to-br from-[#1A667A] via-[#1e7a91] to-[#3ABDE8] flex-col items-center justify-center p-12 relative overflow-hidden">
 
-        {/* Dekorasi lingkaran */}
         <div className="absolute -top-24 -left-24 w-80 h-80 bg-white/5 rounded-full" />
         <div className="absolute -bottom-32 -right-20 w-96 h-96 bg-white/5 rounded-full" />
         <div className="absolute top-1/2 left-1/4 w-48 h-48 bg-white/5 rounded-full -translate-y-1/2" />
 
-        {/* Konten branding */}
         <div className="relative z-10 flex flex-col items-center text-center max-w-md">
 
           {/* Logo + teks rapat tanpa gap */}
@@ -34,16 +31,13 @@ export default function AuthLayout() {
 
         </div>
 
-        {/* Footer */}
         <p className="absolute bottom-6 font-lagusans text-white/40 text-xs">
           © 2026 Netto Laundry All rights reserved.
         </p>
       </div>
 
-      {/* ── Kanan: Form area ── */}
       <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 p-6 sm:p-10 min-h-screen">
 
-        {/* Logo mobile */}
         <div className="lg:hidden flex flex-col items-center mb-8">
           <img
             src="/img/logo Netto Dark.png"
@@ -53,7 +47,6 @@ export default function AuthLayout() {
           <p className="font-lagusans text-xs text-gray-400">Customer Relationship Management</p>
         </div>
 
-        {/* Card form */}
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
           <Outlet />
         </div>
