@@ -42,7 +42,6 @@ export default function App() {
     <Suspense fallback={<Loading />}>
       <Routes>
 
-        {/* ── Root: / → dashboard kalau login, login kalau belum ── */}
         <Route
           path="/"
           element={isLoggedIn()
@@ -51,14 +50,12 @@ export default function App() {
           }
         />
 
-        {/* ── Auth Routes — tidak bisa diakses kalau sudah login ── */}
         <Route element={<GuestRoute><AuthLayout /></GuestRoute>}>
           <Route path="/login"    element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot"   element={<Forgot />} />
         </Route>
 
-        {/* ── Admin Routes — harus login dulu ── */}
         <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
           <Route path="/dashboard"     element={<Dashboard />} />
           <Route path="/customers"     element={<Customers />} />
@@ -72,7 +69,6 @@ export default function App() {
           <Route path="/settings"      element={<Settings />} />
         </Route>
 
-        {/* ── 404 — URL tidak dikenal ── */}
         <Route path="*" element={<NotFound />} />
 
       </Routes>

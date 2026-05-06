@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Save, Plus, Trash2, RotateCcw, Settings2, Tag, Gift, Zap } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 
-// ── Default settings ──────────────────────────────────────────────────────
 const DEFAULT_SERVICES = [
   {
     id: 1,
@@ -66,7 +65,6 @@ function PriceInput({ value, onChange, prefix = "Rp" }) {
   );
 }
 
-// ── Toast notifikasi ──────────────────────────────────────────────────────
 function Toast({ msg, onClose }) {
   return (
     <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-[#1A667A] text-white px-5 py-3 rounded-2xl shadow-xl animate-bounce-once">
@@ -77,7 +75,6 @@ function Toast({ msg, onClose }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("services");
   const [services,  setServices]  = useState(DEFAULT_SERVICES);
@@ -90,7 +87,6 @@ export default function Settings() {
     setTimeout(() => setToast(""), 3000);
   };
 
-  // ── Service handlers ──
   const updateService = (id, field, val) =>
     setServices(services.map((s) => s.id === id ? { ...s, [field]: val } : s));
 
@@ -99,7 +95,6 @@ export default function Settings() {
 
   const deleteService = (id) => setServices(services.filter((s) => s.id !== id));
 
-  // ── Discount handlers ──
   const updateDiscount = (id, field, val) =>
     setDiscounts(discounts.map((d) => d.id === id ? { ...d, [field]: val } : d));
 
@@ -125,7 +120,6 @@ export default function Settings() {
         </button>
       </PageHeader>
 
-      {/* Tab navigation */}
       <div className="flex gap-2 mb-6 bg-white rounded-2xl p-1.5 shadow-sm border border-gray-100 w-fit">
         {tabs.map(({ key, label, Icon }) => (
           <button
@@ -143,7 +137,6 @@ export default function Settings() {
         ))}
       </div>
 
-      {/* ── TAB: Harga Layanan ── */}
       {activeTab === "services" && (
         <div className="space-y-4">
           {/* Info */}
