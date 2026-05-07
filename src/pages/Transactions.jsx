@@ -4,8 +4,8 @@ import PageHeader from "../components/PageHeader";
 import transactionsData from "../data/transactions.json";
 
 const statusColors = {
-  selesai: "bg-green-100 text-green-700",
-  diproses: "bg-blue-100 text-[#3ABDE8]",
+  selesai: "bg-[2CC5BD] text-green-700",
+  diproses: "bg-blue-100 text-[#2940D3]",
   menunggu: "bg-yellow-100 text-yellow-700",
 };
 
@@ -30,7 +30,7 @@ export default function Transactions() {
   return (
     <div>
       <PageHeader title="Riwayat Transaksi" subtitle="Kelola dan pantau semua transaksi pelanggan">
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-[#3ABDE8] text-white rounded-xl text-sm font-semibold hover:bg-[#2AADD8] transition-colors shadow-sm">
+        <button className="flex items-center gap-2 px-4 py-2.5 bg-[#2940D3] text-white rounded-xl text-sm font-semibold hover:bg-[#5A6FE4] transition-colors shadow-sm">
           <Download size={15} /> Export
         </button>
       </PageHeader>
@@ -38,8 +38,8 @@ export default function Transactions() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Total Transaksi", value: transactions.length, Icon: Receipt, color: "bg-blue-50", iconColor: "text-[#3ABDE8]" },
-          { label: "Total Pendapatan", value: `Rp ${totalRevenue.toLocaleString("id-ID")}`, Icon: DollarSign, color: "bg-green-50", iconColor: "text-green-500" },
+          { label: "Total Transaksi", value: transactions.length, Icon: Receipt, color: "bg-blue-50", iconColor: "text-[#2940D3]" },
+          { label: "Total Pendapatan", value: `Rp ${totalRevenue.toLocaleString("id-ID")}`, Icon: DollarSign, color: "bg-[2CC5BD]", iconColor: "text-green-500" },
           { label: "Total Berat", value: `${totalWeight} kg`, Icon: Weight, color: "bg-yellow-50", iconColor: "text-yellow-500" },
           { label: "Selesai", value: transactions.filter((t) => t.status === "selesai").length, Icon: CheckCircle, color: "bg-emerald-50", iconColor: "text-emerald-500" },
         ].map((s) => (
@@ -70,7 +70,7 @@ export default function Transactions() {
                 key={s}
                 onClick={() => setFilterStatus(s)}
                 className={`px-3 py-2 rounded-xl text-xs font-medium capitalize transition-all ${
-                  filterStatus === s ? "bg-[#3ABDE8] text-white shadow-sm" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  filterStatus === s ? "bg-[#2940D3] text-white shadow-sm" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                 }`}
               >
                 {s}
@@ -115,7 +115,7 @@ export default function Transactions() {
                   <td className="px-5 py-4">
                     <button
                       onClick={() => setViewTrx(t)}
-                      className="w-8 h-8 rounded-lg bg-blue-50 text-[#3ABDE8] flex items-center justify-center hover:bg-blue-100 transition-colors"
+                      className="w-8 h-8 rounded-lg bg-blue-50 text-[#2940D3] flex items-center justify-center hover:bg-blue-100 transition-colors"
                       title="Lihat Detail"
                     ><Eye size={14} /></button>
                   </td>
@@ -155,16 +155,16 @@ export default function Transactions() {
                   <span className="text-sm font-semibold text-gray-800">{item.value}</span>
                 </div>
               ))}
-              <div className="flex justify-between py-3 bg-[#3ABDE8]/5 rounded-xl px-3 mt-2">
+              <div className="flex justify-between py-3 bg-[#2940D3]/5 rounded-xl px-3 mt-2">
                 <span className="text-sm font-bold text-gray-700">Total Biaya</span>
-                <span className="text-base font-bold text-[#3ABDE8]">Rp {viewTrx.total.toLocaleString("id-ID")}</span>
+                <span className="text-base font-bold text-[#2940D3]">Rp {viewTrx.total.toLocaleString("id-ID")}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-500">Status</span>
                 <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${statusColors[viewTrx.status]}`}>{viewTrx.status}</span>
               </div>
             </div>
-            <button onClick={() => setViewTrx(null)} className="w-full mt-5 py-2.5 rounded-xl bg-[#3ABDE8] text-white text-sm font-semibold hover:bg-[#2AADD8] transition-colors">Tutup</button>
+            <button onClick={() => setViewTrx(null)} className="w-full mt-5 py-2.5 rounded-xl bg-[#2940D3] text-white text-sm font-semibold hover:bg-[#5A6FE4] transition-colors">Tutup</button>
           </div>
         </div>
       )}

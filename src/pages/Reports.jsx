@@ -18,8 +18,8 @@ const monthlyData = [
 
 const segmentColors = {
   VIP: "bg-purple-100 text-purple-700",
-  Loyal: "bg-blue-100 text-[#3ABDE8]",
-  Regular: "bg-green-100 text-green-700",
+  Loyal: "bg-blue-100 text-[#2940D3]",
+  Regular: "bg-[2CC5BD] text-green-700",
   New: "bg-yellow-100 text-yellow-700",
 };
 
@@ -137,10 +137,10 @@ function exportWord({ totalRevenue, activeCustomers, newCustomers, retentionRate
     <head><meta charset="utf-8"><title>Laporan CRM</title>
     <style>
       body { font-family: Calibri, sans-serif; font-size: 11pt; color: #1a1a1a; }
-      h1 { color: #3ABDE8; font-size: 18pt; margin-bottom: 4pt; }
-      h2 { color: #1a1a1a; font-size: 13pt; margin-top: 18pt; margin-bottom: 6pt; border-bottom: 1px solid #3ABDE8; padding-bottom: 4pt; }
+      h1 { color: #2940D3; font-size: 18pt; margin-bottom: 4pt; }
+      h2 { color: #1a1a1a; font-size: 13pt; margin-top: 18pt; margin-bottom: 6pt; border-bottom: 1px solid #2940D3; padding-bottom: 4pt; }
       table { border-collapse: collapse; width: 100%; margin-bottom: 12pt; }
-      th { background-color: #3ABDE8; color: white; padding: 6pt 8pt; text-align: left; font-size: 10pt; }
+      th { background-color: #2940D3; color: white; padding: 6pt 8pt; text-align: left; font-size: 10pt; }
       td { padding: 5pt 8pt; border-bottom: 1px solid #e5e7eb; font-size: 10pt; }
       tr:nth-child(even) td { background-color: #f5faff; }
       .meta { color: #6b7280; font-size: 10pt; margin-bottom: 16pt; }
@@ -203,8 +203,8 @@ export default function Reports() {
   };
 
   const kpis = [
-    { label: "Total Pendapatan", value: `Rp ${totalRevenue.toLocaleString("id-ID")}`, Icon: TrendingUp, sub: "↑ 12% vs bulan lalu", subColor: "text-green-500", color: "bg-blue-50", iconColor: "text-[#3ABDE8]" },
-    { label: "Pelanggan Aktif", value: activeCustomers, Icon: Users, sub: `${retentionRate}% retensi`, subColor: "text-[#3ABDE8]", color: "bg-green-50", iconColor: "text-green-500" },
+    { label: "Total Pendapatan", value: `Rp ${totalRevenue.toLocaleString("id-ID")}`, Icon: TrendingUp, sub: "↑ 12% vs bulan lalu", subColor: "text-green-500", color: "bg-blue-50", iconColor: "text-[#2940D3]" },
+    { label: "Pelanggan Aktif", value: activeCustomers, Icon: Users, sub: `${retentionRate}% retensi`, subColor: "text-[#2940D3]", color: "bg-[2CC5BD]", iconColor: "text-green-500" },
     { label: "Pelanggan Baru", value: newCustomers, Icon: UserPlus, sub: "Tahun 2025", subColor: "text-purple-500", color: "bg-purple-50", iconColor: "text-purple-500" },
     { label: "Tingkat Retensi", value: `${retentionRate}%`, Icon: RefreshCw, sub: "Pelanggan kembali", subColor: "text-orange-500", color: "bg-orange-50", iconColor: "text-orange-500" },
   ];
@@ -217,7 +217,7 @@ export default function Reports() {
           <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
             {["hari", "minggu", "bulan"].map((p) => (
               <button key={p} onClick={() => setPeriod(p)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${period === p ? "bg-white text-[#3ABDE8] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${period === p ? "bg-white text-[#2940D3] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
                 {p}
               </button>
             ))}
@@ -274,7 +274,7 @@ export default function Reports() {
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
               <YAxis hide />
               <Tooltip formatter={(v) => [`Rp ${v.toLocaleString("id-ID")}`, "Pendapatan"]} contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }} />
-              <Bar dataKey="pendapatan" fill="#3ABDE8" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="pendapatan" fill="#2940D3" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -288,7 +288,7 @@ export default function Reports() {
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
               <YAxis hide />
               <Tooltip contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }} />
-              <Line type="monotone" dataKey="pelangganBaru" stroke="#3ABDE8" strokeWidth={2.5} dot={{ fill: "#3ABDE8", r: 4 }} name="Pelanggan Baru" />
+              <Line type="monotone" dataKey="pelangganBaru" stroke="#2940D3" strokeWidth={2.5} dot={{ fill: "#2940D3", r: 4 }} name="Pelanggan Baru" />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -326,7 +326,7 @@ export default function Reports() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="w-16 bg-gray-100 rounded-full h-1.5">
-                          <div className="h-1.5 rounded-full bg-[#3ABDE8]" style={{ width: `${pct}%` }}></div>
+                          <div className="h-1.5 rounded-full bg-[#2940D3]" style={{ width: `${pct}%` }}></div>
                         </div>
                         <span className="text-xs text-gray-500">{pct}%</span>
                       </div>
@@ -346,7 +346,7 @@ export default function Reports() {
             <p className="font-bold text-gray-800">Pelanggan Tidak Aktif</p>
             <p className="text-xs text-gray-400">Tidak bertransaksi lebih dari 30 hari</p>
           </div>
-          <button className="flex items-center gap-1.5 px-4 py-2 bg-[#3ABDE8]/10 text-[#3ABDE8] rounded-xl text-xs font-semibold hover:bg-[#3ABDE8]/20 transition-colors">
+          <button className="flex items-center gap-1.5 px-4 py-2 bg-[#2940D3]/10 text-[#2940D3] rounded-xl text-xs font-semibold hover:bg-[#2940D3]/20 transition-colors">
             <Send size={13} /> Kirim Reminder
           </button>
         </div>
@@ -362,7 +362,7 @@ export default function Reports() {
                   <p className="text-xs text-gray-500">Terakhir: {c.lastTransaction}</p>
                 </div>
               </div>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#3ABDE8] text-white rounded-lg text-xs font-semibold hover:bg-[#2AADD8] transition-colors">
+              <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#2940D3] text-white rounded-lg text-xs font-semibold hover:bg-[#5A6FE4] transition-colors">
                 <Send size={11} /> Kirim Pesan
               </button>
             </div>

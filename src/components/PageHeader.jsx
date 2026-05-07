@@ -17,7 +17,7 @@ export default function PageHeader({ title, subtitle, children, onSearch }) {
   };
 
   return (
-    <div className="mb-6 font-lagusans">
+    <div className="mb-6 font-Montserrat">
       {/* Top row: title + actions */}
       <div className="flex items-start justify-between gap-4 mb-3">
         <div>
@@ -29,7 +29,7 @@ export default function PageHeader({ title, subtitle, children, onSearch }) {
 
       {/* Search bar — hanya tampil jika onSearch di-pass */}
       {onSearch !== undefined && (
-        <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 w-full max-w-md focus-within:border-[#3ABDE8] focus-within:ring-2 focus-within:ring-[#3ABDE8]/10 transition-all shadow-sm">
+        <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 w-full max-w-md focus-within:border-[#2940D3] focus-within:ring-2 focus-within:ring-[#2940D3]/10 transition-all shadow-sm">
           <Search size={14} className="text-gray-400 flex-shrink-0" />
           <input
             ref={inputRef}
@@ -37,7 +37,7 @@ export default function PageHeader({ title, subtitle, children, onSearch }) {
             value={query}
             onChange={handleChange}
             placeholder={`Cari di ${title.toLowerCase()}...`}
-            className="bg-transparent text-sm text-gray-600 outline-none w-full placeholder-gray-400 font-lagusans"
+            className="bg-transparent text-sm text-gray-600 outline-none w-full placeholder-gray-400 font-Montserrat"
           />
           {query && (
             <button onClick={handleClear} className="text-gray-400 hover:text-gray-600 flex-shrink-0">

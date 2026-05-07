@@ -52,7 +52,7 @@ const DEFAULT_POINTS = {
 // ── Komponen input harga ──────────────────────────────────────────────────
 function PriceInput({ value, onChange, prefix = "Rp" }) {
   return (
-    <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#3ABDE8] focus-within:ring-2 focus-within:ring-[#3ABDE8]/20 transition-all">
+    <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#2940D3] focus-within:ring-2 focus-within:ring-[#2940D3]/20 transition-all">
       <span className="px-3 py-2.5 bg-gray-50 text-xs text-gray-500 border-r border-gray-200 font-medium">{prefix}</span>
       <input
         type="number"
@@ -67,7 +67,7 @@ function PriceInput({ value, onChange, prefix = "Rp" }) {
 
 function Toast({ msg, onClose }) {
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-[#1A667A] text-white px-5 py-3 rounded-2xl shadow-xl animate-bounce-once">
+    <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-[#142297] text-white px-5 py-3 rounded-2xl shadow-xl animate-bounce-once">
       <Save size={16} />
       <span className="text-sm font-semibold">{msg}</span>
       <button onClick={onClose} className="ml-2 opacity-70 hover:opacity-100">✕</button>
@@ -114,7 +114,7 @@ export default function Settings() {
       <PageHeader title="Pengaturan" subtitle="Kelola harga layanan, diskon, dan program poin">
         <button
           onClick={() => showToast("Pengaturan berhasil disimpan!")}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#3ABDE8] text-white rounded-xl text-sm font-semibold hover:bg-[#2AADD8] transition-colors shadow-sm"
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#2940D3] text-white rounded-xl text-sm font-semibold hover:bg-[#5A6FE4] transition-colors shadow-sm"
         >
           <Save size={15} /> Simpan Semua
         </button>
@@ -127,7 +127,7 @@ export default function Settings() {
             onClick={() => setActiveTab(key)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
               activeTab === key
-                ? "bg-[#3ABDE8] text-white shadow-sm"
+                ? "bg-[#2940D3] text-white shadow-sm"
                 : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
             }`}
           >
@@ -140,11 +140,11 @@ export default function Settings() {
       {activeTab === "services" && (
         <div className="space-y-4">
           {/* Info */}
-          <div className="bg-[#3ABDE8]/5 border border-[#3ABDE8]/20 rounded-2xl px-5 py-3 flex items-start gap-3">
-            <Zap size={16} className="text-[#3ABDE8] mt-0.5 flex-shrink-0" />
+          <div className="bg-[#2940D3]/5 border border-[#2940D3]/20 rounded-2xl px-5 py-3 flex items-start gap-3">
+            <Zap size={16} className="text-[#2940D3] mt-0.5 flex-shrink-0" />
             <p className="text-sm text-gray-600">
-              Harga <span className="font-semibold text-[#3ABDE8]">Regular</span> untuk pengerjaan normal (2–3 hari).
-              Harga <span className="font-semibold text-[#1A667A]">Express</span> untuk pengerjaan cepat (same day / next day).
+              Harga <span className="font-semibold text-[#2940D3]">Regular</span> untuk pengerjaan normal (2–3 hari).
+              Harga <span className="font-semibold text-[#142297]">Express</span> untuk pengerjaan cepat (same day / next day).
             </p>
           </div>
 
@@ -166,7 +166,7 @@ export default function Settings() {
                     <input
                       value={svc.name}
                       onChange={(e) => updateService(svc.id, "name", e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#3ABDE8] focus:ring-2 focus:ring-[#3ABDE8]/20 transition-all font-medium text-gray-800"
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 transition-all font-medium text-gray-800"
                     />
                   </div>
 
@@ -177,8 +177,8 @@ export default function Settings() {
 
                   {/* Harga Express */}
                   <div className="col-span-3">
-                    <div className="flex items-center border border-[#1A667A]/30 rounded-xl overflow-hidden focus-within:border-[#1A667A] focus-within:ring-2 focus-within:ring-[#1A667A]/20 transition-all">
-                      <span className="px-3 py-2.5 bg-[#1A667A]/5 text-xs text-[#1A667A] border-r border-[#1A667A]/20 font-medium">Rp</span>
+                    <div className="flex items-center border border-[#142297]/30 rounded-xl overflow-hidden focus-within:border-[#142297] focus-within:ring-2 focus-within:ring-[#142297]/20 transition-all">
+                      <span className="px-3 py-2.5 bg-[#142297]/5 text-xs text-[#142297] border-r border-[#142297]/20 font-medium">Rp</span>
                       <input
                         type="number"
                         value={svc.expressPrice}
@@ -193,7 +193,7 @@ export default function Settings() {
                   <div className="col-span-1 flex justify-center">
                     <button
                       onClick={() => updateService(svc.id, "active", !svc.active)}
-                      className={`w-10 h-6 rounded-full transition-all relative ${svc.active ? "bg-[#3ABDE8]" : "bg-gray-200"}`}
+                      className={`w-10 h-6 rounded-full transition-all relative ${svc.active ? "bg-[#2940D3]" : "bg-gray-200"}`}
                     >
                       <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${svc.active ? "left-5" : "left-1"}`} />
                     </button>
@@ -216,7 +216,7 @@ export default function Settings() {
             <div className="px-5 py-4 border-t border-gray-100">
               <button
                 onClick={addService}
-                className="flex items-center gap-2 text-sm text-[#3ABDE8] font-semibold hover:text-[#2AADD8] transition-colors"
+                className="flex items-center gap-2 text-sm text-[#2940D3] font-semibold hover:text-[#5A6FE4] transition-colors"
               >
                 <Plus size={15} /> Tambah Layanan
               </button>
@@ -231,12 +231,12 @@ export default function Settings() {
                 <div key={s.id} className="bg-gray-50 rounded-xl p-3">
                   <p className="text-xs font-semibold text-gray-700 mb-2">{s.name}</p>
                   <div className="flex gap-3">
-                    <div className="flex-1 bg-[#3ABDE8]/10 rounded-lg p-2 text-center">
-                      <p className="text-[10px] text-[#3ABDE8] font-medium">Regular</p>
+                    <div className="flex-1 bg-[#2940D3]/10 rounded-lg p-2 text-center">
+                      <p className="text-[10px] text-[#2940D3] font-medium">Regular</p>
                       <p className="text-sm font-bold text-gray-800">Rp {(s.regularPrice * 3).toLocaleString("id-ID")}</p>
                     </div>
-                    <div className="flex-1 bg-[#1A667A]/10 rounded-lg p-2 text-center">
-                      <p className="text-[10px] text-[#1A667A] font-medium">Express</p>
+                    <div className="flex-1 bg-[#142297]/10 rounded-lg p-2 text-center">
+                      <p className="text-[10px] text-[#142297] font-medium">Express</p>
                       <p className="text-sm font-bold text-gray-800">Rp {(s.expressPrice * 3).toLocaleString("id-ID")}</p>
                     </div>
                   </div>
@@ -268,7 +268,7 @@ export default function Settings() {
                     <input
                       value={d.name}
                       onChange={(e) => updateDiscount(d.id, "name", e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#3ABDE8] focus:ring-2 focus:ring-[#3ABDE8]/20 transition-all"
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 transition-all"
                     />
                   </div>
 
@@ -277,7 +277,7 @@ export default function Settings() {
                     <select
                       value={d.type}
                       onChange={(e) => updateDiscount(d.id, "type", e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#3ABDE8] transition-all"
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#2940D3] transition-all"
                     >
                       <option value="persen">Persen (%)</option>
                       <option value="nominal">Nominal (Rp)</option>
@@ -286,7 +286,7 @@ export default function Settings() {
 
                   {/* Nilai */}
                   <div className="col-span-2">
-                    <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#3ABDE8] focus-within:ring-2 focus-within:ring-[#3ABDE8]/20 transition-all">
+                    <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#2940D3] focus-within:ring-2 focus-within:ring-[#2940D3]/20 transition-all">
                       <span className="px-2.5 py-2.5 bg-gray-50 text-xs text-gray-500 border-r border-gray-200">
                         {d.type === "persen" ? "%" : "Rp"}
                       </span>
@@ -310,7 +310,7 @@ export default function Settings() {
                   <div className="col-span-1 flex justify-center">
                     <button
                       onClick={() => updateDiscount(d.id, "active", !d.active)}
-                      className={`w-10 h-6 rounded-full transition-all relative ${d.active ? "bg-[#3ABDE8]" : "bg-gray-200"}`}
+                      className={`w-10 h-6 rounded-full transition-all relative ${d.active ? "bg-[#2940D3]" : "bg-gray-200"}`}
                     >
                       <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${d.active ? "left-5" : "left-1"}`} />
                     </button>
@@ -332,7 +332,7 @@ export default function Settings() {
             <div className="px-5 py-4 border-t border-gray-100">
               <button
                 onClick={addDiscount}
-                className="flex items-center gap-2 text-sm text-[#3ABDE8] font-semibold hover:text-[#2AADD8] transition-colors"
+                className="flex items-center gap-2 text-sm text-[#2940D3] font-semibold hover:text-[#5A6FE4] transition-colors"
               >
                 <Plus size={15} /> Tambah Diskon
               </button>
@@ -344,7 +344,7 @@ export default function Settings() {
             <p className="font-bold text-gray-800 mb-3 text-sm">Diskon Aktif</p>
             <div className="flex flex-wrap gap-2">
               {discounts.filter((d) => d.active).map((d) => (
-                <div key={d.id} className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
+                <div key={d.id} className="flex items-center gap-2 bg-[2CC5BD] border border-green-200 rounded-xl px-3 py-2">
                   <Tag size={12} className="text-green-600" />
                   <span className="text-xs font-semibold text-green-700">{d.name}</span>
                   <span className="text-xs text-green-600">
@@ -367,8 +367,8 @@ export default function Settings() {
             {/* Aturan dasar */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-xl bg-[#3ABDE8]/10 flex items-center justify-center">
-                  <Gift size={16} className="text-[#3ABDE8]" />
+                <div className="w-8 h-8 rounded-xl bg-[#2940D3]/10 flex items-center justify-center">
+                  <Gift size={16} className="text-[#2940D3]" />
                 </div>
                 <p className="font-bold text-gray-800">Aturan Dasar Poin</p>
               </div>
@@ -390,7 +390,7 @@ export default function Settings() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Poin untuk ditukar</label>
-                    <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#3ABDE8] focus-within:ring-2 focus-within:ring-[#3ABDE8]/20 transition-all">
+                    <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#2940D3] focus-within:ring-2 focus-within:ring-[#2940D3]/20 transition-all">
                       <input
                         type="number"
                         value={points.redeemRate}
@@ -410,11 +410,11 @@ export default function Settings() {
                   </div>
                 </div>
 
-                <div className="bg-[#3ABDE8]/5 rounded-xl p-3">
+                <div className="bg-[#2940D3]/5 rounded-xl p-3">
                   <p className="text-xs text-gray-500">
-                    <span className="font-semibold text-[#3ABDE8]">{points.redeemRate} poin</span>
+                    <span className="font-semibold text-[#2940D3]">{points.redeemRate} poin</span>
                     {" "}= diskon{" "}
-                    <span className="font-semibold text-[#3ABDE8]">Rp {points.redeemValue.toLocaleString("id-ID")}</span>
+                    <span className="font-semibold text-[#2940D3]">Rp {points.redeemValue.toLocaleString("id-ID")}</span>
                   </p>
                 </div>
               </div>
@@ -423,8 +423,8 @@ export default function Settings() {
             {/* Bonus multiplier */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-xl bg-[#1A667A]/10 flex items-center justify-center">
-                  <Zap size={16} className="text-[#1A667A]" />
+                <div className="w-8 h-8 rounded-xl bg-[#142297]/10 flex items-center justify-center">
+                  <Zap size={16} className="text-[#142297]" />
                 </div>
                 <p className="font-bold text-gray-800">Bonus Multiplier Poin</p>
               </div>
@@ -432,13 +432,13 @@ export default function Settings() {
               <div className="space-y-4">
                 {[
                   { key: "bonusVIP",     label: "Multiplier Pelanggan VIP",     color: "text-purple-600", bg: "bg-purple-50" },
-                  { key: "bonusLoyal",   label: "Multiplier Pelanggan Loyal",   color: "text-[#3ABDE8]",  bg: "bg-blue-50" },
-                  { key: "expressBonus", label: "Bonus Layanan Express",        color: "text-[#1A667A]",  bg: "bg-teal-50" },
+                  { key: "bonusLoyal",   label: "Multiplier Pelanggan Loyal",   color: "text-[#2940D3]",  bg: "bg-blue-50" },
+                  { key: "expressBonus", label: "Bonus Layanan Express",        color: "text-[#142297]",  bg: "bg-teal-50" },
                 ].map(({ key, label, color, bg }) => (
                   <div key={key}>
                     <label className="text-xs font-semibold text-gray-600 mb-1.5 block">{label}</label>
                     <div className="flex items-center gap-3">
-                      <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#3ABDE8] focus-within:ring-2 focus-within:ring-[#3ABDE8]/20 transition-all flex-1">
+                      <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#2940D3] focus-within:ring-2 focus-within:ring-[#2940D3]/20 transition-all flex-1">
                         <input
                           type="number"
                           value={points[key]}
@@ -465,9 +465,9 @@ export default function Settings() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
                 { label: "Pelanggan Biasa",  mult: 1,                  color: "bg-gray-50",      text: "text-gray-700" },
-                { label: "Pelanggan Loyal",  mult: points.bonusLoyal,  color: "bg-blue-50",      text: "text-[#3ABDE8]" },
+                { label: "Pelanggan Loyal",  mult: points.bonusLoyal,  color: "bg-blue-50",      text: "text-[#2940D3]" },
                 { label: "Pelanggan VIP",    mult: points.bonusVIP,    color: "bg-purple-50",    text: "text-purple-700" },
-                { label: "Express + VIP",    mult: points.bonusVIP * points.expressBonus, color: "bg-[#1A667A]/10", text: "text-[#1A667A]" },
+                { label: "Express + VIP",    mult: points.bonusVIP * points.expressBonus, color: "bg-[#142297]/10", text: "text-[#142297]" },
               ].map((sim) => {
                 const base = Math.floor(50000 / (points.pointsPerRp || 1));
                 const total = Math.round(base * sim.mult);

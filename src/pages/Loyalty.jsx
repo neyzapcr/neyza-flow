@@ -60,7 +60,7 @@ export default function Loyalty() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
           <p className="font-bold text-gray-800">Daftar Poin Pelanggan</p>
-          <p className="text-sm text-gray-500">Total: <span className="font-bold text-[#3ABDE8]">{totalPoints.toLocaleString("id-ID")} poin</span></p>
+          <p className="text-sm text-gray-500">Total: <span className="font-bold text-[#2940D3]">{totalPoints.toLocaleString("id-ID")} poin</span></p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -82,7 +82,7 @@ export default function Loyalty() {
                   <tr key={c.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setSelected(c)}>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-[#3ABDE8]/10 flex items-center justify-center text-[#3ABDE8] font-bold text-sm">
+                        <div className="w-9 h-9 rounded-xl bg-[#2940D3]/10 flex items-center justify-center text-[#2940D3] font-bold text-sm">
                           {c.name.charAt(0)}
                         </div>
                         <p className="font-semibold text-gray-800">{c.name}</p>
@@ -91,7 +91,7 @@ export default function Loyalty() {
                     <td className="px-5 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${tier.color}`}>{tier.name}</span>
                     </td>
-                    <td className="px-5 py-4 font-bold text-[#3ABDE8]">{c.points}</td>
+                    <td className="px-5 py-4 font-bold text-[#2940D3]">{c.points}</td>
                     <td className="px-5 py-4 w-48">
                       <div className="flex items-center gap-2">
                         <div className="flex-1 bg-gray-100 rounded-full h-2">
@@ -121,11 +121,11 @@ export default function Loyalty() {
               </button>
             </div>
             <div className="text-center mb-4">
-              <div className="w-16 h-16 rounded-2xl bg-[#3ABDE8] flex items-center justify-center text-white font-bold text-2xl mx-auto mb-2 shadow">
+              <div className="w-16 h-16 rounded-2xl bg-[#2940D3] flex items-center justify-center text-white font-bold text-2xl mx-auto mb-2 shadow">
                 {selected.name.charAt(0)}
               </div>
               <p className="font-bold text-gray-800">{selected.name}</p>
-              <p className="text-3xl font-bold text-[#3ABDE8] mt-2">{selected.points} <span className="text-sm text-gray-400 font-normal">poin</span></p>
+              <p className="text-3xl font-bold text-[#2940D3] mt-2">{selected.points} <span className="text-sm text-gray-400 font-normal">poin</span></p>
               <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ${getTier(selected.points).color}`}>
                 {getTier(selected.points).name}
               </span>
@@ -142,7 +142,7 @@ export default function Loyalty() {
                 </div>
               ))}
             </div>
-            <button onClick={() => setSelected(null)} className="w-full mt-4 py-2.5 rounded-xl bg-[#3ABDE8] text-white text-sm font-semibold hover:bg-[#2AADD8] transition-colors">Tutup</button>
+            <button onClick={() => setSelected(null)} className="w-full mt-4 py-2.5 rounded-xl bg-[#2940D3] text-white text-sm font-semibold hover:bg-[#5A6FE4] transition-colors">Tutup</button>
           </div>
         </div>
       )}

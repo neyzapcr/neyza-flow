@@ -5,15 +5,15 @@ export default function NotFound() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 font-lagusans">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 font-Montserrat">
       <div className="text-center max-w-md">
         {/* Angka 404 */}
         <div className="relative mb-6">
-          <p className="text-[120px] font-extrabold text-[#3ABDE8]/15 leading-none select-none">
+          <p className="text-[120px] font-extrabold text-[#2940D3]/15 leading-none select-none">
             404
           </p>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-20 h-20 bg-[#3ABDE8]/10 rounded-2xl flex items-center justify-center">
+            <div className="w-20 h-20 bg-[#2940D3]/10 rounded-2xl flex items-center justify-center">
               <img
                 src="/img/logo Netto Dark.png"
                 alt="Netto Laundry"
@@ -40,7 +40,7 @@ export default function NotFound() {
           </button>
           <button
             onClick={() => navigate("/dashboard")}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#3ABDE8] text-white rounded-xl text-sm font-semibold hover:bg-[#2AADD8] transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#2940D3] text-white rounded-xl text-sm font-semibold hover:bg-[#5A6FE4] transition-colors shadow-sm"
           >
             <Home size={15} /> Ke Dashboard
           </button>

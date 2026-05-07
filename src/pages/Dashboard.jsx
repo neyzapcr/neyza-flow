@@ -42,17 +42,17 @@ const serviceData = [
 ];
 
 const ratingData = [
-  { name: "Kebersihan", value: 88, color: "#3ABDE8" },
-  { name: "Kecepatan", value: 82, color: "#1A667A" },
-  { name: "Pelayanan", value: 92, color: "#3ABDE8" },
+  { name: "Kebersihan", value: 88, color: "#2940D3" },
+  { name: "Kecepatan", value: 82, color: "#142297" },
+  { name: "Pelayanan", value: 92, color: "#2940D3" },
 ];
 
 // Two-color palette
-const PIE_COLORS = ["#3ABDE8", "#1A667A", "#7DD3F0"];
+const PIE_COLORS = ["#2940D3", "#142297", "#7DD3F0"];
 
 const statusMap = {
-  selesai: "bg-green-100 text-green-700",
-  diproses: "bg-blue-100 text-[#3ABDE8]",
+  selesai: "bg-[2CC5BD] text-green-700",
+  diproses: "bg-blue-100 text-[#2940D3]",
   menunggu: "bg-yellow-100 text-yellow-700",
 };
 
@@ -60,7 +60,7 @@ const SERVICES = ["Cuci + Setrika", "Cuci Kering", "Cuci + Setrika + Parfum"];
 const PAYMENT_METHODS = ["Cash", "Transfer", "QRIS"];
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
-function StatCard({ Icon, iconBg, iconColor = "text-[#3ABDE8]", label, value, sub, subColor = "text-green-500" }) {
+function StatCard({ Icon, iconBg, iconColor = "text-[#2940D3]", label, value, sub, subColor = "text-green-500" }) {
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
       <div className={`w-12 h-12 rounded-xl ${iconBg} flex items-center justify-center flex-shrink-0`}>
@@ -130,7 +130,7 @@ function TambahCucianModal({ onClose, onSuccess }) {
 
         {saved ? (
           <div className="text-center py-8">
-            <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <div className="w-14 h-14 bg-[2CC5BD] rounded-2xl flex items-center justify-center mx-auto mb-3">
               <Check size={26} className="text-green-500" />
             </div>
             <p className="font-bold text-gray-800 mb-1">Cucian Berhasil Ditambahkan!</p>
@@ -143,12 +143,12 @@ function TambahCucianModal({ onClose, onSuccess }) {
               <div>
                 <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Nama Pelanggan <span className="text-red-400">*</span></label>
                 <input name="customerName" value={form.customerName} onChange={handleChange} required
-                  placeholder="Nama lengkap" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#3ABDE8] focus:ring-2 focus:ring-[#3ABDE8]/20 transition-all" />
+                  placeholder="Nama lengkap" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 transition-all" />
               </div>
               <div>
                 <label className="text-xs font-semibold text-gray-600 mb-1.5 block">No. Telepon <span className="text-red-400">*</span></label>
                 <input name="phone" value={form.phone} onChange={handleChange} required
-                  placeholder="08xxxxxxxxxx" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#3ABDE8] focus:ring-2 focus:ring-[#3ABDE8]/20 transition-all" />
+                  placeholder="08xxxxxxxxxx" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 transition-all" />
               </div>
             </div>
 
@@ -158,9 +158,9 @@ function TambahCucianModal({ onClose, onSuccess }) {
               <div className="grid grid-cols-3 gap-2">
                 {SERVICES.map((s) => (
                   <label key={s}
-                    className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 cursor-pointer transition-all text-center ${form.service === s ? "border-[#3ABDE8] bg-[#3ABDE8]/5" : "border-gray-200 hover:border-gray-300"}`}>
+                    className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 cursor-pointer transition-all text-center ${form.service === s ? "border-[#2940D3] bg-[#2940D3]/5" : "border-gray-200 hover:border-gray-300"}`}>
                     <input type="radio" name="service" value={s} checked={form.service === s} onChange={handleChange} className="sr-only" />
-                    <span className={`text-xs font-semibold leading-tight ${form.service === s ? "text-[#3ABDE8]" : "text-gray-600"}`}>{s}</span>
+                    <span className={`text-xs font-semibold leading-tight ${form.service === s ? "text-[#2940D3]" : "text-gray-600"}`}>{s}</span>
                     <span className="text-xs text-gray-400">Rp {priceMap[s].toLocaleString("id-ID")}/kg</span>
                   </label>
                 ))}
@@ -172,12 +172,12 @@ function TambahCucianModal({ onClose, onSuccess }) {
               <div>
                 <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Berat (kg) <span className="text-red-400">*</span></label>
                 <input name="weight" type="number" min="0.1" step="0.1" value={form.weight} onChange={handleChange} required
-                  placeholder="Contoh: 3.5" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#3ABDE8] focus:ring-2 focus:ring-[#3ABDE8]/20 transition-all" />
+                  placeholder="Contoh: 3.5" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 transition-all" />
               </div>
               <div>
                 <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Metode Pembayaran</label>
                 <select name="paymentMethod" value={form.paymentMethod} onChange={handleChange}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#3ABDE8] transition-all">
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#2940D3] transition-all">
                   {PAYMENT_METHODS.map((m) => <option key={m}>{m}</option>)}
                 </select>
               </div>
@@ -187,14 +187,14 @@ function TambahCucianModal({ onClose, onSuccess }) {
             <div>
               <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Catatan (opsional)</label>
               <textarea name="notes" value={form.notes} onChange={handleChange} rows={2} placeholder="Contoh: ada noda membandel di bagian kerah..."
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#3ABDE8] focus:ring-2 focus:ring-[#3ABDE8]/20 resize-none transition-all" />
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 resize-none transition-all" />
             </div>
 
             {/* Total preview */}
             {total > 0 && (
-              <div className="flex items-center justify-between bg-[#3ABDE8]/5 border border-[#3ABDE8]/20 rounded-xl px-4 py-3">
+              <div className="flex items-center justify-between bg-[#2940D3]/5 border border-[#2940D3]/20 rounded-xl px-4 py-3">
                 <span className="text-sm text-gray-600">Estimasi Total</span>
-                <span className="text-base font-bold text-[#3ABDE8]">Rp {total.toLocaleString("id-ID")}</span>
+                <span className="text-base font-bold text-[#2940D3]">Rp {total.toLocaleString("id-ID")}</span>
               </div>
             )}
 
@@ -202,7 +202,7 @@ function TambahCucianModal({ onClose, onSuccess }) {
               <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
                 Batal
               </button>
-              <button type="submit" className="flex-1 py-2.5 rounded-xl bg-[#3ABDE8] text-white text-sm font-semibold hover:bg-[#2AADD8] transition-colors shadow-sm flex items-center justify-center gap-1.5">
+              <button type="submit" className="flex-1 py-2.5 rounded-xl bg-[#2940D3] text-white text-sm font-semibold hover:bg-[#5A6FE4] transition-colors shadow-sm flex items-center justify-center gap-1.5">
                 <Plus size={15} /> Tambah Cucian
               </button>
             </div>
@@ -236,7 +236,7 @@ export default function Dashboard() {
           <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
             {["hari", "minggu", "bulan"].map((p) => (
               <button key={p} onClick={() => setPeriod(p)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${period === p ? "bg-white text-[#3ABDE8] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${period === p ? "bg-white text-[#2940D3] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
                 {p}
               </button>
             ))}
@@ -244,7 +244,7 @@ export default function Dashboard() {
           {/* Tambah Cucian CTA */}
           <button
             onClick={() => setShowTambah(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#1A667A] text-white rounded-xl text-sm font-semibold hover:bg-[#155a6b] transition-colors shadow-sm"
+            className="flex items-center gap-1.5 px-4 py-2 bg-[#142297] text-white rounded-xl text-sm font-semibold hover:bg-[#155a6b] transition-colors shadow-sm"
           >
             <Plus size={15} /> Tambah Cucian
           </button>
@@ -253,8 +253,8 @@ export default function Dashboard() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard Icon={DollarSign} iconBg="bg-[#3ABDE8]/10" label="Total Pendapatan" value={`Rp ${totalRevenue.toLocaleString("id-ID")}`} sub="↑ 2.1% vs minggu lalu" />
-        <StatCard Icon={Users} iconBg="bg-[#1A667A]/10" iconColor="text-[#1A667A]" label="Pelanggan Aktif" value={activeCustomers} sub="↑ 3 pelanggan baru" />
+        <StatCard Icon={DollarSign} iconBg="bg-[#2940D3]/10" label="Total Pendapatan" value={`Rp ${totalRevenue.toLocaleString("id-ID")}`} sub="↑ 2.1% vs minggu lalu" />
+        <StatCard Icon={Users} iconBg="bg-[#142297]/10" iconColor="text-[#142297]" label="Pelanggan Aktif" value={activeCustomers} sub="↑ 3 pelanggan baru" />
         <StatCard Icon={ClipboardList} iconBg="bg-orange-50" iconColor="text-orange-500" label="Order Pending" value={pendingOrders} sub="Perlu diproses" subColor="text-orange-500" />
         <StatCard Icon={Star} iconBg="bg-yellow-50" iconColor="text-yellow-500" label="Rata-rata Rating" value={`${avgRating}/5`} sub="Dari pelanggan" subColor="text-yellow-500" />
       </div>
@@ -269,7 +269,7 @@ export default function Dashboard() {
               <p className="text-2xl font-bold text-gray-800">Rp {totalRevenue.toLocaleString("id-ID")}</p>
               <p className="text-xs text-green-500 font-medium mt-0.5">↑ 2.1% vs minggu lalu</p>
             </div>
-            <Link to="/reports" className="text-xs text-[#3ABDE8] font-semibold hover:underline">Lihat Laporan</Link>
+            <Link to="/reports" className="text-xs text-[#2940D3] font-semibold hover:underline">Lihat Laporan</Link>
           </div>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={revenueData} barSize={10} barGap={4}>
@@ -277,13 +277,13 @@ export default function Dashboard() {
               <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
               <YAxis hide />
               <Tooltip formatter={(v) => [`Rp ${v.toLocaleString("id-ID")}`, ""]} contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }} />
-              <Bar dataKey="thisWeek" fill="#3ABDE8" radius={[4, 4, 0, 0]} name="Minggu Ini" />
-              <Bar dataKey="lastWeek" fill="#1A667A" radius={[4, 4, 0, 0]} name="Minggu Lalu" />
+              <Bar dataKey="thisWeek" fill="#2940D3" radius={[4, 4, 0, 0]} name="Minggu Ini" />
+              <Bar dataKey="lastWeek" fill="#142297" radius={[4, 4, 0, 0]} name="Minggu Lalu" />
             </BarChart>
           </ResponsiveContainer>
           <div className="flex gap-4 mt-2">
-            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#3ABDE8]"></span><span className="text-xs text-gray-500">Minggu Ini</span></div>
-            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#1A667A]"></span><span className="text-xs text-gray-500">Minggu Lalu</span></div>
+            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#2940D3]"></span><span className="text-xs text-gray-500">Minggu Ini</span></div>
+            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#142297]"></span><span className="text-xs text-gray-500">Minggu Lalu</span></div>
           </div>
         </div>
 
@@ -344,7 +344,7 @@ export default function Dashboard() {
               <p className="text-2xl font-bold text-gray-800">{transactions.length}</p>
               <p className="text-xs text-red-500 font-medium mt-0.5">↓ 2.1% vs minggu lalu</p>
             </div>
-            <Link to="/reports" className="text-xs text-[#3ABDE8] font-semibold hover:underline">Lihat Laporan</Link>
+            <Link to="/reports" className="text-xs text-[#2940D3] font-semibold hover:underline">Lihat Laporan</Link>
           </div>
           <ResponsiveContainer width="100%" height={160}>
             <LineChart data={orderTrendData}>
@@ -352,13 +352,13 @@ export default function Dashboard() {
               <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
               <YAxis hide />
               <Tooltip contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }} />
-              <Line type="monotone" dataKey="thisWeek" stroke="#3ABDE8" strokeWidth={2.5} dot={false} name="Minggu Ini" />
-              <Line type="monotone" dataKey="lastWeek" stroke="#1A667A" strokeWidth={2} dot={false} strokeDasharray="4 4" name="Minggu Lalu" />
+              <Line type="monotone" dataKey="thisWeek" stroke="#2940D3" strokeWidth={2.5} dot={false} name="Minggu Ini" />
+              <Line type="monotone" dataKey="lastWeek" stroke="#142297" strokeWidth={2} dot={false} strokeDasharray="4 4" name="Minggu Lalu" />
             </LineChart>
           </ResponsiveContainer>
           <div className="flex gap-4 mt-2">
-            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#3ABDE8]"></span><span className="text-xs text-gray-500">Minggu Ini</span></div>
-            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#1A667A]"></span><span className="text-xs text-gray-500">Minggu Lalu</span></div>
+            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#2940D3]"></span><span className="text-xs text-gray-500">Minggu Ini</span></div>
+            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#142297]"></span><span className="text-xs text-gray-500">Minggu Lalu</span></div>
           </div>
         </div>
       </div>
@@ -367,7 +367,7 @@ export default function Dashboard() {
       <div className="mt-4 bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm font-bold text-gray-800">Transaksi Terbaru</p>
-          <Link to="/transactions" className="text-xs text-[#3ABDE8] font-semibold hover:underline">Lihat Semua</Link>
+          <Link to="/transactions" className="text-xs text-[#2940D3] font-semibold hover:underline">Lihat Semua</Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

@@ -53,7 +53,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }) {
         className={`
           fixed lg:static inset-y-0 left-0 z-30 lg:z-auto
           min-h-screen bg-white border-r border-gray-100 flex flex-col shadow-sm
-          font-lagusans transition-all duration-300 ease-in-out flex-shrink-0
+          font-Montserrat transition-all duration-300 ease-in-out flex-shrink-0
           ${expanded ? "w-60" : "w-[68px]"}
           ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
@@ -91,8 +91,8 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }) {
                           `flex items-center rounded-xl text-sm font-medium transition-all duration-150
                           ${expanded ? "gap-3 px-3 py-2.5" : "justify-center px-0 py-2.5 mx-1"}
                           ${isActive
-                            ? "bg-[#3ABDE8] text-white shadow-sm"
-                            : "text-gray-500 hover:bg-blue-50 hover:text-[#3ABDE8]"
+                            ? "bg-[#2940D3] text-white shadow-sm"
+                            : "text-gray-500 hover:bg-blue-50 hover:text-[#2940D3]"
                           }`
                         }
                       >

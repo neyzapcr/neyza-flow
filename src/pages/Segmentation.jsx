@@ -5,8 +5,8 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
 const segmentConfig = {
   VIP: { color: "#8B5CF6", bg: "bg-purple-100 text-purple-700", desc: "Pelanggan dengan pengeluaran tertinggi dan frekuensi transaksi sangat tinggi" },
-  Loyal: { color: "#3ABDE8", bg: "bg-blue-100 text-[#3ABDE8]", desc: "Pelanggan yang rutin bertransaksi dan memiliki loyalitas tinggi" },
-  Regular: { color: "#10B981", bg: "bg-green-100 text-green-700", desc: "Pelanggan dengan frekuensi transaksi sedang" },
+  Loyal: { color: "#2940D3", bg: "bg-blue-100 text-[#2940D3]", desc: "Pelanggan yang rutin bertransaksi dan memiliki loyalitas tinggi" },
+  Regular: { color: "#10B981", bg: "bg-[2CC5BD] text-green-700", desc: "Pelanggan dengan frekuensi transaksi sedang" },
   New: { color: "#F59E0B", bg: "bg-yellow-100 text-yellow-700", desc: "Pelanggan baru yang baru bergabung" },
 };
 
@@ -66,7 +66,7 @@ export default function Segmentation() {
                 key={seg}
                 onClick={() => setActiveSegment(activeSegment === seg ? "Semua" : seg)}
                 className={`rounded-2xl p-4 cursor-pointer transition-all border-2 ${
-                  activeSegment === seg ? "border-[#3ABDE8] shadow-md" : "border-transparent bg-white shadow-sm"
+                  activeSegment === seg ? "border-[#2940D3] shadow-md" : "border-transparent bg-white shadow-sm"
                 }`}
                 style={{ backgroundColor: activeSegment === seg ? `${cfg.color}10` : "white" }}
               >
@@ -89,7 +89,7 @@ export default function Segmentation() {
             key={s}
             onClick={() => setActiveSegment(s)}
             className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
-              activeSegment === s ? "bg-[#3ABDE8] text-white shadow-sm" : "bg-white text-gray-500 border border-gray-200 hover:bg-gray-50"
+              activeSegment === s ? "bg-[#2940D3] text-white shadow-sm" : "bg-white text-gray-500 border border-gray-200 hover:bg-gray-50"
             }`}
           >
             {s} ({s === "Semua" ? customers.length : customers.filter((c) => c.segment === s).length})
@@ -116,7 +116,7 @@ export default function Segmentation() {
                 <tr key={c.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-[#3ABDE8]/10 flex items-center justify-center text-[#3ABDE8] font-bold text-sm">
+                      <div className="w-9 h-9 rounded-xl bg-[#2940D3]/10 flex items-center justify-center text-[#2940D3] font-bold text-sm">
                         {c.name.charAt(0)}
                       </div>
                       <p className="font-semibold text-gray-800">{c.name}</p>
@@ -129,7 +129,7 @@ export default function Segmentation() {
                   <td className="px-5 py-4 font-bold text-gray-800">Rp {c.totalSpent.toLocaleString("id-ID")}</td>
                   <td className="px-5 py-4 text-gray-500 text-xs">{c.lastTransaction}</td>
                   <td className="px-5 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${c.status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${c.status === "active" ? "bg-[2CC5BD] text-green-700" : "bg-red-100 text-red-600"}`}>
                       {c.status === "active" ? "Aktif" : "Tidak Aktif"}
                     </span>
                   </td>

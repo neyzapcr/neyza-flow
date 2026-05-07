@@ -6,7 +6,7 @@ import feedbackData from "../data/feedback.json";
 const categoryColors = {
   Kebersihan: "bg-blue-100 text-blue-700",
   Kecepatan: "bg-purple-100 text-purple-700",
-  Pelayanan: "bg-green-100 text-green-700",
+  Pelayanan: "bg-[2CC5BD] text-green-700",
 };
 
 function StarRating({ rating, max = 5 }) {
@@ -48,8 +48,8 @@ export default function Feedback() {
   };
 
   const stats = [
-    { label: "Total Feedback", value: feedbacks.length, Icon: MessageSquare, color: "bg-blue-50", iconColor: "text-[#3ABDE8]" },
-    { label: "Sudah Dibalas", value: feedbacks.filter((f) => f.status === "dibalas").length, Icon: CheckCircle, color: "bg-green-50", iconColor: "text-green-500" },
+    { label: "Total Feedback", value: feedbacks.length, Icon: MessageSquare, color: "bg-blue-50", iconColor: "text-[#2940D3]" },
+    { label: "Sudah Dibalas", value: feedbacks.filter((f) => f.status === "dibalas").length, Icon: CheckCircle, color: "bg-[2CC5BD]", iconColor: "text-green-500" },
     { label: "Menunggu Balasan", value: feedbacks.filter((f) => f.status === "menunggu").length, Icon: Clock, color: "bg-yellow-50", iconColor: "text-yellow-500" },
   ];
 
@@ -62,7 +62,7 @@ export default function Feedback() {
         {/* Avg Rating */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
           <div className="text-center">
-            <p className="text-5xl font-bold text-[#3ABDE8]">{avgRating}</p>
+            <p className="text-5xl font-bold text-[#2940D3]">{avgRating}</p>
             <StarRating rating={Math.round(avgRating)} />
             <p className="text-xs text-gray-400 mt-1">{feedbacks.length} ulasan</p>
           </div>
@@ -98,7 +98,7 @@ export default function Feedback() {
             <span className="text-xs text-gray-500">Rating:</span>
             {[0, 5, 4, 3, 2, 1].map((r) => (
               <button key={r} onClick={() => setFilterRating(r)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${filterRating === r ? "bg-[#3ABDE8] text-white shadow-sm" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}>
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${filterRating === r ? "bg-[#2940D3] text-white shadow-sm" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}>
                 {r === 0 ? "Semua" : `${r} bintang`}
               </button>
             ))}
@@ -107,7 +107,7 @@ export default function Feedback() {
             <span className="text-xs text-gray-500">Status:</span>
             {["Semua", "menunggu", "dibalas"].map((s) => (
               <button key={s} onClick={() => setFilterStatus(s)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize transition-all ${filterStatus === s ? "bg-[#3ABDE8] text-white shadow-sm" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}>
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize transition-all ${filterStatus === s ? "bg-[#2940D3] text-white shadow-sm" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}>
                 {s}
               </button>
             ))}
@@ -121,7 +121,7 @@ export default function Feedback() {
           <div key={f.id} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#3ABDE8]/10 flex items-center justify-center text-[#3ABDE8] font-bold">
+                <div className="w-10 h-10 rounded-xl bg-[#2940D3]/10 flex items-center justify-center text-[#2940D3] font-bold">
                   {f.customerName.charAt(0)}
                 </div>
                 <div>
@@ -131,7 +131,7 @@ export default function Feedback() {
               </div>
               <div className="flex flex-col items-end gap-1">
                 <StarRating rating={f.rating} />
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${f.status === "dibalas" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${f.status === "dibalas" ? "bg-[2CC5BD] text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
                   {f.status === "dibalas" ? "Dibalas" : "Menunggu"}
                 </span>
               </div>
@@ -142,7 +142,7 @@ export default function Feedback() {
             <p className="text-sm text-gray-600 leading-relaxed">{f.comment}</p>
             {f.status === "menunggu" && (
               <button onClick={() => setReplyModal(f)}
-                className="mt-3 w-full py-2 rounded-xl bg-[#3ABDE8]/10 text-[#3ABDE8] text-xs font-semibold hover:bg-[#3ABDE8]/20 transition-colors flex items-center justify-center gap-1.5">
+                className="mt-3 w-full py-2 rounded-xl bg-[#2940D3]/10 text-[#2940D3] text-xs font-semibold hover:bg-[#2940D3]/20 transition-colors flex items-center justify-center gap-1.5">
                 <MessageSquare size={13} /> Balas Feedback
               </button>
             )}
@@ -174,10 +174,10 @@ export default function Feedback() {
               <p className="text-sm text-gray-700">{replyModal.comment}</p>
             </div>
             <textarea value={replyText} onChange={(e) => setReplyText(e.target.value)} placeholder="Tulis balasan Anda..." rows={4}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#3ABDE8] focus:ring-2 focus:ring-[#3ABDE8]/20 resize-none transition-all" />
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 resize-none transition-all" />
             <div className="flex gap-3 mt-4">
               <button onClick={() => setReplyModal(null)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50">Batal</button>
-              <button onClick={handleReply} className="flex-1 py-2.5 rounded-xl bg-[#3ABDE8] text-white text-sm font-semibold hover:bg-[#2AADD8] transition-colors">Kirim Balasan</button>
+              <button onClick={handleReply} className="flex-1 py-2.5 rounded-xl bg-[#2940D3] text-white text-sm font-semibold hover:bg-[#5A6FE4] transition-colors">Kirim Balasan</button>
             </div>
           </div>
         </div>

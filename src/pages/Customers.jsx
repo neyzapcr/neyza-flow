@@ -12,19 +12,19 @@ const toast = (type, title, desc) =>
 
 const segmentColors = {
   VIP:     "bg-purple-100 text-purple-700",
-  Loyal:   "bg-blue-100 text-[#3ABDE8]",
-  Regular: "bg-green-100 text-green-700",
+  Loyal:   "bg-blue-100 text-[#2940D3]",
+  Regular: "bg-[2CC5BD] text-green-700",
   New:     "bg-yellow-100 text-yellow-700",
 };
 
 const statusColors = {
-  active:   "bg-green-100 text-green-700",
+  active:   "bg-[2CC5BD] text-green-700",
   inactive: "bg-red-100 text-red-600",
 };
 
 const serviceTypeConfig = {
   regular: { label: "Regular", Icon: Clock, bg: "bg-gray-100",      text: "text-gray-600" },
-  express: { label: "Express", Icon: Zap,   bg: "bg-[#1A667A]/10",  text: "text-[#1A667A]" },
+  express: { label: "Express", Icon: Zap,   bg: "bg-[#142297]/10",  text: "text-[#142297]" },
 };
 
 // ── Modal Tambah / Edit ───────────────────────────────────────────────────
@@ -62,7 +62,7 @@ function CustomerModal({ customer, onClose, onSave }) {
               <input
                 type={f.type} name={f.name} value={form[f.name] || ""}
                 onChange={handleChange} placeholder={f.placeholder}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#3ABDE8] focus:ring-2 focus:ring-[#3ABDE8]/20 transition-all"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 transition-all"
               />
             </div>
           ))}
@@ -72,14 +72,14 @@ function CustomerModal({ customer, onClose, onSave }) {
             <div>
               <label className="text-xs font-semibold text-gray-600 mb-1 block">Segmen</label>
               <select name="segment" value={form.segment} onChange={handleChange}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#3ABDE8] transition-all">
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2940D3] transition-all">
                 {["New", "Regular", "Loyal", "VIP"].map((s) => <option key={s}>{s}</option>)}
               </select>
             </div>
             <div>
               <label className="text-xs font-semibold text-gray-600 mb-1 block">Status</label>
               <select name="status" value={form.status} onChange={handleChange}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#3ABDE8] transition-all">
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2940D3] transition-all">
                 <option value="active">Aktif</option>
                 <option value="inactive">Tidak Aktif</option>
               </select>
@@ -91,8 +91,8 @@ function CustomerModal({ customer, onClose, onSave }) {
             <label className="text-xs font-semibold text-gray-600 mb-2 block">Tipe Layanan Pilihan</label>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { value: "regular", label: "Regular", desc: "Pengerjaan 2–3 hari", Icon: Clock, activeClass: "border-[#3ABDE8] bg-[#3ABDE8]/5" },
-                { value: "express", label: "Express", desc: "Same day / next day",  Icon: Zap,   activeClass: "border-[#1A667A] bg-[#1A667A]/5" },
+                { value: "regular", label: "Regular", desc: "Pengerjaan 2–3 hari", Icon: Clock, activeClass: "border-[#2940D3] bg-[#2940D3]/5" },
+                { value: "express", label: "Express", desc: "Same day / next day",  Icon: Zap,   activeClass: "border-[#142297] bg-[#142297]/5" },
               ].map((opt) => {
                 const isActive = form.serviceType === opt.value;
                 return (
@@ -100,9 +100,9 @@ function CustomerModal({ customer, onClose, onSave }) {
                     className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${isActive ? opt.activeClass : "border-gray-200 hover:border-gray-300"}`}>
                     <input type="radio" name="serviceType" value={opt.value}
                       checked={isActive} onChange={handleChange} className="sr-only" />
-                    <opt.Icon size={16} className={`mt-0.5 flex-shrink-0 ${isActive ? (opt.value === "express" ? "text-[#1A667A]" : "text-[#3ABDE8]") : "text-gray-400"}`} />
+                    <opt.Icon size={16} className={`mt-0.5 flex-shrink-0 ${isActive ? (opt.value === "express" ? "text-[#142297]" : "text-[#2940D3]") : "text-gray-400"}`} />
                     <div>
-                      <p className={`text-sm font-semibold ${isActive ? (opt.value === "express" ? "text-[#1A667A]" : "text-[#3ABDE8]") : "text-gray-700"}`}>
+                      <p className={`text-sm font-semibold ${isActive ? (opt.value === "express" ? "text-[#142297]" : "text-[#2940D3]") : "text-gray-700"}`}>
                         {opt.label}
                       </p>
                       <p className="text-xs text-gray-400">{opt.desc}</p>
@@ -118,7 +118,7 @@ function CustomerModal({ customer, onClose, onSave }) {
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
             Batal
           </button>
-          <button onClick={() => onSave(form)} className="flex-1 py-2.5 rounded-xl bg-[#3ABDE8] text-white text-sm font-semibold hover:bg-[#2AADD8] transition-colors shadow-sm">
+          <button onClick={() => onSave(form)} className="flex-1 py-2.5 rounded-xl bg-[#2940D3] text-white text-sm font-semibold hover:bg-[#5A6FE4] transition-colors shadow-sm">
             Simpan
           </button>
         </div>
@@ -144,7 +144,7 @@ function CustomerDetail({ customer, onClose }) {
 
         {/* Avatar + info */}
         <div className="flex items-center gap-4 mb-5 p-4 bg-gray-50 rounded-xl">
-          <div className="w-14 h-14 rounded-2xl bg-[#3ABDE8] flex items-center justify-center text-white font-bold text-xl shadow">
+          <div className="w-14 h-14 rounded-2xl bg-[#2940D3] flex items-center justify-center text-white font-bold text-xl shadow">
             {customer.name.charAt(0)}
           </div>
           <div>
@@ -188,7 +188,7 @@ function CustomerDetail({ customer, onClose }) {
           <p className="text-sm text-gray-700">{customer.email}</p>
         </div>
 
-        <button onClick={onClose} className="w-full mt-5 py-2.5 rounded-xl bg-[#3ABDE8] text-white text-sm font-semibold hover:bg-[#2AADD8] transition-colors">
+        <button onClick={onClose} className="w-full mt-5 py-2.5 rounded-xl bg-[#2940D3] text-white text-sm font-semibold hover:bg-[#5A6FE4] transition-colors">
           Tutup
         </button>
       </div>
@@ -240,10 +240,10 @@ export default function Customers() {
   };
 
   const stats = [
-    { label: "Total Pelanggan",  value: customers.length,                                          Icon: Users,        color: "bg-blue-50",   iconColor: "text-[#3ABDE8]" },
-    { label: "Pelanggan Aktif",  value: customers.filter((c) => c.status === "active").length,     Icon: CheckCircle,  color: "bg-green-50",  iconColor: "text-green-500" },
+    { label: "Total Pelanggan",  value: customers.length,                                          Icon: Users,        color: "bg-blue-50",   iconColor: "text-[#2940D3]" },
+    { label: "Pelanggan Aktif",  value: customers.filter((c) => c.status === "active").length,     Icon: CheckCircle,  color: "bg-[2CC5BD]",  iconColor: "text-green-500" },
     { label: "Pelanggan VIP",    value: customers.filter((c) => c.segment === "VIP").length,       Icon: Crown,        color: "bg-purple-50", iconColor: "text-purple-500" },
-    { label: "Layanan Express",  value: customers.filter((c) => c.serviceType === "express").length, Icon: Zap,        color: "bg-teal-50",   iconColor: "text-[#1A667A]" },
+    { label: "Layanan Express",  value: customers.filter((c) => c.serviceType === "express").length, Icon: Zap,        color: "bg-teal-50",   iconColor: "text-[#142297]" },
   ];
 
   return (
@@ -251,7 +251,7 @@ export default function Customers() {
       <PageHeader title="Manajemen Pelanggan" subtitle="Kelola data dan informasi pelanggan">
         <button
           onClick={() => { setEditCustomer(null); setShowModal(true); }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#3ABDE8] text-white rounded-xl text-sm font-semibold hover:bg-[#2AADD8] transition-colors shadow-sm"
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#2940D3] text-white rounded-xl text-sm font-semibold hover:bg-[#5A6FE4] transition-colors shadow-sm"
         >
           <Plus size={15} /> Tambah Pelanggan
         </button>
@@ -284,7 +284,7 @@ export default function Customers() {
             <span className="text-xs text-gray-400 font-medium">Segmen:</span>
             {["Semua", "VIP", "Loyal", "Regular", "New"].map((s) => (
               <button key={s} onClick={() => setFilterSegment(s)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${filterSegment === s ? "bg-[#3ABDE8] text-white shadow-sm" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}>
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${filterSegment === s ? "bg-[#2940D3] text-white shadow-sm" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}>
                 {s}
               </button>
             ))}
@@ -301,7 +301,7 @@ export default function Customers() {
               <button key={f.key} onClick={() => setFilterService(f.key)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
                   filterService === f.key
-                    ? f.key === "express" ? "bg-[#1A667A] text-white shadow-sm" : "bg-[#3ABDE8] text-white shadow-sm"
+                    ? f.key === "express" ? "bg-[#142297] text-white shadow-sm" : "bg-[#2940D3] text-white shadow-sm"
                     : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                 }`}>
                 {f.key === "express" && <Zap size={11} />}
@@ -338,7 +338,7 @@ export default function Customers() {
                   <tr key={c.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-[#3ABDE8]/10 flex items-center justify-center text-[#3ABDE8] font-bold text-sm flex-shrink-0">
+                        <div className="w-9 h-9 rounded-xl bg-[#2940D3]/10 flex items-center justify-center text-[#2940D3] font-bold text-sm flex-shrink-0">
                           {c.name.charAt(0)}
                         </div>
                         <div>
@@ -364,7 +364,7 @@ export default function Customers() {
                     <td className="px-5 py-4 font-semibold text-gray-700">{c.totalTransactions}x</td>
                     <td className="px-5 py-4 font-semibold text-gray-800">Rp {c.totalSpent.toLocaleString("id-ID")}</td>
                     <td className="px-5 py-4">
-                      <span className="text-[#3ABDE8] font-semibold">{c.points}</span>
+                      <span className="text-[#2940D3] font-semibold">{c.points}</span>
                       <span className="text-xs text-gray-400 ml-1">poin</span>
                     </td>
                     <td className="px-5 py-4">
@@ -374,7 +374,7 @@ export default function Customers() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex gap-1">
-                        <button onClick={() => setViewCustomer(c)} className="w-8 h-8 rounded-lg bg-blue-50 text-[#3ABDE8] flex items-center justify-center hover:bg-blue-100 transition-colors" title="Lihat Detail">
+                        <button onClick={() => setViewCustomer(c)} className="w-8 h-8 rounded-lg bg-blue-50 text-[#2940D3] flex items-center justify-center hover:bg-blue-100 transition-colors" title="Lihat Detail">
                           <Eye size={14} />
                         </button>
                         <button onClick={() => { setEditCustomer(c); setShowModal(true); }} className="w-8 h-8 rounded-lg bg-yellow-50 text-yellow-600 flex items-center justify-center hover:bg-yellow-100 transition-colors" title="Edit">

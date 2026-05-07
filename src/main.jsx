@@ -6,11 +6,11 @@ import App from './App.jsx'
 
 // ── Konfigurasi tampilan per tipe ─────────────────────────────────────────
 const typeConfig = {
-  success: { bar: "bg-green-500",    icon: "✓", iconBg: "bg-green-100",      iconText: "text-green-600" },
-  info:    { bar: "bg-[#3ABDE8]",    icon: "i", iconBg: "bg-[#3ABDE8]/10",   iconText: "text-[#3ABDE8]" },
+  success: { bar: "bg-[2CC5BD]",    icon: "✓", iconBg: "bg-[2CC5BD]",      iconText: "text-green-600" },
+  info:    { bar: "bg-[#2940D3]",    icon: "i", iconBg: "bg-[#2940D3]/10",   iconText: "text-[#2940D3]" },
   warning: { bar: "bg-yellow-400",   icon: "!", iconBg: "bg-yellow-100",      iconText: "text-yellow-600" },
   error:   { bar: "bg-red-500",      icon: "✕", iconBg: "bg-red-100",         iconText: "text-red-600" },
-  laundry: { bar: "bg-[#1A667A]",    icon: "🧺", iconBg: "bg-[#1A667A]/10",  iconText: "text-[#1A667A]", isEmoji: true },
+  laundry: { bar: "bg-[#142297]",    icon: "🧺", iconBg: "bg-[#142297]/10",  iconText: "text-[#142297]", isEmoji: true },
 }
 
 // ── Item toast tunggal ────────────────────────────────────────────────────
@@ -18,7 +18,7 @@ function ToastItem({ toast, onRemove }) {
   const cfg = typeConfig[toast.type] || typeConfig.info
   return (
     <div
-      className="pointer-events-auto w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden font-lagusans"
+      className="pointer-events-auto w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden font-Montserrat"
       style={{ animation: "slideInRight 0.35s ease-out" }}
     >
       <div className={`h-1 w-full ${cfg.bar}`} />

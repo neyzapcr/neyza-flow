@@ -56,8 +56,8 @@ const INITIAL_NOTIFS = [
 ];
 
 const notifIcon = {
-  laundry:     { Icon: Package,      bg: "bg-blue-100",   color: "text-[#3ABDE8]" },
-  transaction: { Icon: Receipt,      bg: "bg-green-100",  color: "text-green-600" },
+  laundry:     { Icon: Package,      bg: "bg-blue-100",   color: "text-[#2940D3]" },
+  transaction: { Icon: Receipt,      bg: "bg-[2CC5BD]",  color: "text-green-600" },
   customer:    { Icon: Users,        bg: "bg-orange-100", color: "text-orange-500" },
 };
 
@@ -120,8 +120,8 @@ const typeLabel = {
 };
 
 const typeBadge = {
-  customer:    "bg-blue-100 text-[#3ABDE8]",
-  transaction: "bg-green-100 text-green-700",
+  customer:    "bg-blue-100 text-[#2940D3]",
+  transaction: "bg-[2CC5BD] text-green-700",
   tracking:    "bg-yellow-100 text-yellow-700",
 };
 
@@ -180,7 +180,7 @@ export default function Header({ onMenuClick }) {
 
   return (
     <>
-      <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20 shadow-sm font-lagusans">
+      <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20 shadow-sm font-Montserrat">
 
         {/* ── Kiri: hamburger + search ── */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -194,7 +194,7 @@ export default function Header({ onMenuClick }) {
 
           {/* Search dengan dropdown hasil */}
           <div ref={searchRef} className="relative w-44 sm:w-80">
-            <div className={`flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2 border transition-all ${searchOpen && search ? "border-[#3ABDE8] ring-2 ring-[#3ABDE8]/10" : "border-gray-100"}`}>
+            <div className={`flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2 border transition-all ${searchOpen && search ? "border-[#2940D3] ring-2 ring-[#2940D3]/10" : "border-gray-100"}`}>
               <Search size={14} className="text-gray-400 flex-shrink-0" />
               <input
                 type="text"
@@ -266,7 +266,7 @@ export default function Header({ onMenuClick }) {
             >
               <Bell size={16} className="text-gray-500" />
               {unread > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-[#3ABDE8] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-[#2940D3] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
                   {unread}
                 </span>
               )}
@@ -280,11 +280,11 @@ export default function Header({ onMenuClick }) {
                   <div className="flex items-center gap-2">
                     <p className="font-semibold text-gray-800 text-sm">Notifikasi</p>
                     {unread > 0 && (
-                      <span className="bg-[#3ABDE8] text-white text-xs font-bold px-2 py-0.5 rounded-full">{unread}</span>
+                      <span className="bg-[#2940D3] text-white text-xs font-bold px-2 py-0.5 rounded-full">{unread}</span>
                     )}
                   </div>
                   {unread > 0 && (
-                    <button onClick={markAllRead} className="text-xs text-[#3ABDE8] font-semibold hover:underline flex items-center gap-1">
+                    <button onClick={markAllRead} className="text-xs text-[#2940D3] font-semibold hover:underline flex items-center gap-1">
                       <CheckCircle size={12} /> Tandai semua dibaca
                     </button>
                   )}
@@ -303,7 +303,7 @@ export default function Header({ onMenuClick }) {
                     return (
                       <li
                         key={n.id}
-                        className={`flex items-start gap-3 px-4 py-3 transition-colors ${n.read ? "bg-white" : "bg-[#3ABDE8]/5"}`}
+                        className={`flex items-start gap-3 px-4 py-3 transition-colors ${n.read ? "bg-white" : "bg-[#2940D3]/5"}`}
                       >
                         {/* Icon */}
                         <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${cfg.bg}`}>
@@ -316,7 +316,7 @@ export default function Header({ onMenuClick }) {
                             <p className={`text-sm leading-tight ${n.read ? "text-gray-700" : "font-semibold text-gray-800"}`}>
                               {n.title}
                             </p>
-                            {!n.read && <span className="w-2 h-2 bg-[#3ABDE8] rounded-full flex-shrink-0 mt-1"></span>}
+                            {!n.read && <span className="w-2 h-2 bg-[#2940D3] rounded-full flex-shrink-0 mt-1"></span>}
                           </div>
                           <p className="text-xs text-gray-400 mt-0.5 truncate">{n.desc}</p>
                           <div className="flex items-center gap-1 mt-1">
@@ -342,7 +342,7 @@ export default function Header({ onMenuClick }) {
                   <div className="px-4 py-3 border-t border-gray-100 text-center">
                     <button
                       onClick={() => { navigate("/notifications"); setNotifOpen(false); }}
-                      className="text-xs text-[#3ABDE8] font-semibold hover:underline"
+                      className="text-xs text-[#2940D3] font-semibold hover:underline"
                     >
                       Lihat semua notifikasi
                     </button>
@@ -357,7 +357,7 @@ export default function Header({ onMenuClick }) {
               onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}
               className="flex items-center gap-2.5 pl-1 pr-2 sm:pr-3 py-1 rounded-xl hover:bg-gray-50 transition-colors"
             >
-              <div className="w-8 h-8 rounded-xl bg-[#3ABDE8] flex items-center justify-center shadow-sm flex-shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-[#2940D3] flex items-center justify-center shadow-sm flex-shrink-0">
                 <span className="text-white font-bold text-sm">{adminName.charAt(0).toUpperCase()}</span>
               </div>
               <div className="hidden sm:block text-left">
@@ -369,9 +369,9 @@ export default function Header({ onMenuClick }) {
 
             {profileOpen && (
               <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-40">
-                <div className="px-4 py-3 bg-gradient-to-r from-[#3ABDE8]/10 to-[#1A667A]/10 border-b border-gray-100">
+                <div className="px-4 py-3 bg-gradient-to-r from-[#2940D3]/10 to-[#142297]/10 border-b border-gray-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#3ABDE8] flex items-center justify-center shadow-sm">
+                    <div className="w-10 h-10 rounded-xl bg-[#2940D3] flex items-center justify-center shadow-sm">
                       <span className="text-white font-bold">{adminName.charAt(0).toUpperCase()}</span>
                     </div>
                     <div>
@@ -408,7 +408,7 @@ export default function Header({ onMenuClick }) {
       {/* ── Edit Profile Modal ── */}
       {editOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 font-lagusans">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 font-Montserrat">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-bold text-gray-800">Edit Profil</h2>
               <button onClick={() => setEditOpen(false)} className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-gray-200 text-gray-500">
@@ -416,7 +416,7 @@ export default function Header({ onMenuClick }) {
               </button>
             </div>
             <div className="flex justify-center mb-5">
-              <div className="w-16 h-16 rounded-2xl bg-[#3ABDE8] flex items-center justify-center shadow-md">
+              <div className="w-16 h-16 rounded-2xl bg-[#2940D3] flex items-center justify-center shadow-md">
                 <span className="text-white font-bold text-2xl">{(editForm.name || "A").charAt(0).toUpperCase()}</span>
               </div>
             </div>
@@ -424,17 +424,17 @@ export default function Header({ onMenuClick }) {
               <div>
                 <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Nama</label>
                 <input type="text" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} placeholder="Nama admin"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#3ABDE8] focus:ring-2 focus:ring-[#3ABDE8]/20 transition-all" />
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 transition-all" />
               </div>
               <div>
                 <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Jabatan / Role</label>
                 <input type="text" value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })} placeholder="Contoh: Netto Laundry"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#3ABDE8] focus:ring-2 focus:ring-[#3ABDE8]/20 transition-all" />
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 transition-all" />
               </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setEditOpen(false)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
-              <button onClick={handleSaveProfile} className="flex-1 py-2.5 rounded-xl bg-[#3ABDE8] text-white text-sm font-semibold hover:bg-[#2AADD8] transition-colors flex items-center justify-center gap-1.5">
+              <button onClick={handleSaveProfile} className="flex-1 py-2.5 rounded-xl bg-[#2940D3] text-white text-sm font-semibold hover:bg-[#5A6FE4] transition-colors flex items-center justify-center gap-1.5">
                 <Check size={14} /> Simpan
               </button>
             </div>

@@ -5,8 +5,8 @@ import laundryData from "../data/laundryStatus.json";
 
 const statusConfig = {
   menunggu: { color: "bg-yellow-100 text-yellow-700", label: "Menunggu" },
-  diproses: { color: "bg-blue-100 text-[#3ABDE8]", label: "Diproses" },
-  selesai: { color: "bg-green-100 text-green-700", label: "Selesai" },
+  diproses: { color: "bg-blue-100 text-[#2940D3]", label: "Diproses" },
+  selesai: { color: "bg-[2CC5BD] text-green-700", label: "Selesai" },
 };
 
 const stepLabels = ["Diterima", "Dicuci", "Dikeringkan", "Disetrika", "Selesai"];
@@ -64,7 +64,7 @@ export default function Tracking() {
         <div className="space-y-3">
           {filtered.map((order) => (
             <div key={order.id} onClick={() => setSelected(order)}
-              className={`bg-white rounded-2xl p-4 shadow-sm border cursor-pointer transition-all hover:shadow-md ${selected?.id === order.id ? "border-[#3ABDE8] ring-2 ring-[#3ABDE8]/20" : "border-gray-100"}`}>
+              className={`bg-white rounded-2xl p-4 shadow-sm border cursor-pointer transition-all hover:shadow-md ${selected?.id === order.id ? "border-[#2940D3] ring-2 ring-[#2940D3]/20" : "border-gray-100"}`}>
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <p className="font-bold text-gray-800">{order.customerName}</p>
@@ -80,7 +80,7 @@ export default function Tracking() {
               </div>
               <div className="flex items-center gap-1">
                 {order.steps.map((step, i) => (
-                  <div key={i} className={`flex-1 h-1.5 rounded-full transition-all ${step.done ? "bg-[#3ABDE8]" : "bg-gray-200"}`}></div>
+                  <div key={i} className={`flex-1 h-1.5 rounded-full transition-all ${step.done ? "bg-[#2940D3]" : "bg-gray-200"}`}></div>
                 ))}
               </div>
               <div className="flex justify-between mt-1">
@@ -125,7 +125,7 @@ export default function Tracking() {
               <div className="space-y-3">
                 {selected.steps.map((step, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${step.done ? "bg-[#3ABDE8]" : "bg-gray-100"}`}>
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${step.done ? "bg-[#2940D3]" : "bg-gray-100"}`}>
                       {step.done
                         ? <CheckCircle size={16} className="text-white" />
                         : <Circle size={16} className="text-gray-400" />
@@ -135,7 +135,7 @@ export default function Tracking() {
                       <div className="flex items-center justify-between">
                         <p className={`text-sm font-semibold ${step.done ? "text-gray-800" : "text-gray-400"}`}>{step.step}</p>
                         <button onClick={() => updateStep(selected.id, i)}
-                          className={`text-xs px-2.5 py-1 rounded-lg transition-all ${step.done ? "bg-green-100 text-green-600 cursor-default" : "bg-[#3ABDE8]/10 text-[#3ABDE8] hover:bg-[#3ABDE8]/20"}`}>
+                          className={`text-xs px-2.5 py-1 rounded-lg transition-all ${step.done ? "bg-[2CC5BD] text-green-600 cursor-default" : "bg-[#2940D3]/10 text-[#2940D3] hover:bg-[#2940D3]/20"}`}>
                           {step.done ? "Selesai" : "Tandai"}
                         </button>
                       </div>

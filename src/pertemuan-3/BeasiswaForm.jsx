@@ -196,7 +196,7 @@ function handleSubmit(e) {
 
         <div className="mt-6">
           {bolehSubmit ? (
-            <button className="w-full rounded-xl bg-green-500 py-3 text-white hover:bg-green-600">
+            <button className="w-full rounded-xl bg-[2CC5BD] py-3 text-white hover:bg-green-600">
               Daftar Beasiswa
             </button>
           ) : (
