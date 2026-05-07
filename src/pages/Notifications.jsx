@@ -117,7 +117,6 @@ export default function Notifications() {
     <div>
       <PageHeader title="Notifikasi" subtitle="Kelola template dan kirim notifikasi ke pelanggan" />
 
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
           { label: "Template Aktif", value: templates.filter((t) => t.active).length, Icon: Bell, color: "bg-blue-50", iconColor: "text-[#2940D3]" },
