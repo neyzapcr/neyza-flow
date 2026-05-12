@@ -284,7 +284,6 @@ export default function Settings() {
                     </select>
                   </div>
 
-                  {/* Nilai */}
                   <div className="col-span-2">
                     <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#2940D3] focus-within:ring-2 focus-within:ring-[#2940D3]/20 transition-all">
                       <span className="px-2.5 py-2.5 bg-gray-50 text-xs text-gray-500 border-r border-gray-200">
