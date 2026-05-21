@@ -1,15 +1,23 @@
 import { useState } from "react";
-import { Search, CheckCircle, Circle, Package } from "lucide-react";
+import { CheckCircle, Circle, Package } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import laundryData from "../data/laundryStatus.json";
+import SearchInput from "../components/SearchInput";
+import Badge from "../components/Badge";
+import Card from "../components/Card";
+import EmptyState from "../components/EmptyState";
 
 const statusConfig = {
-  menunggu: { color: "bg-yellow-100 text-yellow-700", label: "Menunggu" },
-  diproses: { color: "bg-blue-100 text-[#2940D3]", label: "Diproses" },
-  selesai: { color: "bg-[2CC5BD] text-green-700", label: "Selesai" },
+  menunggu: { variant: "yellow", label: "Menunggu" },
+  diproses: { variant: "blue",   label: "Diproses" },
+  selesai:  { variant: "green",  label: "Selesai" },
 };
 
-const stepLabels = ["Diterima", "Dicuci", "Dikeringkan", "Disetrika", "Selesai"];
+const statusColorClass = {
+  menunggu: "bg-yellow-100 text-yellow-700",
+  diproses: "bg-blue-100 text-[#2940D3]",
+  selesai:  "bg-green-100 text-green-700",
+};
 
 export default function Tracking() {
   const [orders, setOrders] = useState(laundryData);
@@ -43,24 +51,22 @@ export default function Tracking() {
       <PageHeader title="Tracking Status Laundry" subtitle="Pantau dan perbarui status pengerjaan cucian">
         <div className="flex gap-2">
           {Object.entries(statusConfig).map(([key, val]) => (
-            <span key={key} className={`px-3 py-1.5 rounded-xl text-xs font-medium ${val.color}`}>
+            <span key={key} className={`px-3 py-1.5 rounded-xl text-xs font-medium ${statusColorClass[key]}`}>
               {val.label}: {orders.filter((o) => o.currentStatus === key).length}
             </span>
           ))}
         </div>
       </PageHeader>
 
-      {/* Search */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4">
-        <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5 border border-gray-100">
-          <Search size={14} className="text-gray-400 flex-shrink-0" />
-          <input type="text" placeholder="Cari ID transaksi atau nama pelanggan..." value={search} onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent text-sm outline-none w-full text-gray-600 placeholder-gray-400" />
-        </div>
-      </div>
+      <Card className="mb-4">
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Cari ID transaksi atau nama pelanggan..."
+        />
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Order List */}
         <div className="space-y-3">
           {filtered.map((order) => (
             <div key={order.id} onClick={() => setSelected(order)}
@@ -70,9 +76,9 @@ export default function Tracking() {
                   <p className="font-bold text-gray-800">{order.customerName}</p>
                   <p className="text-xs text-gray-400 font-mono">{order.id}</p>
                 </div>
-                <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusConfig[order.currentStatus]?.color}`}>
+                <Badge variant={statusConfig[order.currentStatus]?.variant || "gray"}>
                   {statusConfig[order.currentStatus]?.label}
-                </span>
+                </Badge>
               </div>
               <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
                 <span>{order.service}</span>
@@ -90,22 +96,20 @@ export default function Tracking() {
             </div>
           ))}
           {filtered.length === 0 && (
-            <div className="bg-white rounded-2xl p-8 text-center text-gray-400 border border-gray-100">
-              <Package size={32} className="mx-auto mb-2 opacity-30" />
-              <p className="text-sm">Tidak ada order ditemukan</p>
-            </div>
+            <Card>
+              <EmptyState icon={<Package size={32} />} message="Tidak ada order ditemukan" />
+            </Card>
           )}
         </div>
 
-        {/* Detail Panel */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 h-fit sticky top-24">
+        <Card className="h-fit sticky top-24">
           {selected ? (
             <>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-gray-800">Detail Tracking</h3>
-                <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusConfig[selected.currentStatus]?.color}`}>
+                <Badge variant={statusConfig[selected.currentStatus]?.variant || "gray"}>
                   {statusConfig[selected.currentStatus]?.label}
-                </span>
+                </Badge>
               </div>
               <div className="bg-gray-50 rounded-xl p-3 mb-4 space-y-1.5">
                 {[
@@ -135,7 +139,7 @@ export default function Tracking() {
                       <div className="flex items-center justify-between">
                         <p className={`text-sm font-semibold ${step.done ? "text-gray-800" : "text-gray-400"}`}>{step.step}</p>
                         <button onClick={() => updateStep(selected.id, i)}
-                          className={`text-xs px-2.5 py-1 rounded-lg transition-all ${step.done ? "bg-[2CC5BD] text-green-600 cursor-default" : "bg-[#2940D3]/10 text-[#2940D3] hover:bg-[#2940D3]/20"}`}>
+                          className={`text-xs px-2.5 py-1 rounded-lg transition-all ${step.done ? "bg-green-100 text-green-600 cursor-default" : "bg-[#2940D3]/10 text-[#2940D3] hover:bg-[#2940D3]/20"}`}>
                           {step.done ? "Selesai" : "Tandai"}
                         </button>
                       </div>
@@ -146,12 +150,9 @@ export default function Tracking() {
               </div>
             </>
           ) : (
-            <div className="text-center py-12 text-gray-400">
-              <Package size={40} className="mx-auto mb-3 opacity-20" />
-              <p className="text-sm font-medium">Pilih order untuk melihat detail tracking</p>
-            </div>
+            <EmptyState icon={<Package size={40} />} message="Pilih order untuk melihat detail tracking" />
           )}
-        </div>
+        </Card>
       </div>
     </div>
   );

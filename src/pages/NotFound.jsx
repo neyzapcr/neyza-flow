@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { Home, ArrowLeft } from "lucide-react";
+import Button from "../components/Button";
 
 export default function NotFound() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 font-Montserrat">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 font-lagusans">
       <div className="text-center max-w-md">
         {/* Angka 404 */}
         <div className="relative mb-6">
@@ -32,18 +33,12 @@ export default function NotFound() {
         </p>
 
         <div className="flex gap-3 justify-center">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors"
-          >
-            <ArrowLeft size={15} /> Kembali
-          </button>
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#2940D3] text-white rounded-xl text-sm font-semibold hover:bg-[#5A6FE4] transition-colors shadow-sm"
-          >
-            <Home size={15} /> Ke Dashboard
-          </button>
+          <Button variant="outline" icon={<ArrowLeft size={15} />} onClick={() => navigate(-1)}>
+            Kembali
+          </Button>
+          <Button variant="primary" icon={<Home size={15} />} onClick={() => navigate("/dashboard")}>
+            Ke Dashboard
+          </Button>
         </div>
       </div>
     </div>
