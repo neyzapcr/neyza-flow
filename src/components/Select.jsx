@@ -1,16 +1,3 @@
-/**
- * Select — Form Component
- * Props:
- *   label: string
- *   name: string
- *   value, onChange
- *   options: { value, label }[] | string[]
- *   placeholder: string
- *   error: string
- *   required: boolean
- *   className: string
- *   icon: ReactNode
- */
 export default function Select({
   label,
   name,

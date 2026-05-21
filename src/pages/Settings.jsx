@@ -136,7 +136,9 @@ export default function Settings() {
               {services.map((svc) => (
                 <div key={svc.id} className={`grid grid-cols-12 gap-4 px-5 py-4 items-center transition-colors ${!svc.active ? "opacity-50" : ""}`}>
                   <div className="col-span-4">
+
                     <Input value={svc.name} onChange={(e) => updateService(svc.id, "name", e.target.value)} />
+                  
                   </div>
                   <div className="col-span-3">
                     <PriceInput value={svc.regularPrice} onChange={(v) => updateService(svc.id, "regularPrice", v)} />

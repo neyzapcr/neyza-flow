@@ -1,10 +1,3 @@
-/**
- * EmptyState — Feedback Component
- * Props:
- *   icon: ReactNode (LucideIcon element)
- *   message: string
- *   className: string
- */
 export default function EmptyState({ icon, message = "Tidak ada data ditemukan", className = "" }) {
   return (
     <div className={`text-center py-12 text-gray-400 ${className}`}>

@@ -76,9 +76,11 @@ export default function Tracking() {
                   <p className="font-bold text-gray-800">{order.customerName}</p>
                   <p className="text-xs text-gray-400 font-mono">{order.id}</p>
                 </div>
+
                 <Badge variant={statusConfig[order.currentStatus]?.variant || "gray"}>
                   {statusConfig[order.currentStatus]?.label}
                 </Badge>
+              
               </div>
               <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
                 <span>{order.service}</span>

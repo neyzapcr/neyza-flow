@@ -1,13 +1,3 @@
-/**
- * ProgressBar — Data Display Component
- * Props:
- *   value: number (0–100)
- *   color: string (hex or tailwind bg class)
- *   height: "sm" | "md"
- *   showLabel: boolean
- *   label: string
- *   className: string
- */
 const heights = {
   sm: "h-1.5",
   md: "h-2",

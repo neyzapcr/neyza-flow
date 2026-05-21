@@ -1,10 +1,3 @@
-/**
- * Table — Data Display Component
- * Props:
- *   headers: string[]
- *   children: <tr> rows
- *   className: string
- */
 export default function Table({ headers = [], children, className = "" }) {
   return (
     <div className={`overflow-x-auto ${className}`}>

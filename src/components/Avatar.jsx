@@ -1,12 +1,3 @@
-/**
- * Avatar — Basic Component
- * Props:
- *   name: string  — diambil huruf pertamanya
- *   size: "sm" | "md" | "lg" | "xl"
- *   color: string tailwind bg class (default gradient biru)
- *   shape: "circle" | "rounded"
- *   className: string
- */
 const sizes = {
   sm:  "w-7 h-7 text-xs",
   md:  "w-9 h-9 text-sm",

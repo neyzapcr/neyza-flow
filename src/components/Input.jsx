@@ -1,22 +1,9 @@
-/**
- * Input — Form Component
- * Props:
- *   label: string
- *   name: string
- *   type: string
- *   value, onChange, placeholder
- *   icon: ReactNode (icon kiri)
- *   iconRight: ReactNode (icon kanan)
- *   error: string
- *   required: boolean
- *   className: string
- */
 export default function Input({
   label,
   name,
   type        = "text",
   value,
-  onChange,
+ onChange,
   placeholder,
   icon,
   iconRight,

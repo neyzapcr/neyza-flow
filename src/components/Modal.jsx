@@ -1,18 +1,6 @@
 import { useEffect } from "react";
 import { X } from "lucide-react";
 
-/**
- * Modal — Feedback Component
- * Props:
- *   open: boolean
- *   onClose: () => void
- *   title: string
- *   subtitle: string
- *   size: "sm" | "md" | "lg" | "xl"
- *   children: ReactNode
- *   footer: ReactNode — custom footer (overrides default)
- *   hideClose: boolean
- */
 const sizes = {
   sm: "max-w-sm",
   md: "max-w-md",

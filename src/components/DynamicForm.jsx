@@ -3,14 +3,6 @@ import Input from "./Input";
 import Select from "./Select";
 import TextArea from "./TextArea";
 
-/**
- * DynamicForm — Komponen Form Pintar & Universal
- * Props:
- *   fields: array of object — konfigurasi struktur kolom input
- *   initialData: object — data awal untuk kebutuhan EDIT (opsional)
- *   onChange: function — mengirim state form terbaru ke halaman utama
- *   customRender: function — untuk merender layout custom seperti radio button khusus (opsional)
- */
 export default function DynamicForm({ fields = [], initialData = {}, onChange, customRender }) {
   const [form, setForm] = useState({});
 

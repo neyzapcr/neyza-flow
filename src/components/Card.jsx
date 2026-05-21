@@ -1,10 +1,3 @@
-/**
- * Card — Layout / Data Display Component
- * Props:
- *   className: string
- *   padding: boolean (default true)
- *   children
- */
 export default function Card({ children, className = "", padding = true }) {
   return (
     <div

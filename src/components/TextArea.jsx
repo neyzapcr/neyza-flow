@@ -1,16 +1,3 @@
-/**
- * TextArea — Form Component
- * Props:
- *   label: string
- *   name: string
- *   value, onChange, placeholder
- *   rows: number (default 4)
- *   error: string
- *   required: boolean
- *   resize: boolean (default false)
- *   className: string
- *   hint: string — small helper text below
- */
 export default function TextArea({
   label,
   name,

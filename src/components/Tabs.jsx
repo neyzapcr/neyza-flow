@@ -1,24 +1,3 @@
-/**
- * Tabs — Navigation / Layout Component
- *
- * Usage:
- *   <Tabs
- *     tabs={[
- *       { key: "overview", label: "Overview", icon: <LayoutDashboard size={15} /> },
- *       { key: "details",  label: "Details" },
- *     ]}
- *     active="overview"
- *     onChange={(key) => setActiveTab(key)}
- *   />
- *
- * Props:
- *   tabs: { key, label, icon?, badge? }[]
- *   active: string — key of the active tab
- *   onChange: (key: string) => void
- *   variant: "pill" | "underline" (default "pill")
- *   size: "sm" | "md" (default "md")
- *   className: string
- */
 export default function Tabs({
   tabs      = [],
   active,

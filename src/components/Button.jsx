@@ -1,15 +1,3 @@
-/**
- * Button — Basic Component
- * Props:
- *   variant: "primary" | "secondary" | "danger" | "warning" | "ghost" | "outline"
- *   size:    "sm" | "md" | "lg"
- *   icon:    ReactNode (icon di kiri)
- *   iconRight: ReactNode (icon di kanan)
- *   loading: boolean
- *   disabled: boolean
- *   className: string (override tambahan)
- *   children, onClick, type, ...rest
- */
 const variants = {
   primary:   "bg-[#3ABDE8] text-white hover:bg-[#2AADD8] shadow-sm",
   secondary: "bg-[#1A667A] text-white hover:bg-[#155a6b] shadow-sm",
@@ -46,7 +34,7 @@ export default function Button({
       className={`
         inline-flex items-center justify-center font-semibold rounded-xl
         transition-colors duration-150 flex-shrink-0
-        disabled:opacity-60 disabled:cursor-not-allowed
+        disabled:opacity-60 disabled:cursor-not-allowed 
         ${variants[variant] || variants.primary}
         ${sizes[size] || sizes.md}
         ${className}

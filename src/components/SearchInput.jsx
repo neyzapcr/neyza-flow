@@ -1,15 +1,6 @@
 import { useRef, useState } from "react";
 import { Search, X } from "lucide-react";
 
-/**
- * SearchInput — Form Component
- * Props:
- *   value: string
- *   onChange: (value: string) => void
- *   placeholder: string
- *   className: string
- *   size: "sm" | "md"
- */
 export default function SearchInput({
   value,
   onChange,

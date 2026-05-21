@@ -2,21 +2,6 @@ import { AlertCircle, Trash2, AlertTriangle, Info } from "lucide-react";
 import Modal from "./Modal";
 import Button from "./Button";
 
-/**
- * ConfirmModal — Feedback Component
- * A pre-built confirmation dialog built on top of Modal.
- *
- * Props:
- *   open: boolean
- *   onClose: () => void
- *   onConfirm: () => void
- *   title: string
- *   message: string
- *   confirmLabel: string (default "Hapus")
- *   cancelLabel: string (default "Batal")
- *   variant: "danger" | "warning" | "info" (default "danger")
- *   loading: boolean
- */
 const variantConfig = {
   danger: {
     Icon: Trash2,

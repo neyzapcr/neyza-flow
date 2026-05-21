@@ -1,14 +1,3 @@
-/**
- * StatCard — Data Display Component
- * Props:
- *   Icon: LucideIcon component
- *   iconBg: string tailwind class (bg color)
- *   iconColor: string tailwind class (text color)
- *   label: string
- *   value: string | number
- *   sub: string (optional sub-text)
- *   subColor: string tailwind class
- */
 export default function StatCard({
   Icon,
   iconBg    = "bg-[#3ABDE8]/10",
