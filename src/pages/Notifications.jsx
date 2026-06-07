@@ -1,7 +1,34 @@
 import { useState } from "react";
 import { Send, CheckCircle, XCircle, Bell, ToggleLeft, ToggleRight, MessageSquare, Mail } from "lucide-react";
 import PageHeader from "../components/PageHeader";
-import customersData from "../data/customers.json";
+import rawCustomersData from "../data/customers.json";
+const customersData = rawCustomersData.flatMap((c) => {
+  const historyList = c.transactionHistory || [];
+  if (historyList.length === 0) {
+    return [{
+      ...c,
+      customerId: c.customerId || String(Math.random()),
+      joinDate: c.joinDate || "-",
+      totalTransactions: c.totalTransactions !== undefined ? c.totalTransactions : 0,
+      totalSpent: c.totalSpent !== undefined ? c.totalSpent : 0,
+      points: c.points !== undefined ? c.points : 0,
+      segment: c.segment || "New",
+      lastTransaction: c.lastTransaction || "-",
+      status: c.status || "active",
+    }];
+  }
+  return historyList.map((history) => ({
+    ...c,
+    customerId: history.customerId || c.customerId || String(Math.random()),
+    joinDate: history.joinDate || c.joinDate || "-",
+    totalTransactions: history.totalTransactions !== undefined ? history.totalTransactions : (c.totalTransactions || 0),
+    totalSpent: history.totalSpent !== undefined ? history.totalSpent : (c.totalSpent || 0),
+    points: history.points !== undefined ? history.points : (c.points || 0),
+    segment: history.segment || c.segment || "New",
+    lastTransaction: history.lastTransaction || c.lastTransaction || "-",
+    status: history.status || c.status || "active",
+  }));
+});
 import DynamicForm from "../components/DynamicForm"; // Integrasi Form Utama
 import Button from "../components/Button";
 import Badge from "../components/Badge";
@@ -17,11 +44,11 @@ const TEMPLATES = [
 const categoryVariant = { status: "blue", reminder: "yellow", retensi: "red", promosi: "green" };
 
 const notifHistory = [
-  { id: 1, customer: "Rina Marlina", template: "Cucian Selesai", time: "2025-04-20 11:05", channel: "WhatsApp", status: "terkirim" },
-  { id: 2, customer: "Fajar Nugroho", template: "Cucian Selesai", time: "2025-04-30 11:00", channel: "WhatsApp", status: "terkirim" },
-  { id: 3, customer: "Siti Nurhaliza", template: "Pengingat Pengambilan", time: "2025-05-01 10:05", channel: "Email", status: "terkirim" },
-  { id: 4, customer: "Dedi Kurniawan", template: "Reminder Pelanggan Tidak Aktif", time: "2025-04-01 09:00", channel: "WhatsApp", status: "gagal" },
-  { id: 5, customer: "Ani Rahayu", template: "Promo Spesial", time: "2025-04-15 08:00", channel: "Email", status: "terkirim" }
+  { id: 1, customer: "Elisa Zulkarnain", template: "Cucian Selesai", time: "2025-04-20 11:05", channel: "WhatsApp", status: "terkirim" },
+  { id: 2, customer: "Kurnia Anwar", template: "Cucian Selesai", time: "2025-04-30 11:00", channel: "WhatsApp", status: "terkirim" },
+  { id: 3, customer: "Putri Saputra", template: "Pengingat Pengambilan", time: "2025-05-01 10:05", channel: "Email", status: "terkirim" },
+  { id: 4, customer: "Deni Lubis", template: "Reminder Pelanggan Tidak Aktif", time: "2025-04-01 09:00", channel: "WhatsApp", status: "gagal" },
+  { id: 5, customer: "Hamid Fauzi", template: "Promo Spesial", time: "2025-04-15 08:00", channel: "Email", status: "terkirim" }
 ];
 
 export default function Notifications() {
@@ -43,7 +70,7 @@ export default function Notifications() {
 
   const handleSelectAll = (checked) => {
     setSelectAll(checked);
-    setSelectedCustomers(checked ? customersData.map(c => c.id) : []);
+    setSelectedCustomers(checked ? customersData.map(c => c.customerId) : []);
   };
 
   const handleSelectCustomer = (id, checked) => {
@@ -59,7 +86,7 @@ export default function Notifications() {
     setTimeout(() => {
       const newEntries = selectedCustomers.map((cid) => ({
         id: Date.now() + cid,
-        customer: customersData.find(x => x.id === cid).name,
+        customer: customersData.find(x => x.customerId === cid).customerName,
         template: selectedTemplate.name,
         time: new Date().toLocaleString("id-ID"),
         channel: channel === "whatsapp" ? "WhatsApp" : "Email",
@@ -166,11 +193,11 @@ export default function Notifications() {
                       <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
                         <div className="max-h-52 overflow-y-auto divide-y divide-gray-50">
                           {customersData.map((c) => (
-                            <label key={c.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 cursor-pointer transition-colors">
-                              <input type="checkbox" checked={selectedCustomers.includes(c.id)} onChange={(e) => handleSelectCustomer(c.id, e.target.checked)} className="accent-[#2940D3] w-3.5 h-3.5 flex-shrink-0" />
-                              <div className="w-7 h-7 rounded-lg bg-[#2940D3]/10 flex items-center justify-center text-[#2940D3] font-bold text-xs flex-shrink-0">{c.name.charAt(0)}</div>
+                            <label key={c.customerId} className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 cursor-pointer transition-colors">
+                              <input type="checkbox" checked={selectedCustomers.includes(c.customerId)} onChange={(e) => handleSelectCustomer(c.customerId, e.target.checked)} className="accent-[#2940D3] w-3.5 h-3.5 flex-shrink-0" />
+                              <div className="w-7 h-7 rounded-lg bg-[#2940D3]/10 flex items-center justify-center text-[#2940D3] font-bold text-xs flex-shrink-0">{c.customerName.charAt(0)}</div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-800 truncate">{c.name}</p>
+                                <p className="text-sm font-medium text-gray-800 truncate">{c.customerName}</p>
                                 <p className="text-xs text-gray-400">{channel === "whatsapp" ? c.phone : c.email}</p>
                               </div>
                               <Badge variant={c.status === "active" ? "green" : "gray"}>{c.status === "active" ? "Aktif" : "Tidak Aktif"}</Badge>

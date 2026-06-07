@@ -2,7 +2,34 @@ import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { FileText, Download, Users, TrendingUp, RefreshCw, UserPlus, Send } from "lucide-react";
 import PageHeader from "../components/PageHeader";
-import customersData from "../data/customers.json";
+import rawCustomersData from "../data/customers.json";
+const customersData = rawCustomersData.flatMap((c) => {
+  const historyList = c.transactionHistory || [];
+  if (historyList.length === 0) {
+    return [{
+      ...c,
+      customerId: c.customerId || String(Math.random()),
+      joinDate: c.joinDate || "-",
+      totalTransactions: c.totalTransactions !== undefined ? c.totalTransactions : 0,
+      totalSpent: c.totalSpent !== undefined ? c.totalSpent : 0,
+      points: c.points !== undefined ? c.points : 0,
+      segment: c.segment || "New",
+      lastTransaction: c.lastTransaction || "-",
+      status: c.status || "active",
+    }];
+  }
+  return historyList.map((history) => ({
+    ...c,
+    customerId: history.customerId || c.customerId || String(Math.random()),
+    joinDate: history.joinDate || c.joinDate || "-",
+    totalTransactions: history.totalTransactions !== undefined ? history.totalTransactions : (c.totalTransactions || 0),
+    totalSpent: history.totalSpent !== undefined ? history.totalSpent : (c.totalSpent || 0),
+    points: history.points !== undefined ? history.points : (c.points || 0),
+    segment: history.segment || c.segment || "New",
+    lastTransaction: history.lastTransaction || c.lastTransaction || "-",
+    status: history.status || c.status || "active",
+  }));
+});
 import transactionsData from "../data/transactions.json";
 import Button from "../components/Button";
 import Badge from "../components/Badge";
@@ -151,10 +178,10 @@ export default function Reports() {
         </div>
         <div className="space-y-3">
           {customersData.filter((c) => c.status === "inactive").map((c) => (
-            <div key={c.id} className="flex items-center justify-between p-3 bg-red-50 rounded-xl">
+            <div key={c.customerId} className="flex items-center justify-between p-3 bg-red-50 rounded-xl">
               <div className="flex items-center gap-3">
-                <Avatar name={c.name} size="md" color="bg-red-100" className="text-red-500" />
-                <div><p className="font-semibold text-sm">{c.name}</p><p className="text-xs text-gray-500">Terakhir: {c.lastTransaction}</p></div>
+                <Avatar name={c.customerName} size="md" color="bg-red-100" className="text-red-500" />
+                <div><p className="font-semibold text-sm">{c.customerName}</p><p className="text-xs text-gray-500">Terakhir: {c.lastTransaction}</p></div>
               </div>
               <Button size="sm" icon={<Send size={11} />}>Pesan</Button>
             </div>

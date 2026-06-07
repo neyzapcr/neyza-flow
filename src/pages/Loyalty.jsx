@@ -20,7 +20,35 @@ const tiers = [
 const getTier = (pts) => tiers.find((t) => pts >= t.min && pts <= t.max) || tiers[0];
 
 export default function Loyalty() {
-  const [customers] = useState(customersData);
+  const [customers] = useState(() => {
+    return customersData.flatMap((c) => {
+      const historyList = c.transactionHistory || [];
+      if (historyList.length === 0) {
+        return [{
+          ...c,
+          customerId: c.customerId || String(Math.random()),
+          joinDate: c.joinDate || "-",
+          totalTransactions: c.totalTransactions !== undefined ? c.totalTransactions : 0,
+          totalSpent: c.totalSpent !== undefined ? c.totalSpent : 0,
+          points: c.points !== undefined ? c.points : 0,
+          segment: c.segment || "New",
+          lastTransaction: c.lastTransaction || "-",
+          status: c.status || "active",
+        }];
+      }
+      return historyList.map((history) => ({
+        ...c,
+        customerId: history.customerId || c.customerId || String(Math.random()),
+        joinDate: history.joinDate || c.joinDate || "-",
+        totalTransactions: history.totalTransactions !== undefined ? history.totalTransactions : (c.totalTransactions || 0),
+        totalSpent: history.totalSpent !== undefined ? history.totalSpent : (c.totalSpent || 0),
+        points: history.points !== undefined ? history.points : (c.points || 0),
+        segment: history.segment || c.segment || "New",
+        lastTransaction: history.lastTransaction || c.lastTransaction || "-",
+        status: history.status || c.status || "active",
+      }));
+    });
+  });
   const [selected, setSelected] = useState(null);
   const totalPoints = customers.reduce((s, c) => s + c.points, 0);
 
@@ -67,11 +95,11 @@ export default function Loyalty() {
             const nextTier = tiers[tiers.indexOf(tier) + 1];
             const progress = nextTier ? Math.round(((c.points - tier.min) / (nextTier.min - tier.min)) * 100) : 100;
             return (
-              <tr key={c.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setSelected(c)}>
+              <tr key={c.customerId} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setSelected(c)}>
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-3">
-                    <Avatar name={c.name} size="md" shape="rounded" color="bg-[#2940D3]/10" className="text-[#2940D3]" />
-                    <p className="font-semibold text-gray-800">{c.name}</p>
+                    <Avatar name={c.customerName} size="md" shape="rounded" color="bg-[#2940D3]/10" className="text-[#2940D3]" />
+                    <p className="font-semibold text-gray-800">{c.customerName}</p>
                   </div>
                 </td>
                 <td className="px-5 py-4"><Badge variant={tier.name} icon={<Medal size={11} style={{ color: tier.barColor }} />}>{tier.name}</Badge></td>
@@ -94,8 +122,8 @@ export default function Loyalty() {
       {selected && (
         <Modal open onClose={() => setSelected(null)} title="Detail Poin" footer={<Button variant="primary" className="w-full" onClick={() => setSelected(null)}>Tutup</Button>}>
           <div className="text-center mb-4">
-            <Avatar name={selected.name} size="xl" shape="rounded" color="bg-[#2940D3] mx-auto mb-2 shadow" />
-            <p className="font-bold text-gray-800">{selected.name}</p>
+            <Avatar name={selected.customerName} size="xl" shape="rounded" color="bg-[#2940D3] mx-auto mb-2 shadow" />
+            <p className="font-bold text-gray-800">{selected.customerName}</p>
             <p className="text-3xl font-bold text-[#2940D3] mt-2">{selected.points} <span className="text-sm text-gray-400 font-normal">poin</span></p>
             <Badge variant={getTier(selected.points).name} icon={<Medal size={11} style={{ color: getTier(selected.points).barColor }} />} className="mt-1">{getTier(selected.points).name}</Badge>
           </div>

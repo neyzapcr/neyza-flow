@@ -6,7 +6,34 @@ import {
 } from "recharts";
 import { DollarSign, Users, ClipboardList, Star, Plus, Check } from "lucide-react";
 import PageHeader from "../components/PageHeader";
-import customers from "../data/customers.json";
+import rawCustomers from "../data/customers.json";
+const customers = rawCustomers.flatMap((c) => {
+  const historyList = c.transactionHistory || [];
+  if (historyList.length === 0) {
+    return [{
+      ...c,
+      customerId: c.customerId || String(Math.random()),
+      joinDate: c.joinDate || "-",
+      totalTransactions: c.totalTransactions !== undefined ? c.totalTransactions : 0,
+      totalSpent: c.totalSpent !== undefined ? c.totalSpent : 0,
+      points: c.points !== undefined ? c.points : 0,
+      segment: c.segment || "New",
+      lastTransaction: c.lastTransaction || "-",
+      status: c.status || "active",
+    }];
+  }
+  return historyList.map((history) => ({
+    ...c,
+    customerId: history.customerId || c.customerId || String(Math.random()),
+    joinDate: history.joinDate || c.joinDate || "-",
+    totalTransactions: history.totalTransactions !== undefined ? history.totalTransactions : (c.totalTransactions || 0),
+    totalSpent: history.totalSpent !== undefined ? history.totalSpent : (c.totalSpent || 0),
+    points: history.points !== undefined ? history.points : (c.points || 0),
+    segment: history.segment || c.segment || "New",
+    lastTransaction: history.lastTransaction || c.lastTransaction || "-",
+    status: history.status || c.status || "active",
+  }));
+});
 import transactions from "../data/transactions.json";
 import feedback from "../data/feedback.json";
 import Modal from "../components/Modal";

@@ -17,7 +17,35 @@ const segmentConfig = {
 const PIE_COLORS = ["#8B5CF6", "#2940D3", "#10B981", "#F59E0B"];
 
 export default function Segmentation() {
-  const [customers] = useState(customersData);
+  const [customers] = useState(() => {
+    return customersData.flatMap((c) => {
+      const historyList = c.transactionHistory || [];
+      if (historyList.length === 0) {
+        return [{
+          ...c,
+          customerId: c.customerId || String(Math.random()),
+          joinDate: c.joinDate || "-",
+          totalTransactions: c.totalTransactions !== undefined ? c.totalTransactions : 0,
+          totalSpent: c.totalSpent !== undefined ? c.totalSpent : 0,
+          points: c.points !== undefined ? c.points : 0,
+          segment: c.segment || "New",
+          lastTransaction: c.lastTransaction || "-",
+          status: c.status || "active",
+        }];
+      }
+      return historyList.map((history) => ({
+        ...c,
+        customerId: history.customerId || c.customerId || String(Math.random()),
+        joinDate: history.joinDate || c.joinDate || "-",
+        totalTransactions: history.totalTransactions !== undefined ? history.totalTransactions : (c.totalTransactions || 0),
+        totalSpent: history.totalSpent !== undefined ? history.totalSpent : (c.totalSpent || 0),
+        points: history.points !== undefined ? history.points : (c.points || 0),
+        segment: history.segment || c.segment || "New",
+        lastTransaction: history.lastTransaction || c.lastTransaction || "-",
+        status: history.status || c.status || "active",
+      }));
+    });
+  });
   const [activeSegment, setActiveSegment] = useState("Semua");
 
   const segmentData = Object.keys(segmentConfig).map((seg) => ({
@@ -100,11 +128,11 @@ export default function Segmentation() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <Table headers={["Pelanggan", "Segmen", "Frekuensi", "Total Belanja", "Transaksi Terakhir", "Status"]}>
           {filtered.map((c) => (
-            <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+            <tr key={c.customerId} className="hover:bg-gray-50 transition-colors">
               <td className="px-5 py-4">
                 <div className="flex items-center gap-3">
-                  <Avatar name={c.name} size="md" color="bg-[#2940D3]/10" className="text-[#2940D3]" />
-                  <p className="font-semibold text-gray-800">{c.name}</p>
+                  <Avatar name={c.customerName} size="md" color="bg-[#2940D3]/10" className="text-[#2940D3]" />
+                  <p className="font-semibold text-gray-800">{c.customerName}</p>
                 </div>
               </td>
               <td className="px-5 py-4">
