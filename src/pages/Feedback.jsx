@@ -2,7 +2,12 @@ import { useState } from "react";
 import { MessageSquare, CheckCircle, Clock } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import feedbackData from "../data/feedback.json";
-import Modal from "../components/Modal";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 import Button from "../components/Button";
 import DynamicForm from "../components/DynamicForm";
 import Badge from "../components/Badge";
@@ -110,15 +115,32 @@ export default function Feedback() {
         {filtered.length === 0 && <div className="lg:col-span-2"><Card><div className="py-8 text-center text-gray-400"><MessageSquare size={32} className="mx-auto mb-2 opacity-30" /><p className="text-sm">Tidak ada feedback ditemukan</p></div></Card></div>}
       </div>
 
-      {replyModal && (
-        <Modal open onClose={() => setReplyModal(null)} title="Balas Feedback" footer={<div className="flex gap-3"><Button variant="outline" className="flex-1" onClick={() => setReplyModal(null)}>Batal</Button><Button variant="primary" className="flex-1" onClick={() => { setFeedbacks(feedbacks.map(f => f.id === replyModal.id ? { ...f, status: "dibalas" } : f)); setReplyModal(null); }}>Kirim Balasan</Button></div>}>
-          <div className="bg-gray-50 rounded-xl p-3 mb-4 text-left">
-            <div className="flex items-center gap-2 mb-1"><span className="text-xs text-gray-500">{replyModal.customerName}</span>{renderStars(replyModal.rating)}</div>
-            <p className="text-sm text-gray-700">{replyModal.comment}</p>
+      <Dialog open={!!replyModal} onOpenChange={(openState) => { if (!openState) setReplyModal(null); }}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col font-lagusans p-0 gap-0 overflow-hidden bg-white rounded-2xl border-none shadow-2xl">
+          <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0 text-left">
+            <DialogTitle className="text-base font-bold text-gray-800">Balas Feedback</DialogTitle>
+          </DialogHeader>
+
+          <div className="px-6 py-5 overflow-y-auto flex-1 text-sm text-gray-700">
+            {replyModal && (
+              <>
+                <div className="bg-gray-50 rounded-xl p-3 mb-4 text-left">
+                  <div className="flex items-center gap-2 mb-1"><span className="text-xs text-gray-500">{replyModal.customerName}</span>{renderStars(replyModal.rating)}</div>
+                  <p className="text-sm text-gray-700">{replyModal.comment}</p>
+                </div>
+                <DynamicForm fields={[{ name: "replyText", label: "Tulis Balasan Anda", type: "textarea", placeholder: "Tulis balasan Anda...", rows: 4 }]} />
+              </>
+            )}
           </div>
-          <DynamicForm fields={[{ name: "replyText", label: "Tulis Balasan Anda", type: "textarea", placeholder: "Tulis balasan Anda...", rows: 4 }]} />
-        </Modal>
-      )}
+
+          <div className="px-6 pb-6 flex-shrink-0">
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1" onClick={() => setReplyModal(null)}>Batal</Button>
+              <Button variant="primary" className="flex-1" onClick={() => { setFeedbacks(feedbacks.map(f => f.id === replyModal.id ? { ...f, status: "dibalas" } : f)); setReplyModal(null); }}>Kirim Balasan</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

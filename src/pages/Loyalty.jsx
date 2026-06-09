@@ -2,7 +2,12 @@ import { useState } from "react";
 import { Medal } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import customersData from "../data/customers.json";
-import Modal from "../components/Modal";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 import Button from "../components/Button";
 import Badge from "../components/Badge";
 import Card from "../components/Card";
@@ -118,29 +123,42 @@ export default function Loyalty() {
         </Table>
       </div>
 
-      {/* Detail Modal */}
-      {selected && (
-        <Modal open onClose={() => setSelected(null)} title="Detail Poin" footer={<Button variant="primary" className="w-full" onClick={() => setSelected(null)}>Tutup</Button>}>
-          <div className="text-center mb-4">
-            <Avatar name={selected.customerName} size="xl" shape="rounded" color="bg-[#2940D3] mx-auto mb-2 shadow" />
-            <p className="font-bold text-gray-800">{selected.customerName}</p>
-            <p className="text-3xl font-bold text-[#2940D3] mt-2">{selected.points} <span className="text-sm text-gray-400 font-normal">poin</span></p>
-            <Badge variant={getTier(selected.points).name} icon={<Medal size={11} style={{ color: getTier(selected.points).barColor }} />} className="mt-1">{getTier(selected.points).name}</Badge>
+      <Dialog open={!!selected} onOpenChange={(openState) => { if (!openState) setSelected(null); }}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col font-lagusans p-0 gap-0 overflow-hidden bg-white rounded-2xl border-none shadow-2xl">
+          <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0 text-left">
+            <DialogTitle className="text-base font-bold text-gray-800">Detail Poin</DialogTitle>
+          </DialogHeader>
+
+          <div className="px-6 py-5 overflow-y-auto flex-1 text-sm text-gray-700">
+            {selected && (
+              <>
+                <div className="text-center mb-4">
+                  <Avatar name={selected.customerName} size="xl" shape="rounded" color="bg-[#2940D3] mx-auto mb-2 shadow" />
+                  <p className="font-bold text-gray-800">{selected.customerName}</p>
+                  <p className="text-3xl font-bold text-[#2940D3] mt-2">{selected.points} <span className="text-sm text-gray-400 font-normal">poin</span></p>
+                  <Badge variant={getTier(selected.points).name} icon={<Medal size={11} style={{ color: getTier(selected.points).barColor }} />} className="mt-1">{getTier(selected.points).name}</Badge>
+                </div>
+                <div className="space-y-2 text-sm">
+                  {[
+                    { label: "Total Transaksi", value: `${selected.totalTransactions}x` },
+                    { label: "Total Belanja", value: `Rp ${selected.totalSpent.toLocaleString("id-ID")}` },
+                    { label: "Nilai Poin", value: `Rp ${(Math.floor(selected.points / 100) * 5000).toLocaleString("id-ID")}`, color: "text-green-600" },
+                  ].map((item) => (
+                    <div key={item.label} className="flex justify-between py-2 border-b border-gray-50 text-left">
+                      <span className="text-gray-500">{item.label}</span>
+                      <span className={`font-semibold ${item.color || "text-gray-800"}`}>{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
-          <div className="space-y-2 text-sm">
-            {[
-              { label: "Total Transaksi", value: `${selected.totalTransactions}x` },
-              { label: "Total Belanja", value: `Rp ${selected.totalSpent.toLocaleString("id-ID")}` },
-              { label: "Nilai Poin", value: `Rp ${(Math.floor(selected.points / 100) * 5000).toLocaleString("id-ID")}`, color: "text-green-600" },
-            ].map((item) => (
-              <div key={item.label} className="flex justify-between py-2 border-b border-gray-50 text-left">
-                <span className="text-gray-500">{item.label}</span>
-                <span className={`font-semibold ${item.color || "text-gray-800"}`}>{item.value}</span>
-              </div>
-            ))}
+
+          <div className="px-6 pb-6 flex-shrink-0">
+            <Button variant="primary" className="w-full" onClick={() => setSelected(null)}>Tutup</Button>
           </div>
-        </Modal>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

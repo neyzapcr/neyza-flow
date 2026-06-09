@@ -1,99 +1,154 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell,
 } from "recharts";
 import { DollarSign, Users, ClipboardList, Star, Plus, Check } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import rawCustomers from "../data/customers.json";
-const customers = rawCustomers.flatMap((c) => {
-  const historyList = c.transactionHistory || [];
-  if (historyList.length === 0) {
-    return [{
-      ...c,
-      customerId: c.customerId || String(Math.random()),
-      joinDate: c.joinDate || "-",
-      totalTransactions: c.totalTransactions !== undefined ? c.totalTransactions : 0,
-      totalSpent: c.totalSpent !== undefined ? c.totalSpent : 0,
-      points: c.points !== undefined ? c.points : 0,
-      segment: c.segment || "New",
-      lastTransaction: c.lastTransaction || "-",
-      status: c.status || "active",
-    }];
-  }
-  return historyList.map((history) => ({
-    ...c,
-    customerId: history.customerId || c.customerId || String(Math.random()),
-    joinDate: history.joinDate || c.joinDate || "-",
-    totalTransactions: history.totalTransactions !== undefined ? history.totalTransactions : (c.totalTransactions || 0),
-    totalSpent: history.totalSpent !== undefined ? history.totalSpent : (c.totalSpent || 0),
-    points: history.points !== undefined ? history.points : (c.points || 0),
-    segment: history.segment || c.segment || "New",
-    lastTransaction: history.lastTransaction || c.lastTransaction || "-",
-    status: history.status || c.status || "active",
-  }));
-});
+const customers = rawCustomers.flatMap(c => (c.transactionHistory?.length ? c.transactionHistory : [{}]).map(h => ({
+  ...c,
+  customerId: h.customerId || c.customerId || String(Math.random()),
+  joinDate: h.joinDate || c.joinDate || "-",
+  totalTransactions: h.totalTransactions ?? c.totalTransactions ?? 0,
+  totalSpent: h.totalSpent ?? c.totalSpent ?? 0,
+  points: h.points ?? c.points ?? 0,
+  segment: h.segment || c.segment || "New",
+  lastTransaction: h.lastTransaction || c.lastTransaction || "-",
+  status: h.status || c.status || "active",
+})));
 import transactions from "../data/transactions.json";
 import feedback from "../data/feedback.json";
-import Modal from "../components/Modal";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "../components/ui/dialog";
 import Button from "../components/Button";
-import DynamicForm from "../components/DynamicForm";
 import StatCard from "../components/StatCard";
 import Badge from "../components/Badge";
 import Card from "../components/Card";
 import ProgressBar from "../components/ProgressBar";
 import Table from "../components/Table";
+import Input from "../components/Input";
+import Select from "../components/Select";
+import TextArea from "../components/TextArea";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../components/ui/chart";
+import { Combobox } from "../components/ui/combobox";
 
 // Helper — kirim toast tanpa import context
 const toast = (type, title, desc, duration) =>
   window.dispatchEvent(new CustomEvent("addToast", { detail: { type, title, desc, duration } }));
 
-// ── Chart data ────────────────────────────────────────────────────────────────
-const revenueData = [
-  { day: "01", thisWeek: 120000, lastWeek: 95000 },
-  { day: "02", thisWeek: 85000, lastWeek: 110000 },
-  { day: "03", thisWeek: 145000, lastWeek: 80000 },
-  { day: "04", thisWeek: 200000, lastWeek: 130000 },
-  { day: "05", thisWeek: 175000, lastWeek: 160000 },
-  { day: "06", thisWeek: 220000, lastWeek: 190000 },
-  { day: "07", thisWeek: 195000, lastWeek: 175000 },
-];
-
-const orderTrendData = [
-  { day: "01", thisWeek: 5, lastWeek: 4 },
-  { day: "02", thisWeek: 3, lastWeek: 6 },
-  { day: "03", thisWeek: 7, lastWeek: 3 },
-  { day: "04", thisWeek: 9, lastWeek: 5 },
-  { day: "05", thisWeek: 8, lastWeek: 7 },
-  { day: "06", thisWeek: 11, lastWeek: 9 },
-  { day: "07", thisWeek: 10, lastWeek: 8 },
-];
-
-const serviceData = [
-  { name: "Cuci + Setrika", value: 45 },
-  { name: "Cuci Kering", value: 30 },
-  { name: "Cuci + Setrika + Parfum", value: 25 },
-];
-
-const ratingData = [
-  { name: "Kebersihan", value: 88, color: "#2940D3" },
-  { name: "Kecepatan", value: 82, color: "#142297" },
-  { name: "Pelayanan", value: 92, color: "#2940D3" },
-];
-
-const PIE_COLORS = ["#2940D3", "#142297", "#7DD3F0"];
+// ── Konfigurasi & Status ──────────────────────────────────────────────────────
 const statusMap = { selesai: "green", diproses: "blue", menunggu: "yellow" };
-const SERVICES = ["Cuci + Setrika", "Cuci Kering", "Cuci + Setrika + Parfum"];
+const SERVICES = ["Cuci + Setrika", "Cuci Kering", "Cuci + Setrika + Parfum", "Cuci Basah", "Setrika Saja"];
 const PAYMENT_METHODS = ["Cash", "Transfer", "QRIS"];
-const priceMap = { "Cuci + Setrika": 8000, "Cuci Kering": 7000, "Cuci + Setrika + Parfum": 12000 };
+const priceMap = {
+  "Cuci + Setrika": 8000,
+  "Cuci Kering": 7000,
+  "Cuci + Setrika + Parfum": 12000,
+  "Cuci Basah": 6000,
+  "Setrika Saja": 5000,
+};
+
+const PIE_COLORS = ["#2940D3", "#142297", "#7DD3F0", "#3ABDE8", "#A5F3FC"];
+
+const chartConfig = {
+  thisWeek: { label: "Minggu Ini", color: "#2940D3" },
+  lastWeek: { label: "Minggu Lalu", color: "#142297" },
+};
+
+const pieChartConfig = {
+  value: { label: "Porsi" },
+  "Cuci + Setrika": { label: "Cuci + Setrika", color: "#2940D3" },
+  "Cuci Kering": { label: "Cuci Kering", color: "#142297" },
+  "Cuci + Setrika + Parfum": { label: "Cuci + Setrika + Parfum", color: "#7DD3F0" },
+  "Cuci Basah": { label: "Cuci Basah", color: "#3ABDE8" },
+  "Setrika Saja": { label: "Setrika Saja", color: "#A5F3FC" },
+};
+
+const Legend = () => (
+  <div className="flex gap-4 mt-2">
+    {[{ bg: "bg-[#2940D3]", label: "Minggu Ini" }, { bg: "bg-[#142297]", label: "Minggu Lalu" }].map(l => (
+      <div key={l.label} className="flex items-center gap-1.5">
+        <span className={`w-3 h-3 rounded-full ${l.bg}`}></span>
+        <span className="text-xs text-gray-500">{l.label}</span>
+      </div>
+    ))}
+  </div>
+);
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [period, setPeriod] = useState("minggu");
+
+  // ── Perhitungan Data Grafik Dinamis dari File JSON ────────────────────────
+  const maxDateStr = transactions.map(t => t.date).filter(Boolean).sort().pop() || "2026-05-31";
+  const [yr, mt, dy] = maxDateStr.split("-").map(Number);
+
+  const getOffsetDay = (offset) => {
+    const d = new Date(yr, mt - 1, dy - offset);
+    return {
+      dateStr: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
+      dayLabel: String(d.getDate()).padStart(2, "0")
+    };
+  };
+
+  const thisWeekDays = Array.from({ length: 7 }, (_, i) => getOffsetDay(6 - i));
+  const lastWeekDays = Array.from({ length: 7 }, (_, i) => getOffsetDay(13 - i));
+
+  const dailyStats = {};
+  transactions.forEach(t => t.date && ((dailyStats[t.date] ||= { revenue: 0, count: 0 }).revenue += t.total, dailyStats[t.date].count++));
+
+  const [revenueData, orderTrendData] = ["revenue", "count"].map(key =>
+    thisWeekDays.map((day, idx) => ({
+      day: day.dayLabel,
+      thisWeek: dailyStats[day.dateStr]?.[key] || 0,
+      lastWeek: dailyStats[lastWeekDays[idx].dateStr]?.[key] || 0,
+    }))
+  );
+
+  const serviceCounts = {};
+  transactions.forEach(t => t.service && (serviceCounts[t.service] = (serviceCounts[t.service] || 0) + 1));
+  const serviceData = Object.entries(serviceCounts).map(([name, count]) => ({
+    name,
+    value: Math.round((count / (transactions.length || 1)) * 100)
+  })).sort((a, b) => b.value - a.value);
+
+  const ratingData = ["Kebersihan", "Kecepatan", "Pelayanan"].map((cat, idx) => {
+    const fbs = feedback.filter(f => f.category === cat);
+    const avg = fbs.length ? fbs.reduce((s, f) => s + f.rating, 0) / fbs.length : 4;
+    return { name: cat, value: Math.round((avg / 5) * 100), color: idx % 2 === 0 ? "#2940D3" : "#142297" };
+  });
   const [showTambah, setShowTambah] = useState(false);
   const [saved, setSaved] = useState(false);
   const [localForm, setLocalForm] = useState({});
+  const [selectedCustomerId, setSelectedCustomerId] = useState("");
+
+  const handleInputChange = (name, val) => {
+    setLocalForm(prev => ({ ...prev, [name]: val }));
+  };
+
+  const handleCustomerSelect = (val) => {
+    setSelectedCustomerId(val);
+    const cust = val !== "new_customer" && customers.find(c => c.customerId === val);
+    setLocalForm(prev => ({
+      ...prev,
+      customerName: cust ? cust.customerName : "",
+      phone: cust ? cust.phone : "",
+    }));
+  };
+
+  const seen = new Set();
+  const customerOptions = [
+    { label: "+ Tambah Pelanggan Baru", value: "new_customer" },
+    ...customers.filter(c => !seen.has(c.customerName) && seen.add(c.customerName))
+                .map(c => ({ label: `${c.customerName} (${c.phone})`, value: c.customerId }))
+  ];
 
   const total = localForm.weight ? Math.round(parseFloat(localForm.weight) * priceMap[localForm.service || SERVICES[0]]) : 0;
   const totalRevenue = transactions.reduce((s, t) => s + t.total, 0);
@@ -124,7 +179,7 @@ export default function Dashboard() {
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${period === p ? "bg-white text-[#2940D3] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>{p}</button>
             ))}
           </div>
-          <button onClick={() => setShowTambah(true)} className="flex items-center gap-1.5 px-4 py-2 bg-[#142297] text-white rounded-xl text-sm font-semibold hover:bg-[#155a6b] transition-colors shadow-sm">
+          <button onClick={() => { setShowTambah(true); setSelectedCustomerId(""); setLocalForm({ service: SERVICES[0], paymentMethod: PAYMENT_METHODS[0] }); }} className="flex items-center gap-1.5 px-4 py-2 bg-[#142297] text-white rounded-xl text-sm font-semibold hover:bg-[#155a6b] transition-colors shadow-sm">
             <Plus size={15} /> Tambah Cucian
           </button>
         </div>
@@ -149,39 +204,36 @@ export default function Dashboard() {
             </div>
             <Link to="/reports" className="text-xs text-[#2940D3] font-semibold hover:underline">Lihat Laporan</Link>
           </div>
-          <ResponsiveContainer width="100%" height={180}>
+          <ChartContainer config={chartConfig} className="h-[180px] w-full">
             <BarChart data={revenueData} barSize={10} barGap={4}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
               <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
               <YAxis hide />
-              <Tooltip formatter={(v) => [`Rp ${v.toLocaleString("id-ID")}`, ""]} contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }} />
-              <Bar dataKey="thisWeek" fill="#2940D3" radius={[4, 4, 0, 0]} name="Minggu Ini" />
-              <Bar dataKey="lastWeek" fill="#142297" radius={[4, 4, 0, 0]} name="Minggu Lalu" />
+              <ChartTooltip content={<ChartTooltipContent formatter={(value) => `Rp ${value.toLocaleString("id-ID")}`} />} />
+              <Bar dataKey="thisWeek" fill="var(--color-thisWeek)" radius={[4, 4, 0, 0]} name="Minggu Ini" />
+              <Bar dataKey="lastWeek" fill="var(--color-lastWeek)" radius={[4, 4, 0, 0]} name="Minggu Lalu" />
             </BarChart>
-          </ResponsiveContainer>
-          <div className="flex gap-4 mt-2">
-            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#2940D3]"></span><span className="text-xs text-gray-500">Minggu Ini</span></div>
-            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#142297]"></span><span className="text-xs text-gray-500">Minggu Lalu</span></div>
-          </div>
+          </ChartContainer>
+          <Legend />
         </Card>
 
         {/* Service Pie */}
         <Card>
           <p className="text-xs text-gray-400 font-medium">Distribusi Layanan</p>
           <p className="text-sm font-bold text-gray-800 mt-0.5 mb-4">Jenis Layanan</p>
-          <ResponsiveContainer width="100%" height={160}>
+          <ChartContainer config={pieChartConfig} className="h-[160px] w-full">
             <PieChart>
               <Pie data={serviceData} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value" paddingAngle={3}>
-                {serviceData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                {serviceData.map((s, i) => <Cell key={i} fill={pieChartConfig[s.name]?.color || PIE_COLORS[i % PIE_COLORS.length]} />)}
               </Pie>
-              <Tooltip formatter={(v) => [`${v}%`, ""]} contentStyle={{ borderRadius: 12, border: "none" }} />
+              <ChartTooltip content={<ChartTooltipContent formatter={(value) => `${value}%`} />} />
             </PieChart>
-          </ResponsiveContainer>
+          </ChartContainer>
           <div className="space-y-2 mt-2">
             {serviceData.map((s, i) => (
               <div key={i} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}></span>
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: pieChartConfig[s.name]?.color || PIE_COLORS[i % PIE_COLORS.length] }}></span>
                   <span className="text-xs text-gray-500">{s.name}</span>
                 </div>
                 <span className="text-xs font-semibold text-gray-700">{s.value}%</span>
@@ -190,6 +242,7 @@ export default function Dashboard() {
           </div>
         </Card>
       </div>
+
 
       {/* Charts Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -212,20 +265,17 @@ export default function Dashboard() {
             </div>
             <Link to="/reports" className="text-xs text-[#2940D3] font-semibold hover:underline">Lihat Laporan</Link>
           </div>
-          <ResponsiveContainer width="100%" height={160}>
+          <ChartContainer config={chartConfig} className="h-[160px] w-full">
             <LineChart data={orderTrendData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
               <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
               <YAxis hide />
-              <Tooltip contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }} />
-              <Line type="monotone" dataKey="thisWeek" stroke="#2940D3" strokeWidth={2.5} dot={false} name="Minggu Ini" />
-              <Line type="monotone" dataKey="lastWeek" stroke="#142297" strokeWidth={2} dot={false} strokeDasharray="4 4" name="Minggu Lalu" />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Line type="monotone" dataKey="thisWeek" stroke="var(--color-thisWeek)" strokeWidth={2.5} dot={false} name="Minggu Ini" />
+              <Line type="monotone" dataKey="lastWeek" stroke="var(--color-lastWeek)" strokeWidth={2} dot={false} strokeDasharray="4 4" name="Minggu Lalu" />
             </LineChart>
-          </ResponsiveContainer>
-          <div className="flex gap-4 mt-2">
-            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#2940D3]"></span><span className="text-xs text-gray-500">Minggu Ini</span></div>
-            <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#142297]"></span><span className="text-xs text-gray-500">Minggu Lalu</span></div>
-          </div>
+          </ChartContainer>
+          <Legend />
         </Card>
       </div>
 
@@ -249,32 +299,94 @@ export default function Dashboard() {
       </Card>
 
       {/* Tambah Cucian Modal */}
-      {showTambah && (
-        <Modal open onClose={() => { setShowTambah(false); setLocalForm({}); }} title="Tambah Cucian Baru" subtitle="Isi data pelanggan dan detail cucian">
-          {saved ? (
-            <div className="text-center py-8">
-              <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3"><Check size={26} className="text-green-500" /></div>
-              <p className="font-bold text-gray-800 mb-1">Cucian Berhasil Ditambahkan!</p>
-              <p className="text-sm text-gray-500">Mengarahkan ke halaman tracking...</p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <DynamicForm
-                onChange={setLocalForm}
-                initialData={{ service: SERVICES[0], paymentMethod: PAYMENT_METHODS[0] }}
-                fields={[
-                  { name: "customerName", label: "Nama Pelanggan", type: "text", placeholder: "Nama lengkap", required: true },
-                  { name: "phone", label: "No. Telepon", type: "tel", placeholder: "08xxxxxxxxxx", required: true },
-                  { name: "weight", label: "Berat (kg)", type: "number", min: "0.1", step: "0.1", placeholder: "Contoh: 3.5", required: true },
-                  { name: "paymentMethod", label: "Metode Pembayaran", type: "select", options: PAYMENT_METHODS, defaultValue: PAYMENT_METHODS[0] },
-                  { name: "notes", label: "Catatan (opsional)", type: "textarea", placeholder: "Contoh: ada noda membandel...", rows: 2 }
-                ]}
-                customRender={(formState, handleInputChange) => (
+      <Dialog open={showTambah} onOpenChange={(openState) => { if (!openState) { setShowTambah(false); setLocalForm({}); setSelectedCustomerId(""); } }}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col font-lagusans p-0 gap-0 overflow-hidden bg-white rounded-2xl border-none shadow-2xl">
+          <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0 text-left">
+            <DialogTitle className="text-base font-bold text-gray-800">Tambah Cucian Baru</DialogTitle>
+            <DialogDescription className="text-xs text-gray-400 mt-0.5">Isi data pelanggan dan detail cucian</DialogDescription>
+          </DialogHeader>
+
+          <div className="px-6 py-5 overflow-y-auto flex-1 text-sm text-gray-700">
+            {saved ? (
+              <div className="text-center py-8">
+                <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3"><Check size={26} className="text-green-500" /></div>
+                <p className="font-bold text-gray-800 mb-1">Cucian Berhasil Ditambahkan!</p>
+                <p className="text-sm text-gray-500">Mengarahkan ke halaman tracking...</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-4">
+                  <div className="text-left">
+                    <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Pilih Pelanggan</label>
+                    <Combobox
+                      options={customerOptions}
+                      value={selectedCustomerId}
+                      onChange={handleCustomerSelect}
+                      placeholder="Pilih pelanggan atau tambah baru..."
+                      emptyMessage="Pelanggan tidak ditemukan."
+                    />
+                  </div>
+
+                  {/* Show text inputs if new_customer or custom customer is being filled */}
+                  {(selectedCustomerId === "new_customer" || !selectedCustomerId) && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-1">
+                      <Input
+                        label="Nama Pelanggan"
+                        name="customerName"
+                        value={localForm.customerName || ""}
+                        onChange={(e) => handleInputChange("customerName", e.target.value)}
+                        placeholder="Nama lengkap"
+                        required
+                      />
+                      <Input
+                        label="No. Telepon"
+                        name="phone"
+                        type="tel"
+                        value={localForm.phone || ""}
+                        onChange={(e) => handleInputChange("phone", e.target.value)}
+                        placeholder="08xxxxxxxxxx"
+                        required
+                      />
+                    </div>
+                  )}
+
+                  {/* Show read-only details if existing customer selected */}
+                  {selectedCustomerId && selectedCustomerId !== "new_customer" && (
+                    <div className="bg-gray-50 border border-gray-150 rounded-xl p-3.5 flex justify-between items-center text-xs text-left">
+                      <div>
+                        <p className="font-bold text-gray-700">{localForm.customerName}</p>
+                        <p className="text-gray-400 mt-0.5">{localForm.phone}</p>
+                      </div>
+                      <Badge variant="blue">Pelanggan Terdaftar</Badge>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Input
+                      label="Berat (kg)"
+                      name="weight"
+                      type="number"
+                      min="0.1"
+                      step="0.1"
+                      value={localForm.weight || ""}
+                      onChange={(e) => handleInputChange("weight", e.target.value)}
+                      placeholder="Contoh: 3.5"
+                      required
+                    />
+                    <Select
+                      label="Metode Pembayaran"
+                      name="paymentMethod"
+                      value={localForm.paymentMethod || PAYMENT_METHODS[0]}
+                      onChange={(e) => handleInputChange("paymentMethod", e.target.value)}
+                      options={PAYMENT_METHODS}
+                    />
+                  </div>
+
                   <div className="text-left">
                     <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Jenis Layanan</label>
                     <div className="grid grid-cols-3 gap-2">
                       {SERVICES.map((s) => {
-                        const isActive = (formState.service || SERVICES[0]) === s;
+                        const isActive = (localForm.service || SERVICES[0]) === s;
                         return (
                           <label key={s} className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 cursor-pointer transition-all text-center ${isActive ? "border-[#2940D3] bg-[#2940D3]/5" : "border-gray-200 hover:border-gray-300"}`}>
                             <input type="radio" name="service" checked={isActive} onChange={() => handleInputChange("service", s)} className="sr-only" />
@@ -285,24 +397,33 @@ export default function Dashboard() {
                       })}
                     </div>
                   </div>
-                )}
-              />
 
-              {total > 0 && (
-                <div className="flex items-center justify-between bg-[#2940D3]/5 border border-[#2940D3]/20 rounded-xl px-4 py-3">
-                  <span className="text-sm text-gray-600">Estimasi Total</span>
-                  <span className="text-base font-bold text-[#2940D3]">Rp {total.toLocaleString("id-ID")}</span>
+                  <TextArea
+                    label="Catatan (opsional)"
+                    name="notes"
+                    value={localForm.notes || ""}
+                    onChange={(e) => handleInputChange("notes", e.target.value)}
+                    placeholder="Contoh: ada noda membandel..."
+                    rows={2}
+                  />
                 </div>
-              )}
 
-              <div className="flex gap-3 pt-1">
-                <Button type="button" variant="outline" className="flex-1" onClick={() => { setShowTambah(false); setLocalForm({}); }}>Batal</Button>
-                <Button type="submit" variant="primary" icon={<Plus size={15} />} className="flex-1">Tambah Cucian</Button>
-              </div>
-            </form>
-          )}
-        </Modal>
-      )}
+                {total > 0 && (
+                  <div className="flex items-center justify-between bg-[#2940D3]/5 border border-[#2940D3]/20 rounded-xl px-4 py-3 text-left">
+                    <span className="text-sm text-gray-600">Estimasi Total</span>
+                    <span className="text-base font-bold text-[#2940D3]">Rp {total.toLocaleString("id-ID")}</span>
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-1">
+                  <Button type="button" variant="outline" className="flex-1" onClick={() => { setShowTambah(false); setLocalForm({}); setSelectedCustomerId(""); }}>Batal</Button>
+                  <Button type="submit" variant="primary" icon={<Plus size={15} />} className="flex-1">Tambah Cucian</Button>
+                </div>
+              </form>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

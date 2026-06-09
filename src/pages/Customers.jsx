@@ -5,9 +5,23 @@ import PageHeader from "../components/PageHeader";
 import customersData from "../data/customers.json";
 import Button from "../components/Button";
 import SearchInput from "../components/SearchInput";
-import Modal from "../components/Modal";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 import DynamicForm from "../components/DynamicForm";
-import ConfirmModal from "../components/ConfirmModal";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "../components/ui/alert-dialog";
 import Badge from "../components/Badge";
 import Table from "../components/Table";
 import EmptyState from "../components/EmptyState";
@@ -282,28 +296,56 @@ export default function Customers() {
         )}
       </div>
 
-      {/* Modal Tengah dengan Form Dinamis Langsung */}
-      {showModal && (
-        <Modal
-          open
-          onClose={() => { setShowModal(false); setEditCustomer(null); }}
-          title={editCustomer ? "Edit Pelanggan" : "Tambah Pelanggan"}
-          footer={
+      <Dialog open={showModal} onOpenChange={(openState) => { if (!openState) { setShowModal(false); setEditCustomer(null); } }}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col font-lagusans p-0 gap-0 overflow-hidden bg-white rounded-2xl border-none shadow-2xl">
+          <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0 text-left">
+            <DialogTitle className="text-base font-bold text-gray-800">
+              {editCustomer ? "Edit Pelanggan" : "Tambah Pelanggan"}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="px-6 py-5 overflow-y-auto flex-1 text-sm text-gray-700">
+            <DynamicForm
+              fields={customerFields}
+              initialData={editCustomer || { customerName: "", phone: "", email: "", address: "", customerType: "Umum", segment: "New", status: "active" }}
+              onChange={setLocalForm}
+            />
+          </div>
+
+          <div className="px-6 pb-6 flex-shrink-0">
             <div className="flex gap-3 w-full">
               <Button variant="outline" className="flex-1" onClick={() => { setShowModal(false); setEditCustomer(null); }}>Batal</Button>
               <Button variant="primary" className="flex-1" onClick={handleSave}>Simpan</Button>
             </div>
-          }
-        >
-          <DynamicForm
-            fields={customerFields}
-            initialData={editCustomer || { customerName: "", phone: "", email: "", address: "", customerType: "Umum", segment: "New", status: "active" }}
-            onChange={setLocalForm}
-          />
-        </Modal>
-      )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
-      <ConfirmModal open={!!deleteConfirm} onClose={() => setDeleteConfirm(null)} onConfirm={() => { setCustomers(customers.filter(c => c.customerId !== deleteConfirm)); setDeleteConfirm(null); toast("warning", "Pelanggan Dihapus", "Data berhasil dihapus."); }} title="Hapus Pelanggan?" message="Data pelanggan akan dihapus permanen." confirmLabel="Hapus" variant="danger" />
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(openState) => { if (!openState) setDeleteConfirm(null); }}>
+        <AlertDialogContent className="font-lagusans max-w-sm rounded-2xl bg-white border-none shadow-2xl p-6">
+          <AlertDialogHeader className="flex flex-col items-center text-center gap-0">
+            <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center mb-3">
+              <Trash2 size={22} className="text-red-500" />
+            </div>
+            <AlertDialogTitle className="font-bold text-gray-800 mb-2 text-center w-full">Hapus Pelanggan?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-gray-500 text-center w-full">
+              Data pelanggan akan dihapus permanen.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex gap-3 mt-4 w-full">
+            <AlertDialogCancel asChild>
+              <Button variant="outline" className="flex-1" onClick={() => setDeleteConfirm(null)}>
+                Batal
+              </Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button variant="danger" className="flex-1" onClick={() => { setCustomers(customers.filter(c => c.customerId !== deleteConfirm)); setDeleteConfirm(null); toast("warning", "Pelanggan Dihapus", "Data berhasil dihapus."); }}>
+                Hapus
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

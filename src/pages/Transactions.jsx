@@ -4,7 +4,12 @@ import PageHeader from "../components/PageHeader";
 import Button from "../components/Button";
 import SearchInput from "../components/SearchInput";
 import Badge from "../components/Badge";
-import Modal from "../components/Modal";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 import Table from "../components/Table";
 import EmptyState from "../components/EmptyState";
 import Card from "../components/Card";
@@ -223,40 +228,46 @@ export default function Transactions() {
         )}
       </Card>
 
-      {/* Detail Modal */}
-      <Modal
-        open={!!viewTrx}
-        onClose={() => setViewTrx(null)}
-        title="Detail Transaksi"
-        footer={<Button variant="primary" className="w-full" onClick={() => setViewTrx(null)}>Tutup</Button>}
-      >
-        {viewTrx && (
-          <div className="space-y-3">
-            {[
-              { label: "ID Transaksi", value: viewTrx.id },
-              { label: "Pelanggan", value: viewTrx.customerName },
-              { label: "Tanggal", value: viewTrx.date },
-              { label: "Layanan", value: viewTrx.service },
-              { label: "Berat", value: `${viewTrx.weight} kg` },
-              { label: "Harga/kg", value: `Rp ${viewTrx.pricePerKg.toLocaleString("id-ID")}` },
-              { label: "Metode Bayar", value: viewTrx.paymentMethod },
-            ].map((item) => (
-              <div key={item.label} className="flex justify-between py-2 border-b border-gray-50 text-left">
-                <span className="text-sm text-gray-500">{item.label}</span>
-                <span className="text-sm font-semibold text-gray-800">{item.value}</span>
+      <Dialog open={!!viewTrx} onOpenChange={(openState) => { if (!openState) setViewTrx(null); }}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col font-lagusans p-0 gap-0 overflow-hidden bg-white rounded-2xl border-none shadow-2xl">
+          <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0 text-left">
+            <DialogTitle className="text-base font-bold text-gray-800">Detail Transaksi</DialogTitle>
+          </DialogHeader>
+
+          <div className="px-6 py-5 overflow-y-auto flex-1 text-sm text-gray-700">
+            {viewTrx && (
+              <div className="space-y-3">
+                {[
+                  { label: "ID Transaksi", value: viewTrx.id },
+                  { label: "Pelanggan", value: viewTrx.customerName },
+                  { label: "Tanggal", value: viewTrx.date },
+                  { label: "Layanan", value: viewTrx.service },
+                  { label: "Berat", value: `${viewTrx.weight} kg` },
+                  { label: "Harga/kg", value: `Rp ${viewTrx.pricePerKg.toLocaleString("id-ID")}` },
+                  { label: "Metode Bayar", value: viewTrx.paymentMethod },
+                ].map((item) => (
+                  <div key={item.label} className="flex justify-between py-2 border-b border-gray-50 text-left">
+                    <span className="text-sm text-gray-500">{item.label}</span>
+                    <span className="text-sm font-semibold text-gray-800">{item.value}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between py-3 bg-[#2940D3]/5 rounded-xl px-3 mt-2 text-left">
+                  <span className="text-sm font-bold text-gray-700">Total Biaya</span>
+                  <span className="text-base font-bold text-[#2940D3]">Rp {viewTrx.total.toLocaleString("id-ID")}</span>
+                </div>
+                <div className="flex justify-between items-center text-left">
+                  <span className="text-sm text-gray-500">Status</span>
+                  <Badge variant={statusVariant[viewTrx.status] || "gray"} className="capitalize">{viewTrx.status}</Badge>
+                </div>
               </div>
-            ))}
-            <div className="flex justify-between py-3 bg-[#2940D3]/5 rounded-xl px-3 mt-2 text-left">
-              <span className="text-sm font-bold text-gray-700">Total Biaya</span>
-              <span className="text-base font-bold text-[#2940D3]">Rp {viewTrx.total.toLocaleString("id-ID")}</span>
-            </div>
-            <div className="flex justify-between items-center text-left">
-              <span className="text-sm text-gray-500">Status</span>
-              <Badge variant={statusVariant[viewTrx.status] || "gray"} className="capitalize">{viewTrx.status}</Badge>
-            </div>
+            )}
           </div>
-        )}
-      </Modal>
+
+          <div className="px-6 pb-6 flex-shrink-0">
+            <Button variant="primary" className="w-full" onClick={() => setViewTrx(null)}>Tutup</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

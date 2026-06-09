@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Save, Plus, Trash2, RotateCcw, Settings2, Tag, Gift, Zap } from "lucide-react";
+import { toast } from "sonner";
 import PageHeader from "../components/PageHeader";
 import Tabs from "../components/Tabs";
 import Button from "../components/Button";
@@ -47,29 +48,12 @@ function PriceInput({ value, onChange, prefix = "Rp" }) {
   );
 }
 
-// ── Toast notifikasi ──────────────────────────────────────────────────────
-function Toast({ msg, onClose }) {
-  return (
-    <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-[#142297] text-white px-5 py-3 rounded-2xl shadow-xl animate-bounce-once">
-      <Save size={16} />
-      <span className="text-sm font-semibold">{msg}</span>
-      <button onClick={onClose} className="ml-2 opacity-70 hover:opacity-100">✕</button>
-    </div>
-  );
-}
-
 // ─────────────────────────────────────────────────────────────────────────
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("services");
   const [services, setServices] = useState(DEFAULT_SERVICES);
   const [discounts, setDiscounts] = useState(DEFAULT_DISCOUNTS);
   const [points, setPoints] = useState(DEFAULT_POINTS);
-  const [toast, setToast] = useState("");
-
-  const showToast = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(""), 3000);
-  };
 
   // ── Service handlers ──
   const updateService = (id, field, val) =>
@@ -94,7 +78,7 @@ export default function Settings() {
       <PageHeader title="Pengaturan" subtitle="Kelola harga layanan, diskon, dan program poin">
         <Button
           icon={<Save size={15} />}
-          onClick={() => showToast("Pengaturan berhasil disimpan!")}
+          onClick={() => toast.success("Pengaturan berhasil disimpan!")}
         >
           Simpan Semua
         </Button>
@@ -136,9 +120,7 @@ export default function Settings() {
               {services.map((svc) => (
                 <div key={svc.id} className={`grid grid-cols-12 gap-4 px-5 py-4 items-center transition-colors ${!svc.active ? "opacity-50" : ""}`}>
                   <div className="col-span-4">
-
                     <Input value={svc.name} onChange={(e) => updateService(svc.id, "name", e.target.value)} />
-                  
                   </div>
                   <div className="col-span-3">
                     <PriceInput value={svc.regularPrice} onChange={(v) => updateService(svc.id, "regularPrice", v)} />
@@ -317,7 +299,6 @@ export default function Settings() {
         </div>
       )}
 
-      {toast && <Toast msg={toast} onClose={() => setToast("")} />}
     </div>
   );
 }

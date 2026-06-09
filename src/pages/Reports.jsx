@@ -36,14 +36,20 @@ import Badge from "../components/Badge";
 import Card from "../components/Card";
 import ProgressBar from "../components/ProgressBar";
 import Avatar from "../components/Avatar";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../components/ui/chart";
 
-const monthlyData = [
-  { month: "Jan", pelangganBaru: 3, transaksi: 18, pendapatan: 540000 },
-  { month: "Feb", pelangganBaru: 2, transaksi: 22, pendapatan: 660000 },
-  { month: "Mar", pelangganBaru: 5, transaksi: 30, pendapatan: 900000 },
-  { month: "Apr", pelangganBaru: 4, transaksi: 28, pendapatan: 840000 },
-  { month: "Mei", pelangganBaru: 6, transaksi: 35, pendapatan: 1050000 },
-];
+const chartConfig = {
+  pendapatan: {
+    label: "Pendapatan",
+    color: "#2940D3",
+  },
+  pelangganBaru: {
+    label: "Pelanggan Baru",
+    color: "#2940D3",
+  },
+};
+
+// --- Data Bulanan akan dihitung dinamis ---
 
 // --- Fungsi Export PDF & Word tetap sama ---
 async function exportPDF(args) { /* ... */ }
@@ -52,6 +58,25 @@ function exportWord(args) { /* ... */ }
 export default function Reports() {
   const [period, setPeriod] = useState("bulan");
   const [exporting, setExporting] = useState(null);
+
+  const monthsConfig = [
+    { key: "2026-01", label: "Jan" },
+    { key: "2026-02", label: "Feb" },
+    { key: "2026-03", label: "Mar" },
+    { key: "2026-04", label: "Apr" },
+    { key: "2026-05", label: "Mei" },
+  ];
+
+  const monthlyData = monthsConfig.map((m) => {
+    const monthTrxs = transactionsData.filter((t) => t.date && t.date.startsWith(m.key));
+    const monthCusts = customersData.filter((c) => c.joinDate && c.joinDate.startsWith(m.key));
+    return {
+      month: m.label,
+      pelangganBaru: monthCusts.length,
+      transaksi: monthTrxs.length,
+      pendapatan: monthTrxs.reduce((s, t) => s + t.total, 0),
+    };
+  });
 
   const totalRevenue = transactionsData.reduce((s, t) => s + t.total, 0);
   const activeCustomers = customersData.filter((c) => c.status === "active").length;
@@ -104,28 +129,28 @@ export default function Reports() {
         <Card>
           <p className="font-bold text-gray-800 mb-1">Tren Pendapatan</p>
           <p className="text-xs text-gray-400 mb-4">Pendapatan per bulan (2025)</p>
-          <ResponsiveContainer width="100%" height={200}>
+          <ChartContainer config={chartConfig} className="h-[200px] w-full">
             <BarChart data={monthlyData} barSize={20}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
               <YAxis hide />
-              <Tooltip formatter={(v) => [`Rp ${v.toLocaleString("id-ID")}`, "Pendapatan"]} />
-              <Bar dataKey="pendapatan" fill="#2940D3" radius={[6, 6, 0, 0]} />
+              <ChartTooltip content={<ChartTooltipContent formatter={(value) => `Rp ${value.toLocaleString("id-ID")}`} />} />
+              <Bar dataKey="pendapatan" fill="var(--color-pendapatan)" radius={[6, 6, 0, 0]} />
             </BarChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         </Card>
         <Card>
           <p className="font-bold text-gray-800 mb-1">Pertumbuhan Pelanggan</p>
           <p className="text-xs text-gray-400 mb-4">Pelanggan baru per bulan</p>
-          <ResponsiveContainer width="100%" height={200}>
+          <ChartContainer config={chartConfig} className="h-[200px] w-full">
             <LineChart data={monthlyData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
               <YAxis hide />
-              <Tooltip />
-              <Line type="monotone" dataKey="pelangganBaru" stroke="#2940D3" strokeWidth={2.5} dot={{ fill: "#2940D3", r: 4 }} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Line type="monotone" dataKey="pelangganBaru" stroke="var(--color-pelangganBaru)" strokeWidth={2.5} dot={{ fill: "var(--color-pelangganBaru)", r: 4 }} />
             </LineChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         </Card>
       </div>
 
