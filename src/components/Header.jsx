@@ -7,17 +7,52 @@ import {
 } from "lucide-react";
 
 // ── Data untuk global search ──────────────────────────────────────────────
-import customers from "../data/customers.json";
+import rawCustomers from "../data/customers.json";
+const customers = rawCustomers.flatMap((c) => {
+  const historyList = c.transactionHistory || [];
+  if (historyList.length === 0) {
+    return [{
+      ...c,
+      customerId: c.customerId || String(Math.random()),
+      joinDate: c.joinDate || "-",
+      totalTransactions: c.totalTransactions !== undefined ? c.totalTransactions : 0,
+      totalSpent: c.totalSpent !== undefined ? c.totalSpent : 0,
+      points: c.points !== undefined ? c.points : 0,
+      segment: c.segment || "New",
+      lastTransaction: c.lastTransaction || "-",
+      status: c.status || "active",
+    }];
+  }
+  return historyList.map((history) => ({
+    ...c,
+    customerId: history.customerId || c.customerId || String(Math.random()),
+    joinDate: history.joinDate || c.joinDate || "-",
+    totalTransactions: history.totalTransactions !== undefined ? history.totalTransactions : (c.totalTransactions || 0),
+    totalSpent: history.totalSpent !== undefined ? history.totalSpent : (c.totalSpent || 0),
+    points: history.points !== undefined ? history.points : (c.points || 0),
+    segment: history.segment || c.segment || "New",
+    lastTransaction: history.lastTransaction || c.lastTransaction || "-",
+    status: history.status || c.status || "active",
+  }));
+});
 import transactions from "../data/transactions.json";
 import laundry from "../data/laundryStatus.json";
 
 // Notifikasi awal
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "./ui/dialog";
+
 const INITIAL_NOTIFS = [
   {
     id: 1,
     type: "laundry",
     title: "Cucian Selesai",
-    desc: "TRX-001 · Rina Marlina sudah bisa diambil",
+    desc: "TRX-001 · Elisa Zulkarnain sudah bisa diambil",
     time: "2 menit lalu",
     read: false,
   },
@@ -25,7 +60,7 @@ const INITIAL_NOTIFS = [
     id: 2,
     type: "transaction",
     title: "Transaksi Baru",
-    desc: "TRX-007 · Siti Nurhaliza — Rp 84.000",
+    desc: "TRX-007 · Putri Saputra — Rp 84.000",
     time: "15 menit lalu",
     read: false,
   },
@@ -33,7 +68,7 @@ const INITIAL_NOTIFS = [
     id: 3,
     type: "laundry",
     title: "Cucian Diproses",
-    desc: "TRX-008 · Rina Marlina sedang dikeringkan",
+    desc: "TRX-008 · Elisa Zulkarnain sedang dikeringkan",
     time: "1 jam lalu",
     read: false,
   },
@@ -41,7 +76,7 @@ const INITIAL_NOTIFS = [
     id: 4,
     type: "customer",
     title: "Pelanggan Tidak Aktif",
-    desc: "Dedi Kurniawan belum transaksi 30+ hari",
+    desc: "Deni Lubis belum transaksi 30+ hari",
     time: "3 jam lalu",
     read: true,
   },
@@ -49,7 +84,7 @@ const INITIAL_NOTIFS = [
     id: 5,
     type: "transaction",
     title: "Transaksi Baru",
-    desc: "TRX-003 · Fajar Nugroho — Rp 48.000",
+    desc: "TRX-003 · Kurnia Anwar — Rp 48.000",
     time: "5 jam lalu",
     read: true,
   },
@@ -57,7 +92,7 @@ const INITIAL_NOTIFS = [
 
 const notifIcon = {
   laundry:     { Icon: Package,      bg: "bg-blue-100",   color: "text-[#2940D3]" },
-  transaction: { Icon: Receipt,      bg: "bg-[2CC5BD]",  color: "text-green-600" },
+  transaction: { Icon: Receipt,      bg: "bg-green-100",  color: "text-green-600" },
   customer:    { Icon: Users,        bg: "bg-orange-100", color: "text-orange-500" },
 };
 
@@ -69,13 +104,13 @@ function globalSearch(query) {
 
   // Pelanggan
   customers.forEach((c) => {
-    if (c.name.toLowerCase().includes(q) || c.phone.includes(q) || c.email.toLowerCase().includes(q)) {
+    if (c.customerName.toLowerCase().includes(q) || c.phone.includes(q) || c.email.toLowerCase().includes(q)) {
       results.push({
         type: "customer",
         icon: Users,
-        label: c.name,
+        label: c.customerName,
         sub: c.phone + " · " + c.segment,
-        path: "/customers",
+        path: `/customers/${c.customerId}`,
       });
     }
   });
@@ -121,7 +156,7 @@ const typeLabel = {
 
 const typeBadge = {
   customer:    "bg-blue-100 text-[#2940D3]",
-  transaction: "bg-[2CC5BD] text-green-700",
+  transaction: "bg-green-100 text-green-700",
   tracking:    "bg-yellow-100 text-yellow-700",
 };
 
@@ -129,19 +164,16 @@ const typeBadge = {
 export default function Header({ onMenuClick }) {
   const navigate = useNavigate();
 
-  // ── Search state ──
   const [search, setSearch]         = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const searchResults               = globalSearch(search);
   const searchRef                   = useRef(null);
 
-  // ── Notif state ──
   const [notifs, setNotifs]         = useState(INITIAL_NOTIFS);
   const [notifOpen, setNotifOpen]   = useState(false);
   const notifRef                    = useRef(null);
   const unread                      = notifs.filter((n) => !n.read).length;
 
-  // ── Profile state ──
   const [profileOpen, setProfileOpen] = useState(false);
   const [editOpen,    setEditOpen]    = useState(false);
   const [adminName,   setAdminName]   = useState("Admin");
@@ -180,7 +212,7 @@ export default function Header({ onMenuClick }) {
 
   return (
     <>
-      <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20 shadow-sm font-Montserrat">
+      <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20 shadow-sm font-lagusans">
 
         {/* ── Kiri: hamburger + search ── */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -406,27 +438,26 @@ export default function Header({ onMenuClick }) {
       </header>
 
       {/* ── Edit Profile Modal ── */}
-      {editOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 font-Montserrat">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-bold text-gray-800">Edit Profil</h2>
-              <button onClick={() => setEditOpen(false)} className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-gray-200 text-gray-500">
-                <X size={14} />
-              </button>
-            </div>
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-sm max-h-[90vh] flex flex-col font-lagusans p-0 gap-0 overflow-hidden bg-white rounded-2xl border-none shadow-2xl">
+          <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0 text-left">
+            <DialogTitle className="text-base font-bold text-gray-800">Edit Profil</DialogTitle>
+            <DialogDescription className="text-xs text-gray-400 mt-0.5">Perbarui nama dan jabatan admin</DialogDescription>
+          </DialogHeader>
+
+          <div className="px-6 py-5 overflow-y-auto flex-1 text-sm text-gray-700">
             <div className="flex justify-center mb-5">
               <div className="w-16 h-16 rounded-2xl bg-[#2940D3] flex items-center justify-center shadow-md">
                 <span className="text-white font-bold text-2xl">{(editForm.name || "A").charAt(0).toUpperCase()}</span>
               </div>
             </div>
             <div className="space-y-4">
-              <div>
+              <div className="text-left">
                 <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Nama</label>
                 <input type="text" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} placeholder="Nama admin"
                   className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 transition-all" />
               </div>
-              <div>
+              <div className="text-left">
                 <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Jabatan / Role</label>
                 <input type="text" value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })} placeholder="Contoh: Netto Laundry"
                   className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 transition-all" />
@@ -434,13 +465,13 @@ export default function Header({ onMenuClick }) {
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setEditOpen(false)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
-              <button onClick={handleSaveProfile} className="flex-1 py-2.5 rounded-xl bg-[#2940D3] text-white text-sm font-semibold hover:bg-[#5A6FE4] transition-colors flex items-center justify-center gap-1.5">
+              <button onClick={handleSaveProfile} className="flex-1 py-2.5 rounded-xl bg-[#2940D3] text-white text-sm font-semibold hover:bg-[#2940D3]/90 transition-colors flex items-center justify-center gap-1.5">
                 <Check size={14} /> Simpan
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
