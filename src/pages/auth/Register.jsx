@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { usersAPI } from "../../services/usersApi";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ export default function Register() {
     setDataForm({ ...dataForm, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -33,10 +34,44 @@ export default function Register() {
     }
 
     setLoading(true);
-    setTimeout(() => {
+    try {
+      // Cek apakah email sudah terdaftar
+      const allUsers = await usersAPI.fetchUsers();
+      const emailExists = allUsers.some(
+        (u) => u.email && u.email.toLowerCase() === dataForm.email.toLowerCase()
+      );
+      if (emailExists) {
+        setError("Email sudah terdaftar. Silakan gunakan email lain.");
+        setLoading(false);
+        return;
+      }
+
+      // Payload untuk Supabase
+      const payload = {
+        fullname: dataForm.name,
+        email: dataForm.email,
+        password: dataForm.password,
+        role: "member",
+      };
+
+      await usersAPI.createUser(payload);
+
+      // Setelah berhasil mendaftar, ambil data pengguna yang baru dibuat untuk mendapatkan ID dan data lengkapnya
+      const users = await usersAPI.login(dataForm.email, dataForm.password);
+      if (users && users.length > 0) {
+        const createdUser = users[0];
+        localStorage.setItem("netto_auth", "true");
+        localStorage.setItem("netto_user", JSON.stringify(createdUser));
+        navigate("/");
+      } else {
+        throw new Error("User tidak ditemukan setelah registrasi.");
+      }
+    } catch (err) {
+      console.error("Registration error:", err);
+      setError("Registrasi gagal. Pastikan koneksi internet aktif dan silakan coba lagi.");
+    } finally {
       setLoading(false);
-      navigate("/login");
-    }, 1200);
+    }
   };
 
   const errorInfo = error ? (

@@ -174,11 +174,12 @@ export default function Header({ onMenuClick }) {
   const notifRef                    = useRef(null);
   const unread                      = notifs.filter((n) => !n.read).length;
 
+  const userSession = JSON.parse(localStorage.getItem("netto_user") || "null");
   const [profileOpen, setProfileOpen] = useState(false);
   const [editOpen,    setEditOpen]    = useState(false);
-  const [adminName,   setAdminName]   = useState("Admin");
-  const [adminRole,   setAdminRole]   = useState("Netto Laundry");
-  const [editForm,    setEditForm]    = useState({ name: "Admin", role: "Netto Laundry" });
+  const [adminName,   setAdminName]   = useState(userSession?.fullname || "Admin");
+  const [adminRole,   setAdminRole]   = useState(userSession?.role || "Netto Laundry");
+  const [editForm,    setEditForm]    = useState({ name: userSession?.fullname || "Admin", role: userSession?.role || "Netto Laundry" });
   const profileRef                    = useRef(null);
 
   // ── Close panels on outside click ──
@@ -425,7 +426,12 @@ export default function Header({ onMenuClick }) {
                 </div>
                 <div className="border-t border-gray-100 py-1.5">
                   <button
-                    onClick={() => { setProfileOpen(false); localStorage.removeItem("netto_auth"); navigate("/login"); }}
+                    onClick={() => { 
+                      setProfileOpen(false); 
+                      localStorage.removeItem("netto_auth"); 
+                      localStorage.removeItem("netto_user");
+                      navigate("/login"); 
+                    }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
                   >
                     <LogOut size={15} /> Keluar

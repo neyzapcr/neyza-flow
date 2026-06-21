@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, Users, Receipt, Package, Star,
-  Gift, PieChart, Bell, FileText, LogOut, Settings,
+  Gift, PieChart, Bell, FileText, LogOut, Settings, UserCheck,
 } from "lucide-react";
 
 const menuItems = [
@@ -14,6 +14,7 @@ const menuItems = [
       { to: "/transactions", icon: Receipt,         label: "Transaksi" },
       { to: "/tracking",     icon: Package,         label: "Tracking Laundry" },
       { to: "/feedback",     icon: Star,            label: "Feedback & Rating" },
+      { to: "/users",        icon: UserCheck,       label: "Kelola User" },
     ],
   },
   {
@@ -114,7 +115,11 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }) {
           <NavLink
             to="/login"
             title={!expanded ? "Keluar" : undefined}
-            onClick={() => { localStorage.removeItem("netto_auth"); if (mobileOpen) onMobileClose?.(); }}
+            onClick={() => { 
+              localStorage.removeItem("netto_auth"); 
+              localStorage.removeItem("netto_user");
+              if (mobileOpen) onMobileClose?.(); 
+            }}
             className={`flex items-center rounded-xl text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all
               ${expanded ? "gap-3 px-3 py-2.5" : "justify-center px-0 py-2.5 mx-1"}`}
           >

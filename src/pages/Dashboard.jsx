@@ -71,16 +71,27 @@ const pieChartConfig = {
   "Setrika Saja": { label: "Setrika Saja", color: "#A5F3FC" },
 };
 
-const Legend = () => (
-  <div className="flex gap-4 mt-2">
-    {[{ bg: "bg-[#2940D3]", label: "Minggu Ini" }, { bg: "bg-[#142297]", label: "Minggu Lalu" }].map(l => (
-      <div key={l.label} className="flex items-center gap-1.5">
-        <span className={`w-3 h-3 rounded-full ${l.bg}`}></span>
-        <span className="text-xs text-gray-500">{l.label}</span>
+const Legend = ({ period }) => {
+  const getLabels = () => {
+    if (period === "hari") return { thisLabel: "7 Hari Ini", lastLabel: "7 Hari Lalu" };
+    if (period === "minggu") return { thisLabel: "4 Minggu Ini", lastLabel: "4 Minggu Lalu" };
+    return { thisLabel: "6 Bulan Ini", lastLabel: "Tahun Lalu" };
+  };
+  const { thisLabel, lastLabel } = getLabels();
+
+  return (
+    <div className="flex gap-4 mt-2">
+      <div className="flex items-center gap-1.5">
+        <span className="w-3 h-3 rounded-full bg-[#2940D3]"></span>
+        <span className="text-xs text-gray-500">{thisLabel}</span>
       </div>
-    ))}
-  </div>
-);
+      <div className="flex items-center gap-1.5">
+        <span className="w-3 h-3 rounded-full bg-[#142297]"></span>
+        <span className="text-xs text-gray-500">{lastLabel}</span>
+      </div>
+    </div>
+  );
+};
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -90,27 +101,143 @@ export default function Dashboard() {
   const maxDateStr = transactions.map(t => t.date).filter(Boolean).sort().pop() || "2026-05-31";
   const [yr, mt, dy] = maxDateStr.split("-").map(Number);
 
-  const getOffsetDay = (offset) => {
-    const d = new Date(yr, mt - 1, dy - offset);
-    return {
-      dateStr: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
-      dayLabel: String(d.getDate()).padStart(2, "0")
+  let revenueData = [];
+  let orderTrendData = [];
+
+  if (period === "hari") {
+    // Tampilkan 7 hari terakhir vs 7 hari sebelumnya
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(yr, mt - 1, dy - (6 - i));
+      return d;
+    });
+
+    revenueData = days.map((date) => {
+      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      const prevDate = new Date(date.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const prevDateStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, "0")}-${String(prevDate.getDate()).padStart(2, "0")}`;
+
+      const thisWeekVal = transactions.filter(t => t.date === dateStr).reduce((s, t) => s + t.total, 0);
+      const lastWeekVal = transactions.filter(t => t.date === prevDateStr).reduce((s, t) => s + t.total, 0);
+
+      return {
+        day: date.toLocaleDateString("id-ID", { weekday: "short" }),
+        thisWeek: thisWeekVal,
+        lastWeek: lastWeekVal,
+      };
+    });
+
+    orderTrendData = days.map((date) => {
+      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      const prevDate = new Date(date.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const prevDateStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, "0")}-${String(prevDate.getDate()).padStart(2, "0")}`;
+
+      const thisWeekVal = transactions.filter(t => t.date === dateStr).length;
+      const lastWeekVal = transactions.filter(t => t.date === prevDateStr).length;
+
+      return {
+        day: date.toLocaleDateString("id-ID", { weekday: "short" }),
+        thisWeek: thisWeekVal,
+        lastWeek: lastWeekVal,
+      };
+    });
+  } else if (period === "minggu") {
+    // Tampilkan 4 minggu terakhir vs 4 minggu sebelumnya
+    const weeks = Array.from({ length: 4 }, (_, i) => {
+      const wEnd = new Date(yr, mt - 1, dy - (3 - i) * 7);
+      const wStart = new Date(wEnd.getTime() - 6 * 24 * 60 * 60 * 1000);
+      return { start: wStart, end: wEnd, label: `Mng ${i + 1}` };
+    });
+
+    const getRangeStats = (start, end) => {
+      const txs = transactions.filter(t => {
+        if (!t.date) return false;
+        const d = new Date(t.date);
+        return d >= start && d <= end;
+      });
+      return {
+        revenue: txs.reduce((s, t) => s + t.total, 0),
+        count: txs.length
+      };
     };
-  };
 
-  const thisWeekDays = Array.from({ length: 7 }, (_, i) => getOffsetDay(6 - i));
-  const lastWeekDays = Array.from({ length: 7 }, (_, i) => getOffsetDay(13 - i));
+    revenueData = weeks.map((w) => {
+      const thisPeriod = getRangeStats(w.start, w.end);
+      const prevStart = new Date(w.start.getTime() - 28 * 24 * 60 * 60 * 1000);
+      const prevEnd = new Date(w.end.getTime() - 28 * 24 * 60 * 60 * 1000);
+      const lastPeriod = getRangeStats(prevStart, prevEnd);
 
-  const dailyStats = {};
-  transactions.forEach(t => t.date && ((dailyStats[t.date] ||= { revenue: 0, count: 0 }).revenue += t.total, dailyStats[t.date].count++));
+      return {
+        day: w.label,
+        thisWeek: thisPeriod.revenue,
+        lastWeek: lastPeriod.revenue,
+      };
+    });
 
-  const [revenueData, orderTrendData] = ["revenue", "count"].map(key =>
-    thisWeekDays.map((day, idx) => ({
-      day: day.dayLabel,
-      thisWeek: dailyStats[day.dateStr]?.[key] || 0,
-      lastWeek: dailyStats[lastWeekDays[idx].dateStr]?.[key] || 0,
-    }))
-  );
+    orderTrendData = weeks.map((w) => {
+      const thisPeriod = getRangeStats(w.start, w.end);
+      const prevStart = new Date(w.start.getTime() - 28 * 24 * 60 * 60 * 1000);
+      const prevEnd = new Date(w.end.getTime() - 28 * 24 * 60 * 60 * 1000);
+      const lastPeriod = getRangeStats(prevStart, prevEnd);
+
+      return {
+        day: w.label,
+        thisWeek: thisPeriod.count,
+        lastWeek: lastPeriod.count,
+      };
+    });
+  } else {
+    // period === "bulan"
+    const months = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(yr, mt - 1 - (5 - i), 1);
+      return {
+        year: d.getFullYear(),
+        month: d.getMonth(),
+        label: d.toLocaleDateString("id-ID", { month: "short" })
+      };
+    });
+
+    const getMonthStats = (year, month) => {
+      const txs = transactions.filter(t => {
+        if (!t.date) return false;
+        const [y, m] = t.date.split("-").map(Number);
+        return y === year && (m - 1) === month;
+      });
+      return {
+        revenue: txs.reduce((s, t) => s + t.total, 0),
+        count: txs.length
+      };
+    };
+
+    revenueData = months.map((m) => {
+      const thisPeriod = getMonthStats(m.year, m.month);
+      const lastPeriod = getMonthStats(m.year - 1, m.month);
+
+      return {
+        day: `${m.label} ${String(m.year).substring(2)}`,
+        thisWeek: thisPeriod.revenue,
+        lastWeek: lastPeriod.revenue,
+      };
+    });
+
+    orderTrendData = months.map((m) => {
+      const thisPeriod = getMonthStats(m.year, m.month);
+      const lastPeriod = getMonthStats(m.year - 1, m.month);
+
+      return {
+        day: `${m.label} ${String(m.year).substring(2)}`,
+        thisWeek: thisPeriod.count,
+        lastWeek: lastPeriod.count,
+      };
+    });
+  }
+
+  const currentPeriodRevenue = revenueData.reduce((s, d) => s + d.thisWeek, 0);
+  const lastPeriodRevenue = revenueData.reduce((s, d) => s + d.lastWeek, 0);
+  const revenueDiff = lastPeriodRevenue ? ((currentPeriodRevenue - lastPeriodRevenue) / lastPeriodRevenue) * 100 : 0;
+
+  const currentPeriodOrders = orderTrendData.reduce((s, d) => s + d.thisWeek, 0);
+  const lastPeriodOrders = orderTrendData.reduce((s, d) => s + d.lastWeek, 0);
+  const ordersDiff = lastPeriodOrders ? ((currentPeriodOrders - lastPeriodOrders) / lastPeriodOrders) * 100 : 0;
 
   const serviceCounts = {};
   transactions.forEach(t => t.service && (serviceCounts[t.service] = (serviceCounts[t.service] || 0) + 1));
@@ -198,9 +325,11 @@ export default function Dashboard() {
         <Card className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-xs text-gray-400 font-medium">Pendapatan</p>
-              <p className="text-2xl font-bold text-gray-800">Rp {totalRevenue.toLocaleString("id-ID")}</p>
-              <p className="text-xs text-green-500 font-medium mt-0.5">↑ 2.1% vs minggu lalu</p>
+              <p className="text-xs text-gray-400 font-medium">Pendapatan ({period === "hari" ? "7 Hari Ini" : period === "minggu" ? "4 Minggu Ini" : "6 Bulan Ini"})</p>
+              <p className="text-2xl font-bold text-gray-800">Rp {currentPeriodRevenue.toLocaleString("id-ID")}</p>
+              <p className={`text-xs font-medium mt-0.5 ${revenueDiff >= 0 ? "text-green-500" : "text-red-500"}`}>
+                {revenueDiff >= 0 ? "↑" : "↓"} {Math.abs(revenueDiff).toFixed(1)}% vs {period === "hari" ? "7 hari lalu" : period === "minggu" ? "4 minggu lalu" : "tahun lalu"}
+              </p>
             </div>
             <Link to="/reports" className="text-xs text-[#2940D3] font-semibold hover:underline">Lihat Laporan</Link>
           </div>
@@ -214,7 +343,7 @@ export default function Dashboard() {
               <Bar dataKey="lastWeek" fill="var(--color-lastWeek)" radius={[4, 4, 0, 0]} name="Minggu Lalu" />
             </BarChart>
           </ChartContainer>
-          <Legend />
+          <Legend period={period} />
         </Card>
 
         {/* Service Pie */}
@@ -259,9 +388,11 @@ export default function Dashboard() {
         <Card className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-xs text-gray-400 font-medium">Tren Order</p>
-              <p className="text-2xl font-bold text-gray-800">{transactions.length}</p>
-              <p className="text-xs text-red-500 font-medium mt-0.5">↓ 2.1% vs minggu lalu</p>
+              <p className="text-xs text-gray-400 font-medium">Tren Order ({period === "hari" ? "7 Hari Ini" : period === "minggu" ? "4 Minggu Ini" : "6 Bulan Ini"})</p>
+              <p className="text-2xl font-bold text-gray-800">{currentPeriodOrders} Order</p>
+              <p className={`text-xs font-medium mt-0.5 ${ordersDiff >= 0 ? "text-green-500" : "text-red-500"}`}>
+                {ordersDiff >= 0 ? "↑" : "↓"} {Math.abs(ordersDiff).toFixed(1)}% vs {period === "hari" ? "7 hari lalu" : period === "minggu" ? "4 minggu lalu" : "tahun lalu"}
+              </p>
             </div>
             <Link to="/reports" className="text-xs text-[#2940D3] font-semibold hover:underline">Lihat Laporan</Link>
           </div>
@@ -275,7 +406,7 @@ export default function Dashboard() {
               <Line type="monotone" dataKey="lastWeek" stroke="var(--color-lastWeek)" strokeWidth={2} dot={false} strokeDasharray="4 4" name="Minggu Lalu" />
             </LineChart>
           </ChartContainer>
-          <Legend />
+          <Legend period={period} />
         </Card>
       </div>
 

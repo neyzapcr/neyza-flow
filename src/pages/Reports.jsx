@@ -37,6 +37,9 @@ import Card from "../components/Card";
 import ProgressBar from "../components/ProgressBar";
 import Avatar from "../components/Avatar";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../components/ui/chart";
+import Pagination from "../components/Pagination";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 
 const chartConfig = {
   pendapatan: {
@@ -49,34 +52,376 @@ const chartConfig = {
   },
 };
 
-// --- Data Bulanan akan dihitung dinamis ---
+// --- Fungsi Export PDF & Word ---
+async function exportPDF({ totalRevenue, activeCustomers, newCustomers, retentionRate, period, monthlyData }) {
+  await new Promise((resolve) => setTimeout(resolve, 800));
 
-// --- Fungsi Export PDF & Word tetap sama ---
-async function exportPDF(args) { /* ... */ }
-function exportWord(args) { /* ... */ }
+  const doc = new jsPDF();
+  const primaryColor = [41, 64, 211]; // #2940D3
+  const darkTextColor = [31, 41, 55]; // #1f2937
+  const lightTextColor = [107, 114, 128]; // #6b7280
+
+  // 1. Header
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.text("LAPORAN CRM - NEYZA FLOW LAUNDRY", 14, 20);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(lightTextColor[0], lightTextColor[1], lightTextColor[2]);
+  const dateStr = new Date().toLocaleDateString("id-ID", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+  doc.text(`Dicetak pada: ${dateStr}  |  Filter Periode: ${period.toUpperCase()}`, 14, 26);
+
+  // Line separator
+  doc.setDrawColor(229, 231, 235);
+  doc.setLineWidth(0.5);
+  doc.line(14, 29, 196, 29);
+
+  // 2. Executive Summary (KPIs)
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(darkTextColor[0], darkTextColor[1], darkTextColor[2]);
+  doc.text("Ringkasan Performa Bisnis", 14, 37);
+
+  const kpiHeaders = ["Indikator Performa", "Nilai Realisasi"];
+  const kpiRows = [
+    ["Total Pendapatan", `Rp ${totalRevenue.toLocaleString("id-ID")}`],
+    ["Pelanggan Aktif", `${activeCustomers} Pelanggan`],
+    ["Pelanggan Baru", `${newCustomers} Pelanggan`],
+    ["Tingkat Retensi", `${retentionRate}% dari total pelanggan`],
+  ];
+
+  doc.autoTable({
+    startY: 42,
+    head: [kpiHeaders],
+    body: kpiRows,
+    theme: "grid",
+    headStyles: { fillColor: primaryColor, halign: "left" },
+    styles: { font: "helvetica", fontSize: 9 },
+    margin: { left: 14, right: 14 }
+  });
+
+  // 3. Trend Table
+  let nextY = doc.lastAutoTable.finalY + 12;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(darkTextColor[0], darkTextColor[1], darkTextColor[2]);
+  doc.text(`Detail Tren Aktivitas (${period.toUpperCase()})`, 14, nextY);
+
+  const trendHeaders = ["Periode / Label", "Pelanggan Baru", "Total Transaksi", "Total Pendapatan"];
+  const trendRows = (monthlyData || []).map(d => [
+    d.month,
+    `${d.pelangganBaru} Pelanggan`,
+    `${d.transaksi} Transaksi`,
+    `Rp ${d.pendapatan.toLocaleString("id-ID")}`
+  ]);
+
+  doc.autoTable({
+    startY: nextY + 5,
+    head: [trendHeaders],
+    body: trendRows,
+    theme: "striped",
+    headStyles: { fillColor: [20, 34, 151], halign: "left" }, // Darker blue #142297
+    styles: { font: "helvetica", fontSize: 9 },
+    margin: { left: 14, right: 14 }
+  });
+
+  // 4. Segment Analysis
+  nextY = doc.lastAutoTable.finalY + 12;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("Laporan Per Segmen Pelanggan", 14, nextY);
+
+  const segmentHeaders = ["Segmen", "Jumlah", "Total Belanja", "Rata-rata Belanja", "Rata-rata Transaksi", "Kontribusi"];
+  const segmentRows = ["VIP", "Loyal", "Regular", "New"].map((seg) => {
+    const sc = customersData.filter((c) => c.segment === seg);
+    const total = sc.reduce((s, c) => s + c.totalSpent, 0);
+    const avg = Math.round(total / (sc.length || 1));
+    const avgTrx = Math.round(sc.reduce((s, c) => s + c.totalTransactions, 0) / (sc.length || 1));
+    const pct = Math.round((sc.length / customersData.length) * 100);
+
+    return [
+      seg,
+      `${sc.length} Pelanggan`,
+      `Rp ${total.toLocaleString("id-ID")}`,
+      `Rp ${avg.toLocaleString("id-ID")}`,
+      `${avgTrx}x`,
+      `${pct}%`
+    ];
+  });
+
+  doc.autoTable({
+    startY: nextY + 5,
+    head: [segmentHeaders],
+    body: segmentRows,
+    theme: "grid",
+    headStyles: { fillColor: primaryColor, halign: "left" },
+    styles: { font: "helvetica", fontSize: 9 },
+    margin: { left: 14, right: 14 }
+  });
+
+  // 5. Inactive Customers List
+  nextY = doc.lastAutoTable.finalY + 12;
+  if (nextY > 230) {
+    doc.addPage();
+    nextY = 20;
+  }
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("Daftar Pelanggan Tidak Aktif (Perlu Tindakan)", 14, nextY);
+
+  const inactiveHeaders = ["Nama Pelanggan", "Status", "Terakhir Bertransaksi"];
+  const inactiveCustomers = customersData.filter((c) => c.status === "inactive");
+  const inactiveRows = inactiveCustomers.map(c => [
+    c.customerName,
+    "Tidak Aktif",
+    c.lastTransaction
+  ]);
+
+  doc.autoTable({
+    startY: nextY + 5,
+    head: [inactiveHeaders],
+    body: inactiveRows,
+    theme: "striped",
+    headStyles: { fillColor: [239, 68, 68], halign: "left" }, // red-500
+    styles: { font: "helvetica", fontSize: 9 },
+    margin: { left: 14, right: 14 }
+  });
+
+  doc.save(`Laporan_CRM_${period}_${new Date().toISOString().split("T")[0]}.pdf`);
+}
+
+function exportWord({ totalRevenue, activeCustomers, newCustomers, retentionRate, period, monthlyData }) {
+  const dateStr = new Date().toLocaleDateString("id-ID", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+
+  const segmentRowsHtml = ["VIP", "Loyal", "Regular", "New"].map((seg) => {
+    const sc = customersData.filter((c) => c.segment === seg);
+    const total = sc.reduce((s, c) => s + c.totalSpent, 0);
+    const avg = Math.round(total / (sc.length || 1));
+    const avgTrx = Math.round(sc.reduce((s, c) => s + c.totalTransactions, 0) / (sc.length || 1));
+    const pct = Math.round((sc.length / customersData.length) * 100);
+
+    return `
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd;"><b>${seg}</b></td>
+        <td style="padding:8px; border:1px solid #ddd;">${sc.length} Pelanggan</td>
+        <td style="padding:8px; border:1px solid #ddd;">Rp ${total.toLocaleString("id-ID")}</td>
+        <td style="padding:8px; border:1px solid #ddd;">Rp ${avg.toLocaleString("id-ID")}</td>
+        <td style="padding:8px; border:1px solid #ddd;">${avgTrx}x</td>
+        <td style="padding:8px; border:1px solid #ddd;">${pct}%</td>
+      </tr>
+    `;
+  }).join("");
+
+  const trendRowsHtml = (monthlyData || []).map(d => `
+    <tr>
+      <td style="padding:8px; border:1px solid #ddd;">${d.month}</td>
+      <td style="padding:8px; border:1px solid #ddd;">${d.pelangganBaru} Pelanggan</td>
+      <td style="padding:8px; border:1px solid #ddd;">${d.transaksi} Transaksi</td>
+      <td style="padding:8px; border:1px solid #ddd;">Rp ${d.pendapatan.toLocaleString("id-ID")}</td>
+    </tr>
+  `).join("");
+
+  const inactiveCustomers = customersData.filter((c) => c.status === "inactive");
+  const inactiveRowsHtml = inactiveCustomers.map(c => `
+    <tr>
+      <td style="padding:8px; border:1px solid #ddd;">${c.customerName}</td>
+      <td style="padding:8px; border:1px solid #ddd; color:red;">Tidak Aktif</td>
+      <td style="padding:8px; border:1px solid #ddd;">${c.lastTransaction}</td>
+    </tr>
+  `).join("");
+
+  const htmlContent = `
+    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+    <head>
+      <title>Laporan CRM Neyza Flow Laundry</title>
+      <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; line-height: 1.6; }
+        h1 { color: #2940D3; border-bottom: 2px solid #2940D3; padding-bottom: 5px; }
+        h2 { color: #142297; margin-top: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th { background-color: #2940D3; color: white; text-align: left; padding: 10px; font-weight: bold; }
+        td { padding: 10px; border: 1px solid #ddd; }
+        .meta { color: #666; font-size: 12px; margin-bottom: 20px; }
+      </style>
+    </head>
+    <body>
+      <h1>LAPORAN CRM - NEYZA FLOW LAUNDRY</h1>
+      <p class="meta">Dicetak pada: ${dateStr} | Filter Periode: ${period.toUpperCase()}</p>
+
+      <h2>Ringkasan Performa Bisnis</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="background-color:#2940D3; color:white;">Indikator Performa</th>
+            <th style="background-color:#2940D3; color:white;">Nilai Realisasi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><b>Total Pendapatan</b></td><td>Rp ${totalRevenue.toLocaleString("id-ID")}</td></tr>
+          <tr><td><b>Pelanggan Aktif</b></td><td>${activeCustomers} Pelanggan</td></tr>
+          <tr><td><b>Pelanggan Baru</b></td><td>${newCustomers} Pelanggan</td></tr>
+          <tr><td><b>Tingkat Retensi</b></td><td>${retentionRate}% dari total pelanggan</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Detail Tren Aktivitas (${period.toUpperCase()})</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="background-color:#142297; color:white;">Periode / Label</th>
+            <th style="background-color:#142297; color:white;">Pelanggan Baru</th>
+            <th style="background-color:#142297; color:white;">Total Transaksi</th>
+            <th style="background-color:#142297; color:white;">Total Pendapatan</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${trendRowsHtml}
+        </tbody>
+      </table>
+
+      <h2>Laporan Per Segmen Pelanggan</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="background-color:#2940D3; color:white;">Segmen</th>
+            <th style="background-color:#2940D3; color:white;">Jumlah</th>
+            <th style="background-color:#2940D3; color:white;">Total Belanja</th>
+            <th style="background-color:#2940D3; color:white;">Rata-rata Belanja</th>
+            <th style="background-color:#2940D3; color:white;">Rata-rata Transaksi</th>
+            <th style="background-color:#2940D3; color:white;">Kontribusi</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${segmentRowsHtml}
+        </tbody>
+      </table>
+
+      <h2>Daftar Pelanggan Tidak Aktif (> 30 Hari)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="background-color:#ef4444; color:white;">Nama Pelanggan</th>
+            <th style="background-color:#ef4444; color:white;">Status</th>
+            <th style="background-color:#ef4444; color:white;">Terakhir Bertransaksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${inactiveRowsHtml}
+        </tbody>
+      </table>
+    </body>
+    </html>
+  `;
+
+  const blob = new Blob(['\\ufeff' + htmlContent], {
+    type: 'application/msword'
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Laporan_CRM_${period}_${new Date().toISOString().split("T")[0]}.doc`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 export default function Reports() {
   const [period, setPeriod] = useState("bulan");
   const [exporting, setExporting] = useState(null);
+  const [inactivePage, setInactivePage] = useState(1);
 
-  const monthsConfig = [
-    { key: "2026-01", label: "Jan" },
-    { key: "2026-02", label: "Feb" },
-    { key: "2026-03", label: "Mar" },
-    { key: "2026-04", label: "Apr" },
-    { key: "2026-05", label: "Mei" },
-  ];
+  const maxDateStr = transactionsData.map(t => t.date).filter(Boolean).sort().pop() || "2026-05-31";
+  const [yr, mt, dy] = maxDateStr.split("-").map(Number);
 
-  const monthlyData = monthsConfig.map((m) => {
-    const monthTrxs = transactionsData.filter((t) => t.date && t.date.startsWith(m.key));
-    const monthCusts = customersData.filter((c) => c.joinDate && c.joinDate.startsWith(m.key));
-    return {
-      month: m.label,
-      pelangganBaru: monthCusts.length,
-      transaksi: monthTrxs.length,
-      pendapatan: monthTrxs.reduce((s, t) => s + t.total, 0),
-    };
-  });
+  let monthlyData = [];
+
+  if (period === "hari") {
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(yr, mt - 1, dy - (6 - i));
+      return d;
+    });
+
+    monthlyData = days.map((date) => {
+      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      const dayTrxs = transactionsData.filter((t) => t.date === dateStr);
+      const dayCusts = customersData.filter((c) => c.joinDate === dateStr);
+      return {
+        month: date.toLocaleDateString("id-ID", { weekday: "short" }),
+        pelangganBaru: dayCusts.length,
+        transaksi: dayTrxs.length,
+        pendapatan: dayTrxs.reduce((s, t) => s + t.total, 0),
+      };
+    });
+  } else if (period === "minggu") {
+    const weeks = Array.from({ length: 4 }, (_, i) => {
+      const wEnd = new Date(yr, mt - 1, dy - (3 - i) * 7);
+      const wStart = new Date(wEnd.getTime() - 6 * 24 * 60 * 60 * 1000);
+      return { start: wStart, end: wEnd, label: `Mng ${i + 1}` };
+    });
+
+    monthlyData = weeks.map((w) => {
+      const weekTrxs = transactionsData.filter((t) => {
+        if (!t.date) return false;
+        const d = new Date(t.date);
+        return d >= w.start && d <= w.end;
+      });
+      const weekCusts = customersData.filter((c) => {
+        if (!c.joinDate) return false;
+        const d = new Date(c.joinDate);
+        return d >= w.start && d <= w.end;
+      });
+      return {
+        month: w.label,
+        pelangganBaru: weekCusts.length,
+        transaksi: weekTrxs.length,
+        pendapatan: weekTrxs.reduce((s, t) => s + t.total, 0),
+      };
+    });
+  } else {
+    const months = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(yr, mt - 1 - (5 - i), 1);
+      return {
+        year: d.getFullYear(),
+        month: d.getMonth(),
+        label: d.toLocaleDateString("id-ID", { month: "short" })
+      };
+    });
+
+    monthlyData = months.map((m) => {
+      const monthTrxs = transactionsData.filter((t) => {
+        if (!t.date) return false;
+        const [y, mNum] = t.date.split("-").map(Number);
+        return y === m.year && (mNum - 1) === m.month;
+      });
+      const monthCusts = customersData.filter((c) => {
+        if (!c.joinDate) return false;
+        const [y, mNum] = c.joinDate.split("-").map(Number);
+        return y === m.year && (mNum - 1) === m.month;
+      });
+      return {
+        month: `${m.label} ${String(m.year).substring(2)}`,
+        pelangganBaru: monthCusts.length,
+        transaksi: monthTrxs.length,
+        pendapatan: monthTrxs.reduce((s, t) => s + t.total, 0),
+      };
+    });
+  }
 
   const totalRevenue = transactionsData.reduce((s, t) => s + t.total, 0);
   const activeCustomers = customersData.filter((c) => c.status === "active").length;
@@ -85,7 +430,7 @@ export default function Reports() {
 
   const handleExport = async (type) => {
     setExporting(type);
-    const args = { totalRevenue, activeCustomers, newCustomers, retentionRate, period };
+    const args = { totalRevenue, activeCustomers, newCustomers, retentionRate, period, monthlyData };
     type === "pdf" ? await exportPDF(args) : exportWord(args);
     setExporting(null);
   };
@@ -128,7 +473,9 @@ export default function Reports() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         <Card>
           <p className="font-bold text-gray-800 mb-1">Tren Pendapatan</p>
-          <p className="text-xs text-gray-400 mb-4">Pendapatan per bulan (2025)</p>
+          <p className="text-xs text-gray-400 mb-4">
+            {period === "hari" ? "Pendapatan per hari (7 hari terakhir)" : period === "minggu" ? "Pendapatan per minggu (4 minggu terakhir)" : "Pendapatan per bulan (6 bulan terakhir)"}
+          </p>
           <ChartContainer config={chartConfig} className="h-[200px] w-full">
             <BarChart data={monthlyData} barSize={20}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
@@ -141,7 +488,9 @@ export default function Reports() {
         </Card>
         <Card>
           <p className="font-bold text-gray-800 mb-1">Pertumbuhan Pelanggan</p>
-          <p className="text-xs text-gray-400 mb-4">Pelanggan baru per bulan</p>
+          <p className="text-xs text-gray-400 mb-4">
+            {period === "hari" ? "Pelanggan baru per hari (7 hari terakhir)" : period === "minggu" ? "Pelanggan baru per minggu (4 minggu terakhir)" : "Pelanggan baru per bulan (6 bulan terakhir)"}
+          </p>
           <ChartContainer config={chartConfig} className="h-[200px] w-full">
             <LineChart data={monthlyData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
@@ -202,15 +551,30 @@ export default function Reports() {
           <Button variant="ghost" size="sm" icon={<Send size={13} />}>Kirim Reminder</Button>
         </div>
         <div className="space-y-3">
-          {customersData.filter((c) => c.status === "inactive").map((c) => (
-            <div key={c.customerId} className="flex items-center justify-between p-3 bg-red-50 rounded-xl">
-              <div className="flex items-center gap-3">
-                <Avatar name={c.customerName} size="md" color="bg-red-100" className="text-red-500" />
-                <div><p className="font-semibold text-sm">{c.customerName}</p><p className="text-xs text-gray-500">Terakhir: {c.lastTransaction}</p></div>
-              </div>
-              <Button size="sm" icon={<Send size={11} />}>Pesan</Button>
-            </div>
-          ))}
+          {(() => {
+            const inactiveCustomers = customersData.filter((c) => c.status === "inactive");
+            const paginatedInactive = inactiveCustomers.slice((inactivePage - 1) * 5, inactivePage * 5);
+            return (
+              <>
+                {paginatedInactive.map((c) => (
+                  <div key={c.customerId} className="flex items-center justify-between p-3 bg-red-50 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <Avatar name={c.customerName} size="md" color="bg-red-100" className="text-red-500" />
+                      <div><p className="font-semibold text-sm">{c.customerName}</p><p className="text-xs text-gray-500">Terakhir: {c.lastTransaction}</p></div>
+                    </div>
+                    <Button size="sm" icon={<Send size={11} />}>Pesan</Button>
+                  </div>
+                ))}
+                <Pagination
+                  currentPage={inactivePage}
+                  totalItems={inactiveCustomers.length}
+                  itemsPerPage={5}
+                  onPageChange={setInactivePage}
+                  itemName="pelanggan tidak aktif"
+                />
+              </>
+            );
+          })()}
         </div>
       </Card>
     </div>

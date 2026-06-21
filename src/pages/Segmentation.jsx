@@ -6,6 +6,7 @@ import Badge from "../components/Badge";
 import Card from "../components/Card";
 import Table from "../components/Table";
 import Avatar from "../components/Avatar";
+import Pagination from "../components/Pagination";
 
 const segmentConfig = {
   VIP:     { variant: "purple", desc: "Pelanggan dengan pengeluaran tertinggi dan frekuensi transaksi sangat tinggi" },
@@ -47,6 +48,8 @@ export default function Segmentation() {
     });
   });
   const [activeSegment, setActiveSegment] = useState("Semua");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const segmentData = Object.keys(segmentConfig).map((seg) => ({
     name: seg,
@@ -54,6 +57,7 @@ export default function Segmentation() {
   }));
 
   const filtered = activeSegment === "Semua" ? customers : customers.filter((c) => c.segment === activeSegment);
+  const paginatedFiltered = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div>
@@ -94,7 +98,7 @@ export default function Segmentation() {
             return (
               <div
                 key={seg}
-                onClick={() => setActiveSegment(activeSegment === seg ? "Semua" : seg)}
+                onClick={() => { setActiveSegment(activeSegment === seg ? "Semua" : seg); setCurrentPage(1); }}
                 className={`rounded-2xl p-4 cursor-pointer transition-all border-2 ${activeSegment === seg ? "border-[#2940D3] shadow-md bg-[#2940D3]/5" : "border-transparent bg-white shadow-sm"}`}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -114,7 +118,7 @@ export default function Segmentation() {
         {["Semua", ...Object.keys(segmentConfig)].map((s) => (
           <button
             key={s}
-            onClick={() => setActiveSegment(s)}
+            onClick={() => { setActiveSegment(s); setCurrentPage(1); }}
             className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
               activeSegment === s ? "bg-[#2940D3] text-white shadow-sm" : "bg-white text-gray-500 border border-gray-200 hover:bg-gray-50"
             }`}
@@ -127,7 +131,7 @@ export default function Segmentation() {
       {/* Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <Table headers={["Pelanggan", "Segmen", "Frekuensi", "Total Belanja", "Transaksi Terakhir", "Status"]}>
-          {filtered.map((c) => (
+          {paginatedFiltered.map((c) => (
             <tr key={c.customerId} className="hover:bg-gray-50 transition-colors">
               <td className="px-5 py-4">
                 <div className="flex items-center gap-3">
@@ -149,6 +153,13 @@ export default function Segmentation() {
             </tr>
           ))}
         </Table>
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filtered.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          itemName="pelanggan"
+        />
       </div>
     </div>
   );

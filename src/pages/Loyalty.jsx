@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Medal } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import customersData from "../data/customers.json";
+import Pagination from "../components/Pagination";
 import {
   Dialog,
   DialogContent,
@@ -55,7 +56,9 @@ export default function Loyalty() {
     });
   });
   const [selected, setSelected] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const totalPoints = customers.reduce((s, c) => s + c.points, 0);
+  const itemsPerPage = 10;
 
   return (
     <div>
@@ -95,32 +98,43 @@ export default function Loyalty() {
           <p className="text-sm text-gray-500">Total: <span className="font-bold text-[#2940D3]">{totalPoints.toLocaleString("id-ID")} poin</span></p>
         </div>
         <Table headers={["Pelanggan", "Tier", "Poin", "Progress ke Tier Berikutnya", "Total Transaksi"]}>
-          {[...customers].sort((a, b) => b.points - a.points).map((c) => {
-            const tier = getTier(c.points);
-            const nextTier = tiers[tiers.indexOf(tier) + 1];
-            const progress = nextTier ? Math.round(((c.points - tier.min) / (nextTier.min - tier.min)) * 100) : 100;
-            return (
-              <tr key={c.customerId} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setSelected(c)}>
-                <td className="px-5 py-4">
-                  <div className="flex items-center gap-3">
-                    <Avatar name={c.customerName} size="md" shape="rounded" color="bg-[#2940D3]/10" className="text-[#2940D3]" />
-                    <p className="font-semibold text-gray-800">{c.customerName}</p>
-                  </div>
-                </td>
-                <td className="px-5 py-4"><Badge variant={tier.name} icon={<Medal size={11} style={{ color: tier.barColor }} />}>{tier.name}</Badge></td>
-                <td className="px-5 py-4 font-bold text-[#2940D3]">{c.points}</td>
-                <td className="px-5 py-4 w-48 text-left">
-                  <div className="flex items-center gap-2">
-                    <ProgressBar value={progress} color={tier.barColor} height="md" className="flex-1" />
-                    <span className="text-xs text-gray-400">{progress}%</span>
-                  </div>
-                  {nextTier && <p className="text-[11px] text-gray-400 mt-0.5">{nextTier.min - c.points} poin lagi ke {nextTier.name}</p>}
-                </td>
-                <td className="px-5 py-4 text-gray-700">{c.totalTransactions}x</td>
-              </tr>
-            );
-          })}
+          {(() => {
+            const sortedCustomers = [...customers].sort((a, b) => b.points - a.points);
+            const paginatedCustomers = sortedCustomers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+            return paginatedCustomers.map((c) => {
+              const tier = getTier(c.points);
+              const nextTier = tiers[tiers.indexOf(tier) + 1];
+              const progress = nextTier ? Math.round(((c.points - tier.min) / (nextTier.min - tier.min)) * 100) : 100;
+              return (
+                <tr key={c.customerId} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setSelected(c)}>
+                  <td className="px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar name={c.customerName} size="md" shape="rounded" color="bg-[#2940D3]/10" className="text-[#2940D3]" />
+                      <p className="font-semibold text-gray-800">{c.customerName}</p>
+                    </div>
+                  </td>
+                  <td className="px-5 py-4"><Badge variant={tier.name} icon={<Medal size={11} style={{ color: tier.barColor }} />}>{tier.name}</Badge></td>
+                  <td className="px-5 py-4 font-bold text-[#2940D3]">{c.points}</td>
+                  <td className="px-5 py-4 w-48 text-left">
+                    <div className="flex items-center gap-2">
+                      <ProgressBar value={progress} color={tier.barColor} height="md" className="flex-1" />
+                      <span className="text-xs text-gray-400">{progress}%</span>
+                    </div>
+                    {nextTier && <p className="text-[11px] text-gray-400 mt-0.5">{nextTier.min - c.points} poin lagi ke {nextTier.name}</p>}
+                  </td>
+                  <td className="px-5 py-4 text-gray-700">{c.totalTransactions}x</td>
+                </tr>
+              );
+            });
+          })()}
         </Table>
+        <Pagination
+          currentPage={currentPage}
+          totalItems={customers.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          itemName="pelanggan"
+        />
       </div>
 
       <Dialog open={!!selected} onOpenChange={(openState) => { if (!openState) setSelected(null); }}>

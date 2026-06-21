@@ -13,32 +13,30 @@ const Toaster = ({
       className="toaster group"
       icons={{
         success: (
-          <CircleCheckIcon className="size-4" />
+          <CircleCheckIcon className="size-4 text-green-600" />
         ),
         info: (
-          <InfoIcon className="size-4" />
+          <InfoIcon className="size-4 text-blue-600" />
         ),
         warning: (
-          <TriangleAlertIcon className="size-4" />
+          <TriangleAlertIcon className="size-4 text-yellow-600" />
         ),
         error: (
-          <OctagonXIcon className="size-4" />
+          <OctagonXIcon className="size-4 text-red-600" />
         ),
         loading: (
-          <Loader2Icon className="size-4 animate-spin" />
+          <Loader2Icon className="size-4 animate-spin text-gray-500" />
         ),
       }}
-      style={
-        {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
-          "--border-radius": "var(--radius)"
-        }
-      }
       toastOptions={{
         classNames: {
-          toast: "cn-toast",
+          toast: "cn-toast border border-gray-150 rounded-2xl shadow-xl p-4 font-Montserrat flex gap-3 items-start bg-white text-gray-800",
+          title: "text-xs font-bold text-gray-800",
+          description: "text-[11px] text-gray-500 font-medium mt-0.5",
+          success: "!bg-green-50/80 !border-green-100 !text-green-900",
+          error: "!bg-red-50/80 !border-red-100 !text-red-900",
+          warning: "!bg-yellow-50/80 !border-yellow-100 !text-yellow-900",
+          info: "!bg-blue-50/80 !border-blue-100 !text-blue-900",
         },
       }}
       {...props} />

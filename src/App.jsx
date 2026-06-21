@@ -25,18 +25,41 @@ const Settings      = lazy(() => import("./pages/Settings"));
 const NotFound      = lazy(() => import("./pages/NotFound"));
 const CustomerDetail = lazy(() => import("./pages/CustomerDetail"));
 const Landing       = lazy(() => import("./pages/guest/Landing"));
+const Users         = lazy(() => import("./pages/Users"));
 
 // ── Cek status login dari localStorage ───────────────────────────────────
-const isLoggedIn = () => localStorage.getItem("netto_auth") === "true";
+const getUserSession = () => {
+  try {
+    return JSON.parse(localStorage.getItem("netto_user"));
+  } catch (e) {
+    return null;
+  }
+};
 
-// ── Guard: halaman admin — redirect ke /login kalau belum login ───────────
-function ProtectedRoute({ children }) {
-  return isLoggedIn() ? children : <Navigate to="/login" replace />;
+const isLoggedIn = () => getUserSession() !== null;
+
+// ── Guard: halaman admin — khusus admin, redirect ke / jika member ───────────
+function AdminRoute({ children }) {
+  const user = getUserSession();
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  if (user.role !== "admin") {
+    return <Navigate to="/" replace />;
+  }
+  return children;
 }
 
-// ── Guard: halaman auth — redirect ke /dashboard kalau sudah login ────────
+// ── Guard: halaman auth — redirect ke dashboard/landing page kalau sudah login ────────
 function GuestRoute({ children }) {
-  return isLoggedIn() ? <Navigate to="/dashboard" replace /> : children;
+  const user = getUserSession();
+  if (user) {
+    if (user.role === "admin") {
+      return <Navigate to="/dashboard" replace />;
+    }
+    return <Navigate to="/" replace />;
+  }
+  return children;
 }
 
 export default function App() {
@@ -55,7 +78,7 @@ export default function App() {
         </Route>
 
         {/* ── Admin Routes — harus login dulu ── */}
-        <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+        <Route element={<AdminRoute><MainLayout /></AdminRoute>}>
           <Route path="/dashboard"     element={<Dashboard />} />
           <Route path="/customers"     element={<Customers />} />
           <Route path="/customers/:id" element={<CustomerDetail />} />
@@ -67,6 +90,7 @@ export default function App() {
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/reports"       element={<Reports />} />
           <Route path="/settings"      element={<Settings />} />
+          <Route path="/users"         element={<Users />} />
         </Route>
 
         {/* ── 404 — URL tidak dikenal ── */}

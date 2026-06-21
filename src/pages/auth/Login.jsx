@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-
-// Kredensial valid
-const VALID_EMAIL = "admin@netto.com";
-const VALID_PASSWORD = "netto123";
+import { usersAPI } from "../../services/usersApi";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -22,7 +19,7 @@ export default function Login() {
   };
 
   /* ── handleSubmit ── */
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -33,19 +30,28 @@ export default function Login() {
 
     setLoading(true);
 
-    // Simulasi proses autentikasi
-    setTimeout(() => {
-      if (
-        dataForm.email === VALID_EMAIL &&
-        dataForm.password === VALID_PASSWORD
-      ) {
+    try {
+      const users = await usersAPI.login(dataForm.email, dataForm.password);
+      if (users && users.length > 0) {
+        const user = users[0];
         localStorage.setItem("netto_auth", "true");
-        navigate("/dashboard");
+        localStorage.setItem("netto_user", JSON.stringify(user));
+        
+        // Cek role untuk redirection
+        if (user.role === "admin") {
+          navigate("/dashboard");
+        } else {
+          navigate("/");
+        }
       } else {
         setError("Email atau password salah. Silakan coba lagi.");
       }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Login gagal. Pastikan koneksi internet aktif dan silakan coba lagi.");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const errorInfo = error ? (

@@ -190,3 +190,38 @@ body {
     @apply font-sans;
   }
 }
+
+/* ── Sonner Toast Custom Overrides ── */
+[data-sonner-toast] {
+  font-family: 'Montserrat', sans-serif !important;
+}
+[data-sonner-toast] [data-title] {
+  color: #1f2937 !important;
+}
+[data-sonner-toast] [data-description] {
+  color: #374151 !important;
+}
+[data-sonner-toast][data-type="success"] [data-title] {
+  color: #166534 !important;
+}
+[data-sonner-toast][data-type="success"] [data-description] {
+  color: #15803d !important;
+}
+[data-sonner-toast][data-type="error"] [data-title] {
+  color: #991b1b !important;
+}
+[data-sonner-toast][data-type="error"] [data-description] {
+  color: #b91c1c !important;
+}
+[data-sonner-toast][data-type="warning"] [data-title] {
+  color: #854d0e !important;
+}
+[data-sonner-toast][data-type="warning"] [data-description] {
+  color: #a16207 !important;
+}
+[data-sonner-toast][data-type="info"] [data-title] {
+  color: #075985 !important;
+}
+[data-sonner-toast][data-type="info"] [data-description] {
+  color: #0369a1 !important;
+}
