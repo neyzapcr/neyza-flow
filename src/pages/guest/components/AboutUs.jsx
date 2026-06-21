@@ -98,10 +98,10 @@ export default function AboutUs() {
                       Lokasi Usaha Kami
                     </h3>
                     <p className="text-[10px] sm:text-[11px] font-extrabold text-gray-700 mt-1">
-                      Netto Laundry Workshop Utama
+                      Netto Express Laundry KUAU 
                     </p>
                     <p className="text-[9.5px] sm:text-[10.5px] font-bold text-gray-400 mt-1.5 leading-relaxed">
-                      Jl. Kebon Jeruk Raya No. 42A, Palmerah, Kota Jakarta Barat, Daerah Khusus Ibukota Jakarta 11530.
+                      Jl. Kuau No.2A, Kp. Melayu, Sukajadi, Kota Pekanbaru, Riau 28122
                     </p>
                   </div>
                 </div>
@@ -110,7 +110,7 @@ export default function AboutUs() {
                 <div className="md:col-span-7 h-44 sm:h-52 w-full rounded-2xl overflow-hidden border border-slate-200/50">
                   <iframe
                     title="Netto Laundry Location"
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.4422204992984!2d106.78205467475005!3d-6.205241793782528!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f727c62bb1bb%3A0xc3fcdcdcdb53cbfa!2sJl.%20Kebon%20Jeruk%20Raya%20No.42%2C%20RT.1%2FRW.9%2C%20Kb.%20Jeruk%2C%20Kec.%20Kb.%20Jeruk%2C%20Kota%20Jakarta%20Barat%2C%20Daerah%20Khusus%20Ibukota%20Jakarta%2011530!5e0!3m2!1sid!2sid!4v1718872000000!5m2!1sid!2sid"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.661772409653!2d101.43567687349183!3d0.5075585637072189!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31d5afd54240f221%3A0x2cd0b2091bf7f6d7!2sNETTO%20EXPREES%20LAUNDRY%20KUAU!5e0!3m2!1sid!2sid!4v1782019568210!5m2!1sid!2sid"
                     className="w-full h-full border-0"
                     allowFullScreen=""
                     loading="lazy"

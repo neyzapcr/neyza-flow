@@ -71,7 +71,7 @@ export default function Hero() {
             <div className="space-y-6 text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 border border-white/20 text-[10px] font-bold text-white uppercase tracking-wider animate-pulse">
               <Sparkles size={12} />
-              Aplikasi Laundry Modern No.1 di Indonesia
+              Netto Express Laundry KUAU
             </div>
             
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-tight">
