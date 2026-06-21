@@ -1,7 +1,7 @@
 export default function StatCard({
   Icon,
-  iconBg    = "bg-[#3ABDE8]/10",
-  iconColor = "text-[#3ABDE8]",
+  iconBg    = "bg-[#2940D3]/10",
+  iconColor = "text-[#2940D3]",
   label,
   value,
   sub,

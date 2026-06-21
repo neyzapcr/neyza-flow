@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import Logo from "./Logo";
 import {
   LayoutDashboard, Users, Receipt, Package, Star,
   Gift, PieChart, Bell, FileText, LogOut, Settings, UserCheck,
@@ -61,11 +62,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }) {
       >
         {/* ── Logo ── */}
         <div className={`flex items-center border-b border-gray-100 transition-all duration-300 h-16 ${expanded ? "px-4" : "justify-center px-0"}`}>
-          <img
-            src="/img/logo Netto Dark.png"
-            alt="Netto Laundry"
-            className={`object-contain transition-all duration-300 ${expanded ? "h-10 w-auto" : "h-9 w-9"}`}
-          />
+          <Logo variant="dark" expanded={expanded} className={expanded ? "h-10 w-auto" : "h-9 w-9"} />
         </div>
 
         {/* ── Navigation ── */}

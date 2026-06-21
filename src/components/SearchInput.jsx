@@ -21,7 +21,7 @@ export default function SearchInput({
     <div
       className={`
         flex items-center gap-2 bg-gray-50 rounded-xl border border-gray-100
-        focus-within:border-[#3ABDE8] focus-within:ring-2 focus-within:ring-[#3ABDE8]/10
+        focus-within:border-[#2940D3] focus-within:ring-2 focus-within:ring-[#2940D3]/10
         transition-all ${padding} ${className}
       `}
     >

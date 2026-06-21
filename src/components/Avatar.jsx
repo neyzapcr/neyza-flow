@@ -14,7 +14,7 @@ export default function Avatar({
   name     = "?",
   size     = "md",
   shape    = "rounded",
-  color    = "bg-[#3ABDE8]",
+  color    = "bg-[#2940D3]",
   className = "",
 }) {
   return (

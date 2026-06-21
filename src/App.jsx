@@ -1,6 +1,7 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Loading from "./components/Loading";
+import { applyTheme } from "./utils/theme";
 
 // Layouts
 import MainLayout from "./layouts/MainLayout";
@@ -63,6 +64,10 @@ function GuestRoute({ children }) {
 }
 
 export default function App() {
+  useEffect(() => {
+    applyTheme();
+  }, []);
+
   return (
     <Suspense fallback={<Loading />}>
       <Routes>

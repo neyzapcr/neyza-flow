@@ -1,4 +1,5 @@
 import { Outlet } from "react-router-dom";
+import Logo from "../components/Logo";
 
 export default function AuthLayout() {
   return (
@@ -18,12 +19,8 @@ export default function AuthLayout() {
         <div className="relative z-20 flex flex-col items-center text-center max-w-md">
           <div className="flex flex-col items-center mb-12">
             {/* Logo */}
-            <div className="w-72 xl:w-80 mb-4">
-              <img
-                src="/img/logo Netto light.png"
-                alt="Netto Laundry Logo"
-                className="w-full h-auto object-contain drop-shadow-2xl"
-              />
+            <div className="w-72 xl:w-80 mb-4 flex justify-center">
+              <Logo variant="light" className="w-full h-auto" />
             </div>
 
             {/* Title */}
@@ -49,11 +46,7 @@ export default function AuthLayout() {
       <div className="flex-1 flex flex-col items-center justify-center bg-white p-6 sm:p-10 min-h-screen relative z-20">
         {/* Mobile logo */}
         <div className="lg:hidden flex flex-col items-center mb-8">
-          <img
-            src="/img/logo Netto Dark.png"
-            alt="Netto Laundry Logo"
-            className="h-12 w-auto object-contain mb-2"
-          />
+          <Logo variant="dark" className="h-12 w-auto mb-2" />
           <p className="font-Montserrat text-xs text-gray-400">
             Customer Relationship Management
           </p>

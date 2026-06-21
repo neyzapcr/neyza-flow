@@ -29,7 +29,7 @@ export default function TextArea({
         required={required}
         className={`
           w-full border rounded-xl px-4 py-3 text-sm outline-none transition-all
-          focus:border-[#3ABDE8] focus:ring-2 focus:ring-[#3ABDE8]/20
+          focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20
           ${error ? "border-red-300" : "border-gray-200"}
           ${resize ? "" : "resize-none"}
         `}

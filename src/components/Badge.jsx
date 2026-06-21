@@ -1,12 +1,12 @@
 
 const variants = {
-  blue:     "bg-blue-100 text-[#3ABDE8]",
+  blue:     "bg-[#2940D3]/10 text-[#2940D3]",
   green:    "bg-green-100 text-green-700",
   red:      "bg-red-100 text-red-600",
   yellow:   "bg-yellow-100 text-yellow-700",
   purple:   "bg-purple-100 text-purple-700",
   gray:     "bg-gray-100 text-gray-600",
-  teal:     "bg-[#1A667A]/10 text-[#1A667A]",
+  teal:     "bg-[#142297]/10 text-[#142297]",
   
   bronze:   "bg-orange-50 text-orange-700 border border-orange-200/40",
   silver:   "bg-slate-100 text-slate-700 border border-slate-200/40",

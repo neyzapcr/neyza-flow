@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Home, ArrowLeft } from "lucide-react";
 import Button from "../components/Button";
+import Logo from "../components/Logo";
 
 export default function NotFound() {
   const navigate = useNavigate();
@@ -15,11 +16,7 @@ export default function NotFound() {
           </p>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-20 h-20 bg-[#2940D3]/10 rounded-2xl flex items-center justify-center">
-              <img
-                src="/img/logo Netto Dark.png"
-                alt="Netto Laundry"
-                className="h-10 w-auto object-contain opacity-60"
-              />
+              <Logo variant="dark" className="h-10 w-auto opacity-60" />
             </div>
           </div>
         </div>

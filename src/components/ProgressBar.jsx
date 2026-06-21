@@ -5,7 +5,7 @@ const heights = {
 
 export default function ProgressBar({
   value     = 0,
-  color     = "#3ABDE8",
+  color     = "#2940D3",
   height    = "md",
   showLabel = false,
   label,

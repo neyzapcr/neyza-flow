@@ -65,7 +65,7 @@ async function exportPDF({ totalRevenue, activeCustomers, newCustomers, retentio
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
   doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.text("LAPORAN CRM - NEYZA FLOW LAUNDRY", 14, 20);
+  doc.text("LAPORAN CRM - Netto LAUNDRY", 14, 20);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
@@ -247,7 +247,7 @@ function exportWord({ totalRevenue, activeCustomers, newCustomers, retentionRate
   const htmlContent = `
     <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
     <head>
-      <title>Laporan CRM Neyza Flow Laundry</title>
+      <title>Laporan CRM  Netto Laundry</title>
       <style>
         body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; line-height: 1.6; }
         h1 { color: #2940D3; border-bottom: 2px solid #2940D3; padding-bottom: 5px; }
@@ -259,7 +259,7 @@ function exportWord({ totalRevenue, activeCustomers, newCustomers, retentionRate
       </style>
     </head>
     <body>
-      <h1>LAPORAN CRM - NEYZA FLOW LAUNDRY</h1>
+      <h1>LAPORAN CRM - Netto LAUNDRY</h1>
       <p class="meta">Dicetak pada: ${dateStr} | Filter Periode: ${period.toUpperCase()}</p>
 
       <h2>Ringkasan Performa Bisnis</h2>

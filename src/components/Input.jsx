@@ -35,7 +35,7 @@ export default function Input({
           required={required}
           className={`
             w-full border rounded-xl py-2.5 text-sm outline-none transition-all
-            focus:border-[#3ABDE8] focus:ring-2 focus:ring-[#3ABDE8]/20
+            focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20
             ${error ? "border-red-300" : "border-gray-200"}
             ${icon ? "pl-9 pr-4" : "px-4"}
             ${iconRight ? "pr-10" : ""}

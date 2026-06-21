@@ -18,7 +18,7 @@ const variantConfig = {
   info: {
     Icon: Info,
     iconBg: "bg-blue-100",
-    iconColor: "text-[#3ABDE8]",
+    iconColor: "text-[#2940D3]",
     confirmVariant: "primary",
   },
 };

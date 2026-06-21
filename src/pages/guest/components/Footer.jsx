@@ -1,6 +1,7 @@
 import { MapPin, Phone, Mail } from "lucide-react";
 import BackgroundBubbles from "./BackgroundBubbles";
 import ScrollReveal from "./ScrollReveal";
+import Logo from "../../../components/Logo";
 
 export default function Footer() {
   const socials = [
@@ -43,12 +44,7 @@ export default function Footer() {
         
         {/* Centered Logo & Motto */}
         <div className="flex flex-col items-center space-y-2">
-          <img 
-            src="/img/logo Netto Dark.png" 
-            alt="Netto Laundry Logo" 
-            className="h-8 w-auto object-contain transform hover:scale-102 transition-transform duration-200"
-            style={{ filter: "brightness(0) invert(1)" }}
-          />
+          <Logo variant="light" className="h-8 w-auto transform hover:scale-102 transition-transform duration-200" />
           <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest">
             Laundry Cepat, Bersih, dan Terpercaya
           </p>

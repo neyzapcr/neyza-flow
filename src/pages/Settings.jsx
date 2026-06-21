@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { Save, Plus, Trash2, RotateCcw, Settings2, Tag, Gift, Zap } from "lucide-react";
+import { 
+  Save, Plus, Trash2, RotateCcw, Settings2, Tag, Gift, Zap,
+  Palette, Image, Type, Paintbrush, LayoutDashboard, Shirt,
+  Wind, Sparkles, Package, Star, Medal, Users, ShieldCheck
+} from "lucide-react";
 import { toast } from "sonner";
 import PageHeader from "../components/PageHeader";
 import Tabs from "../components/Tabs";
@@ -7,6 +11,7 @@ import Button from "../components/Button";
 import Card from "../components/Card";
 import Input from "../components/Input";
 import Select from "../components/Select";
+import { applyTheme } from "../utils/theme";
 
 // ── Default settings ──────────────────────────────────────────────────────
 const DEFAULT_SERVICES = [
@@ -51,9 +56,45 @@ function PriceInput({ value, onChange, prefix = "Rp" }) {
 // ─────────────────────────────────────────────────────────────────────────
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("services");
-  const [services, setServices] = useState(DEFAULT_SERVICES);
-  const [discounts, setDiscounts] = useState(DEFAULT_DISCOUNTS);
-  const [points, setPoints] = useState(DEFAULT_POINTS);
+  
+  const [services, setServices] = useState(() => {
+    const saved = localStorage.getItem("netto_services");
+    return saved ? JSON.parse(saved) : DEFAULT_SERVICES;
+  });
+  
+  const [discounts, setDiscounts] = useState(() => {
+    const saved = localStorage.getItem("netto_discounts");
+    return saved ? JSON.parse(saved) : DEFAULT_DISCOUNTS;
+  });
+  
+  const [points, setPoints] = useState(() => {
+    const saved = localStorage.getItem("netto_points");
+    return saved ? JSON.parse(saved) : DEFAULT_POINTS;
+  });
+
+  const [branding, setBranding] = useState(() => {
+    const configStr = localStorage.getItem("netto_branding");
+    return configStr ? JSON.parse(configStr) : {
+      themePrimary: "#2940D3",
+      themeSecondary: "#142297",
+      landingPrimary: "#3957ED",
+      landingSecondary: "#80C8F6",
+      logoType: "image",
+      logoUrlDark: "/img/logo Netto Dark.png",
+      logoUrlLight: "/img/logo Netto light.png",
+      logoText: "Netto Laundry",
+      logoIcon: "Shirt"
+    };
+  });
+
+  const handleSave = () => {
+    localStorage.setItem("netto_services", JSON.stringify(services));
+    localStorage.setItem("netto_discounts", JSON.stringify(discounts));
+    localStorage.setItem("netto_points", JSON.stringify(points));
+    localStorage.setItem("netto_branding", JSON.stringify(branding));
+    applyTheme();
+    toast.success("Pengaturan & branding berhasil disimpan!");
+  };
 
   // ── Service handlers ──
   const updateService = (id, field, val) =>
@@ -78,7 +119,7 @@ export default function Settings() {
       <PageHeader title="Pengaturan" subtitle="Kelola harga layanan, diskon, dan program poin">
         <Button
           icon={<Save size={15} />}
-          onClick={() => toast.success("Pengaturan berhasil disimpan!")}
+          onClick={handleSave}
         >
           Simpan Semua
         </Button>
@@ -93,6 +134,7 @@ export default function Settings() {
           { key: "services", label: "Harga Layanan", icon: <Settings2 size={15} /> },
           { key: "discounts", label: "Diskon & Promo", icon: <Tag size={15} /> },
           { key: "points", label: "Program Poin", icon: <Gift size={15} /> },
+          { key: "branding", label: "Branding & Tampilan", icon: <Paintbrush size={15} /> },
         ]}
       />
 
@@ -295,6 +337,261 @@ export default function Settings() {
 
           <div className="flex justify-end">
             <Button variant="ghost" onClick={() => setPoints(DEFAULT_POINTS)} icon={<RotateCcw size={14}/>}>Reset ke Default</Button>
+          </div>
+        </div>
+      )}
+      {/* ── TAB: Branding & Tampilan ── */}
+      {activeTab === "branding" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Form Pengaturan Branding */}
+            <div className="lg:col-span-7 space-y-4">
+              <Card>
+                <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-3">
+                  <Palette size={18} className="text-[#2940D3]" />
+                  <p className="font-bold text-gray-800">Skema Warna Aplikasi</p>
+                </div>
+                
+                {/* Warna Dashboard Admin */}
+                <div className="mb-4">
+                  <p className="text-xs font-bold text-gray-700 mb-2">Dashboard & Panel Admin</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-semibold text-gray-500 mb-1 block">Warna Utama (Primary)</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={branding.themePrimary}
+                          onChange={(e) => setBranding({ ...branding, themePrimary: e.target.value })}
+                          className="w-8 h-8 rounded-lg cursor-pointer border border-gray-200"
+                        />
+                        <Input
+                          value={branding.themePrimary}
+                          onChange={(e) => setBranding({ ...branding, themePrimary: e.target.value })}
+                          placeholder="#2940D3"
+                          className="flex-1 !py-1 text-xs"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold text-gray-500 mb-1 block">Warna Sekunder (Secondary)</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={branding.themeSecondary}
+                          onChange={(e) => setBranding({ ...branding, themeSecondary: e.target.value })}
+                          className="w-8 h-8 rounded-lg cursor-pointer border border-gray-200"
+                        />
+                        <Input
+                          value={branding.themeSecondary}
+                          onChange={(e) => setBranding({ ...branding, themeSecondary: e.target.value })}
+                          placeholder="#142297"
+                          className="flex-1 !py-1 text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Warna Landing Page Publik */}
+                <div>
+                  <p className="text-xs font-bold text-gray-700 mb-2 border-t border-gray-50 pt-3">Landing Page Publik</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-semibold text-gray-500 mb-1 block">Warna Utama (Primary)</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={branding.landingPrimary || "#3957ED"}
+                          onChange={(e) => setBranding({ ...branding, landingPrimary: e.target.value })}
+                          className="w-8 h-8 rounded-lg cursor-pointer border border-gray-200"
+                        />
+                        <Input
+                          value={branding.landingPrimary || "#3957ED"}
+                          onChange={(e) => setBranding({ ...branding, landingPrimary: e.target.value })}
+                          placeholder="#3957ED"
+                          className="flex-1 !py-1 text-xs"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold text-gray-500 mb-1 block">Warna Gradasi Sekunder</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={branding.landingSecondary || "#80C8F6"}
+                          onChange={(e) => setBranding({ ...branding, landingSecondary: e.target.value })}
+                          className="w-8 h-8 rounded-lg cursor-pointer border border-gray-200"
+                        />
+                        <Input
+                          value={branding.landingSecondary || "#80C8F6"}
+                          onChange={(e) => setBranding({ ...branding, landingSecondary: e.target.value })}
+                          placeholder="#80C8F6"
+                          className="flex-1 !py-1 text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card>
+                <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-3">
+                  <Image size={18} className="text-[#2940D3]" />
+                  <p className="font-bold text-gray-800">Identitas & Logo Brand</p>
+                </div>
+                
+                {/* Tipe Logo */}
+                <div className="mb-4">
+                  <label className="text-xs font-semibold text-gray-600 mb-2 block">Tipe Identitas Logo</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setBranding({ ...branding, logoType: "image" })}
+                      className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all font-semibold text-xs ${branding.logoType === "image" ? "border-[#2940D3] bg-[#2940D3]/5 text-[#2940D3]" : "border-gray-200 hover:border-gray-300 text-gray-600"}`}
+                    >
+                      <Image size={14} /> Logo Gambar (URL)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBranding({ ...branding, logoType: "text" })}
+                      className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all font-semibold text-xs ${branding.logoType === "text" ? "border-[#2940D3] bg-[#2940D3]/5 text-[#2940D3]" : "border-gray-200 hover:border-gray-300 text-gray-600"}`}
+                    >
+                      <Type size={14} /> Logo Teks & Ikon
+                    </button>
+                  </div>
+                </div>
+
+                {branding.logoType === "image" ? (
+                  <div className="space-y-3 animate-in fade-in slide-in-from-top-1">
+                    <Input
+                      label="URL Logo Tema Gelap (Dark Mode / Sidebar)"
+                      value={branding.logoUrlDark}
+                      onChange={(e) => setBranding({ ...branding, logoUrlDark: e.target.value })}
+                      placeholder="Masukkan URL logo untuk latar putih..."
+                    />
+                    <Input
+                      label="URL Logo Tema Terang (Light Mode / Auth)"
+                      value={branding.logoUrlLight}
+                      onChange={(e) => setBranding({ ...branding, logoUrlLight: e.target.value })}
+                      placeholder="Masukkan URL logo untuk latar gelap..."
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-3 animate-in fade-in slide-in-from-top-1">
+                    <Input
+                      label="Nama Brand (Teks)"
+                      value={branding.logoText}
+                      onChange={(e) => setBranding({ ...branding, logoText: e.target.value })}
+                      placeholder="Contoh: Netto Laundry"
+                    />
+                    <div>
+                      <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Pilih Ikon Brand</label>
+                      <Select
+                        value={branding.logoIcon}
+                        onChange={(e) => setBranding({ ...branding, logoIcon: e.target.value })}
+                        options={[
+                          { label: "Kemeja (Shirt)", value: "Shirt" },
+                          { label: "Angin (Wind)", value: "Wind" },
+                          { label: "Kilau (Sparkles)", value: "Sparkles" },
+                          { label: "Paket (Package)", value: "Package" },
+                          { label: "Bintang (Star)", value: "Star" },
+                          { label: "Medali (Medal)", value: "Medal" },
+                          { label: "Kilat (Zap)", value: "Zap" },
+                          { label: "Pengguna (Users)", value: "Users" },
+                          { label: "Aman (ShieldCheck)", value: "ShieldCheck" }
+                        ]}
+                      />
+                    </div>
+                  </div>
+                )}
+              </Card>
+            </div>
+
+            {/* Live Preview Panel */}
+            <div className="lg:col-span-5">
+              <Card className="sticky top-4 border border-gray-100 shadow-sm h-full flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-3">
+                    <Settings2 size={18} className="text-[#2940D3]" />
+                    <p className="font-bold text-gray-800">Pratinjau Langsung (Real-Time Preview)</p>
+                  </div>
+                  
+                  {/* Preview Sidebar */}
+                  <p className="text-xs font-semibold text-gray-500 mb-2">Representasi Sidebar & Menu</p>
+                  <div className="border border-gray-100 rounded-2xl overflow-hidden shadow-sm bg-white mb-6">
+                    <div className="flex items-center px-4 h-14 border-b border-gray-100">
+                      {branding.logoType === "image" ? (
+                        <img src={branding.logoUrlDark || "/img/logo Netto Dark.png"} alt="Preview Logo" className="h-8 object-contain" />
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${branding.themePrimary}1A` }}>
+                            {React.createElement(
+                              {
+                                Shirt, Wind, Sparkles, Package, Star, Medal, Zap, Users, ShieldCheck
+                              }[branding.logoIcon] || Shirt,
+                              { size: 18, style: { color: branding.themePrimary } }
+                            )}
+                          </div>
+                          <span className="font-extrabold text-sm text-gray-800" style={{ color: branding.themePrimary }}>{branding.logoText || "Netto Laundry"}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-2 space-y-1">
+                      <div className="flex items-center gap-3 px-3 py-2 rounded-xl text-white text-xs font-medium" style={{ backgroundColor: branding.themePrimary }}>
+                        <LayoutDashboard size={14} />
+                        <span>Dashboard (Aktif)</span>
+                      </div>
+                      <div className="flex items-center gap-3 px-3 py-2 rounded-xl text-gray-500 text-xs font-medium hover:bg-gray-50">
+                        <Users size={14} />
+                        <span>Pelanggan</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Preview Auth / Landing Page */}
+                  <p className="text-xs font-semibold text-gray-500 mb-2">Representasi Landing Page Hero</p>
+                  <div className="rounded-2xl p-6 text-center text-white overflow-hidden relative" style={{ background: `linear-gradient(135deg, ${branding.landingSecondary || "#80C8F6"}, ${branding.landingPrimary || "#3957ED"})` }}>
+                    <div className="relative z-10 flex flex-col items-center">
+                      <div className="mb-4 w-32 flex justify-center">
+                        {branding.logoType === "image" ? (
+                          <img src={branding.logoUrlLight || "/img/logo Netto light.png"} alt="Preview Logo Light" className="w-full object-contain" style={{ filter: "brightness(0) invert(1)" }} />
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <div className="p-2 rounded-xl bg-white/20 flex items-center justify-center">
+                              {React.createElement(
+                                {
+                                  Shirt, Wind, Sparkles, Package, Star, Medal, Zap, Users, ShieldCheck
+                                }[branding.logoIcon] || Shirt,
+                                { size: 24, className: "text-white" }
+                              )}
+                            </div>
+                            <span className="font-extrabold text-base text-white">{branding.logoText || "Netto Laundry"}</span>
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="font-bold text-base">Netto Laundry</h3>
+                      <p className="text-[10px] text-white/80 mt-1">Laundry Cepat, Bersih, dan Terpercaya</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-end">
+                  <Button variant="outline" size="sm" icon={<RotateCcw size={14} />} onClick={() => setBranding({
+                    themePrimary: "#2940D3",
+                    themeSecondary: "#142297",
+                    landingPrimary: "#3957ED",
+                    landingSecondary: "#80C8F6",
+                    logoType: "image",
+                    logoUrlDark: "/img/logo Netto Dark.png",
+                    logoUrlLight: "/img/logo Netto light.png",
+                    logoText: "Netto Laundry",
+                    logoIcon: "Shirt"
+                  })}>Reset default branding</Button>
+                </div>
+              </Card>
+            </div>
           </div>
         </div>
       )}

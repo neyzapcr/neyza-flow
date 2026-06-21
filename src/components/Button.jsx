@@ -1,6 +1,6 @@
 const variants = {
-  primary:   "bg-[#3ABDE8] text-white hover:bg-[#2AADD8] shadow-sm",
-  secondary: "bg-[#1A667A] text-white hover:bg-[#155a6b] shadow-sm",
+  primary:   "bg-[#2940D3] text-white hover:bg-[#142297] shadow-sm",
+  secondary: "bg-[#142297] text-white hover:bg-[#2940D3] shadow-sm",
   danger:    "bg-red-500 text-white hover:bg-red-600 shadow-sm",
   warning:   "bg-yellow-50 text-yellow-600 hover:bg-yellow-100",
   ghost:     "bg-gray-100 text-gray-600 hover:bg-gray-200",

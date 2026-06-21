@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Menu, X, ChevronDown, User, LogOut, Check, Settings } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../../../components/ui/dialog";
 import { usersAPI } from "../../../services/usersApi";
+import Logo from "../../../components/Logo";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -96,11 +97,7 @@ export default function Navbar() {
         
         {/* Logo Netto */}
         <div className="flex items-center transform hover:scale-105 transition-transform duration-200">
-          <img 
-            src="/img/logo Netto Dark.png" 
-            alt="Netto Laundry Logo" 
-            className="h-8 w-auto object-contain"
-          />
+          <Logo variant="dark" className="h-8 w-auto" />
         </div>
 
         {/* Desktop Nav Links */}
