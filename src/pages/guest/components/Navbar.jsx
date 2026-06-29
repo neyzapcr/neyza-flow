@@ -192,13 +192,13 @@ export default function Navbar() {
                 to="/login" 
                 className="px-3.5 py-1.5 text-[10px] font-extrabold text-gray-700 hover:text-[#3957ED] transition-all focus:outline-none uppercase tracking-wider"
               >
-                Login
+                Masuk
               </Link>
               <Link 
                 to="/register" 
                 className="px-4 py-1.5 text-[10px] font-extrabold text-white bg-[#3957ED] rounded-xl hover:bg-[#2940D3] hover:shadow-md active:translate-y-[1px] transition-all duration-200 focus:outline-none uppercase tracking-wider"
               >
-                Register
+                Daftar
               </Link>
             </>
           )}

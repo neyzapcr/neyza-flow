@@ -1,4 +1,4 @@
-import { Sparkles, ArrowRight, Clock, Truck, DollarSign } from "lucide-react";
+import { Sparkles, ArrowRight, Clock, DollarSign } from "lucide-react";
 import BackgroundBubbles from "./BackgroundBubbles";
 import ScrollReveal from "./ScrollReveal";
 import BrowserMockup from "./BrowserMockup";
@@ -18,9 +18,9 @@ export default function Hero() {
       color: "bg-white/10 text-white" 
     },
     { 
-      label: "Antar-Jemput", 
-      desc: "Kurir siap ambil & antar sampai pintu rumah", 
-      icon: Truck,
+      label: "Promo Menarik", 
+      desc: "Dapatkan diskon khusus & hadiah menarik", 
+      icon: Sparkles,
       color: "bg-white/10 text-white" 
     },
   ];
@@ -79,7 +79,7 @@ export default function Hero() {
             </h1>
             
             <p className="text-[11px] sm:text-xs text-white/80 leading-relaxed max-w-lg font-bold">
-              Solusi perawatan pakaian modern. Kami memproses pakaian Anda secara higienis, cepat, dan rapi. Nikmati kemudahan melacak cucian real-time dan layanan antar jemput instan.
+              Solusi perawatan pakaian modern. Kami memproses pakaian Anda secara higienis, cepat, dan rapi. Nikmati kemudahan melacak cucian real-time dan berbagai promo menarik.
             </p>
 
             {/* Action Row: Buttons and Advantages responsive placement */}
