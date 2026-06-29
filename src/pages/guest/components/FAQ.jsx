@@ -38,8 +38,8 @@ export default function FAQ() {
   const rightColFaqs = faqs.filter((_, idx) => idx % 2 !== 0);
 
   return (
-    <section id="faq" className="py-14 bg-[#FAFBFD] text-gray-800 relative overflow-hidden">
-      <BackgroundBubbles count={8} theme="blue" />
+    <section id="faq" className="py-14 bg-gradient-to-br from-[#80C8F6] to-[#3957ED] text-white relative overflow-hidden">
+      <BackgroundBubbles count={8} theme="light" />
 
       {/* Decorative SVG Wave Divider Top */}
       <div className="absolute top-[-1.5px] left-0 w-full overflow-hidden leading-[0] transform rotate-180">
@@ -50,17 +50,17 @@ export default function FAQ() {
         </svg>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 relative z-10">
+      <div className="max-w-5xl mx-auto px-6 relative z-10 font-lagusans">
         
         <ScrollReveal variant="slide-up">
           <div className="text-center mb-10 space-y-3">
-            <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#3957ED]/5 text-[10px] font-extrabold text-[#3957ED] uppercase tracking-wider">
+            <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-[10px] font-extrabold text-white uppercase tracking-wider">
               FAQ
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-gray-900 leading-tight">
+            <h2 className="text-xl sm:text-2xl font-black text-white leading-tight">
               Pertanyaan yang Sering Diajukan
             </h2>
-            <p className="text-[11px] font-bold text-gray-500 max-w-xl mx-auto">
+            <p className="text-[11px] font-bold text-white/80 max-w-xl mx-auto">
               Temukan jawaban cepat atas pertanyaan-pertanyaan yang sering ditanyakan mengenai layanan kami.
             </p>
           </div>
@@ -81,8 +81,8 @@ export default function FAQ() {
                   key={originalIdx} 
                   className={`group border rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300 ${
                     isOpen 
-                      ? "border-[#3957ED] bg-white shadow-md shadow-[#3957ED]/5" 
-                      : "border-gray-150 bg-white/75 hover:border-gray-300"
+                      ? "border-[#3957ED] bg-white ring-2 ring-[#3957ED]/15 shadow-xl shadow-[#3957ED]/8" 
+                      : "border-gray-150 bg-white/75 hover:border-gray-300 hover:shadow-md hover:shadow-gray-100"
                   }`}
                 >
                   <button 
@@ -101,14 +101,16 @@ export default function FAQ() {
                     />
                   </button>
                   
-                  {/* Slide details container */}
+                  {/* CSS Grid Smooth Height Auto transition details container */}
                   <div 
-                    className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                      isOpen ? "max-h-60 border-t border-gray-100" : "max-h-0 opacity-0 pointer-events-none"
+                    className={`grid transition-all duration-350 ease-in-out ${
+                      isOpen ? "grid-rows-[1fr] border-t border-gray-100 opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none"
                     }`}
                   >
-                    <div className="px-2.5 py-2 sm:px-5 sm:py-4 text-[8px] xs:text-[9px] sm:text-[10.5px] font-bold text-gray-500 leading-normal sm:leading-relaxed bg-[#3957ED]/2">
-                      {faq.a}
+                    <div className="overflow-hidden">
+                      <div className="px-2.5 py-2 sm:px-5 sm:py-4 text-[8px] xs:text-[9px] sm:text-[10.5px] font-bold text-gray-500 leading-normal sm:leading-relaxed bg-[#3957ED]/2">
+                        {faq.a}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -128,8 +130,8 @@ export default function FAQ() {
                   key={originalIdx} 
                   className={`group border rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300 ${
                     isOpen 
-                      ? "border-[#3957ED] bg-white shadow-md shadow-[#3957ED]/5" 
-                      : "border-gray-150 bg-white/75 hover:border-gray-300"
+                      ? "border-[#3957ED] bg-white ring-2 ring-[#3957ED]/15 shadow-xl shadow-[#3957ED]/8" 
+                      : "border-gray-150 bg-white/75 hover:border-gray-300 hover:shadow-md hover:shadow-gray-100"
                   }`}
                 >
                   <button 
@@ -148,14 +150,16 @@ export default function FAQ() {
                     />
                   </button>
                   
-                  {/* Slide details container */}
+                  {/* CSS Grid Smooth Height Auto transition details container */}
                   <div 
-                    className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                      isOpen ? "max-h-60 border-t border-gray-100" : "max-h-0 opacity-0 pointer-events-none"
+                    className={`grid transition-all duration-350 ease-in-out ${
+                      isOpen ? "grid-rows-[1fr] border-t border-gray-100 opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none"
                     }`}
                   >
-                    <div className="px-2.5 py-2 sm:px-5 sm:py-4 text-[8px] xs:text-[9px] sm:text-[10.5px] font-bold text-gray-500 leading-normal sm:leading-relaxed bg-[#3957ED]/2">
-                      {faq.a}
+                    <div className="overflow-hidden">
+                      <div className="px-2.5 py-2 sm:px-5 sm:py-4 text-[8px] xs:text-[9px] sm:text-[10.5px] font-bold text-gray-500 leading-normal sm:leading-relaxed bg-[#3957ED]/2">
+                        {faq.a}
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -5,20 +5,20 @@ import ScrollReveal from "./ScrollReveal";
 export default function AboutUs() {
   const sections = [
     {
-      title: "Sistem Laundry Modern",
-      description: "Netto Laundry mengintegrasikan perawatan pakaian premium dengan sistem digital mutakhir. Kami memastikan seluruh data cucian Anda terpantau secara transparan melalui panel lacak cucian digital.",
+      title: "Sistem CRM Modern",
+      description: "Netto Laundry mengintegrasikan perawatan pakaian premium dengan sistem CRM digital mutakhir. Layanan kami terhubung untuk memastikan proses administrasi cepat, data tersimpan rapi, dan transparan.",
       icon: Info,
       color: "bg-blue-50 text-[#3957ED]",
     },
     {
-      title: "Latar Belakang",
-      description: "Berdiri dari tantangan rutinitas harian yang padat, kami hadir memberikan solusi laundry berkualitas tinggi tanpa menyita waktu berharga Anda. Kami hadir mendefinisikan kembali cara Anda mencuci.",
+      title: "Kemudahan Layanan",
+      description: "Melalui sistem CRM terintegrasi, pelanggan dapat dengan mudah memantau progres laundry real-time, menerima pemberitahuan otomatis, dan menukar poin loyalitas secara digital tanpa ribet.",
       icon: Compass,
       color: "bg-sky-50 text-[#3957ED]",
     },
     {
       title: "Tujuan Layanan",
-      description: "Memberikan kenyamanan laundry terbaik dengan mengutamakan higienitas mutlak (1 mesin 1 pelanggan), ketepatan waktu tinggi, dan parfum aromatik eksklusif yang bertahan lama.",
+      description: "Memberikan kenyamanan laundry terbaik dengan mengutamakan transparansi data pelanggan, higienitas mutlak (1 mesin 1 pelanggan), dan pelayanan personal yang bersahabat.",
       icon: Target,
       color: "bg-emerald-50 text-emerald-600",
     },
@@ -49,7 +49,7 @@ export default function AboutUs() {
               Kenali Lebih Dekat Netto Laundry
             </h2>
             <p className="text-[11px] font-bold text-gray-500">
-              Kami menghadirkan standar baru perawatan pakaian modern yang higienis, andal, dan sepenuhnya terdigitalisasi.
+              Kami menghadirkan standar baru perawatan pakaian modern yang higienis, cepat, dan transparan didukung oleh sistem CRM terintegrasi.
             </p>
           </div>
         </ScrollReveal>

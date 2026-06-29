@@ -13,26 +13,26 @@ export default function HowItWorks() {
 
   const steps = [
     {
-      title: "Terima Pakaian",
-      description: "Pakaian kotor Anda kami terima langsung di outlet atau diambil oleh kurir kami di depan pintu rumah.",
+      title: "Antar atau Daftar Pesanan",
+      description: "Antar pakaian kotor Anda ke outlet kami atau daftarkan pesanan Anda secara digital.",
       icon: Inbox,
       stepNum: 1,
     },
     {
-      title: "Masuk ke Sistem",
-      description: "Data cucian dicatat secara digital untuk proses penimbangan, pelabelan, dan penentuan jenis paket.",
+      title: "Tercatat Otomatis",
+      description: "Data pakaian Anda langsung dicatat secara otomatis ke dalam sistem CRM kami untuk penimbangan dan pelabelan.",
       icon: Shirt,
       stepNum: 2,
     },
     {
-      title: "Pantau Status",
-      description: "Pelanggan memantau setiap tahapan cuci secara real-time dan transparan langsung dari website.",
+      title: "Pantau Status Real-Time",
+      description: "Pantau status cucian Anda secara real-time kapan saja langsung melalui sistem tracking di website kami.",
       icon: Eye,
       stepNum: 3,
     },
     {
-      title: "Pesanan Selesai",
-      description: "Pakaian bersih, wangi, rapi siap diserahkan/diantar dan Anda mendapatkan poin loyalitas.",
+      title: "Ambil Pesanan & Dapat Poin",
+      description: "Ambil pakaian bersih Anda di outlet dan kumpulkan poin loyalitas untuk mendapatkan diskon di pesanan berikutnya.",
       icon: Sparkles,
       stepNum: 4,
     },
@@ -49,7 +49,7 @@ export default function HowItWorks() {
   const ActiveIcon = steps[activeStep].icon;
 
   return (
-    <section id="cara-kerja" className="py-16 bg-gradient-to-br from-[#80C8F6] to-[#3957ED] text-white relative overflow-hidden">
+    <section id="cara-kerja" className="py-12 sm:py-16 bg-gradient-to-br from-[#80C8F6] to-[#3957ED] text-white relative overflow-hidden">
       
       {/* CSS Animations */}
       <style>{`
@@ -61,9 +61,9 @@ export default function HowItWorks() {
           animation: slide-up-fade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
       `}</style>
-
+ 
       <BackgroundBubbles count={10} theme="light" />
-
+ 
       {/* Decorative Wave Divider Top */}
       <div className="absolute top-[-1.5px] left-0 w-full overflow-hidden leading-[0] transform rotate-180">
         <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-[calc(100%+1.3px)] h-[55px] text-[#FAFBFD] fill-current">
@@ -72,7 +72,7 @@ export default function HowItWorks() {
           <path d="M0,50 C200,20 400,90 700,55 C900,30 1100,75 1200,60 L1200,120 L0,120 Z"></path>
         </svg>
       </div>
-
+ 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
         
         {/* Header */}
@@ -89,9 +89,9 @@ export default function HowItWorks() {
             </p>
           </div>
         </ScrollReveal>
-
+ 
         {/* Responsive Layout Container (Always side-by-side on all screens) */}
-        <div className="flex flex-row items-center justify-center gap-3 sm:gap-8 md:gap-12 lg:gap-16 w-full max-w-5xl mx-auto">
+        <div className="flex flex-row items-center justify-center gap-4 sm:gap-14 md:gap-24 lg:gap-32 w-full max-w-5xl mx-auto">
           
           {/* A. HORIZONTAL ARC TIMELINE (Left side) */}
           <div className="relative w-[130px] xs:w-[150px] sm:w-[280px] md:w-[460px] h-[70px] xs:h-[90px] sm:h-[110px] md:h-[150px] flex-shrink-0">
@@ -124,8 +124,8 @@ export default function HowItWorks() {
                   style={{ left: pos.left, top: pos.top }}
                   className={`absolute w-8.5 h-8.5 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-all duration-300 transform -translate-x-1/2 -translate-y-1/2 shadow-lg focus:outline-none z-20 ${
                     isActive 
-                      ? "bg-white text-[#3957ED] scale-110 ring-4 ring-white/30" 
-                      : "bg-white/10 border border-white/20 text-white hover:bg-white/20 hover:scale-105"
+                      ? "bg-white text-[#3957ED] ring-4 ring-white/30" 
+                      : "bg-white/10 border border-white/20 text-white hover:bg-white/20"
                   }`}
                 >
                   <StepIcon className={`w-3.5 h-3.5 sm:w-5 sm:h-5 md:w-6 md:h-6 ${isActive ? "animate-pulse" : ""}`} />
@@ -142,7 +142,7 @@ export default function HowItWorks() {
           </div>
 
           {/* B. EXPLANATION PANEL (Right side - Horizontal layout inside on mobile) */}
-          <div className="w-[200px] xs:w-[230px] sm:w-[280px] md:w-[400px] bg-white/10 backdrop-blur-md border border-white/20 p-3 xs:p-4 sm:p-6 md:p-8 rounded-[20px] sm:rounded-[32px] shadow-2xl relative overflow-hidden min-h-[105px] xs:min-h-[125px] sm:min-h-[170px] md:min-h-[180px] flex flex-col justify-between transition-all duration-300 hover:border-white/30">
+          <div className="w-[200px] xs:w-[230px] sm:w-[280px] md:w-[400px] bg-white/10 backdrop-blur-md border border-white/20 p-3 xs:p-4 sm:p-6 md:p-8 rounded-[20px] sm:rounded-[32px] shadow-2xl relative overflow-hidden h-[110px] xs:h-[130px] sm:h-[175px] md:h-[190px] flex flex-col justify-between transition-all duration-300 hover:border-white/30">
             
             {/* Giant watermark number background */}
             <div className="absolute -right-2 -bottom-4 sm:-right-4 sm:-bottom-6 text-6xl sm:text-8xl md:text-9xl font-black text-white/5 font-mono select-none pointer-events-none">

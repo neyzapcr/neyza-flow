@@ -100,8 +100,8 @@ export default function Testimonials() {
   };
 
   return (
-    <section id="testimoni" className="py-14 bg-gradient-to-br from-[#80C8F6] to-[#3957ED] text-white relative overflow-hidden">
-      <BackgroundBubbles count={12} theme="light" />
+    <section id="testimoni" className="py-16 bg-[#FAFBFD] text-gray-800 relative overflow-hidden">
+      <BackgroundBubbles count={12} theme="blue" />
       
       {/* CSS Keyframe for card drop animation & custom scrollbar */}
       <style>{`
@@ -116,6 +116,13 @@ export default function Testimonials() {
             opacity: 1;
             filter: drop-shadow(0 10px 8px rgba(0,0,0,0.12));
           }
+        }
+        @keyframes fade-in-up {
+          0% { opacity: 0; transform: translateY(15px) var(--original-rotate, rotate(0deg)); }
+          100% { opacity: 1; transform: translateY(0px) var(--original-rotate, rotate(0deg)); }
+        }
+        .animate-fade-in-up {
+          animation: fade-in-up 0.5s ease-out forwards;
         }
         .animate-pin-drop {
           animation: card-pin-drop 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
@@ -146,15 +153,16 @@ export default function Testimonials() {
 
       <div className="max-w-5xl mx-auto px-6 relative z-10">
         
+        {/* Section Header */}
         <ScrollReveal variant="slide-up">
           <div className="text-center max-w-xl mx-auto mb-8 space-y-3">
-            <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-[10px] font-extrabold text-white uppercase tracking-wider">
+            <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#3957ED]/5 text-[10px] font-extrabold text-[#3957ED] uppercase tracking-wider">
               Ulasan Papan Buletin
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-white leading-tight">
+            <h2 className="text-xl sm:text-2xl font-black text-gray-900 leading-tight">
               Ulasan Hangat Pelanggan Netto
             </h2>
-            <p className="text-[11px] font-bold text-white/80">
+            <p className="text-[11px] font-bold text-gray-500">
               Papan catatan ulasan pelanggan Netto. Tulis ulasan Anda di sebelah kanan untuk menempelkannya langsung.
             </p>
           </div>
@@ -251,6 +259,15 @@ export default function Testimonials() {
           </div>
         </div>
       )}
+
+      {/* Decorative Wave Divider Bottom */}
+      <div className="absolute bottom-[-1.5px] left-0 w-full overflow-hidden leading-[0]">
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-[calc(100%+1.3px)] h-[55px] text-[#FAFBFD] fill-current">
+          <path opacity="0.2" d="M0,90 C300,50 500,110 800,80 C950,65 1100,85 1200,75 L1200,120 L0,120 Z"></path>
+          <path opacity="0.4" d="M0,70 C250,110 450,40 750,70 C950,90 1100,60 1200,85 L1200,120 L0,120 Z"></path>
+          <path d="M0,50 C200,20 400,90 700,55 C900,30 1100,75 1200,60 L1200,120 L0,120 Z"></path>
+        </svg>
+      </div>
 
     </section>
   );

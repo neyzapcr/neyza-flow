@@ -1,26 +1,29 @@
-import { Sparkles, ArrowRight, Clock, DollarSign } from "lucide-react";
+import { Sparkles, ArrowRight, Clock, DollarSign, Eye, Gift } from "lucide-react";
+import { Link } from "react-router-dom";
 import BackgroundBubbles from "./BackgroundBubbles";
 import ScrollReveal from "./ScrollReveal";
 import BrowserMockup from "./BrowserMockup";
 
 export default function Hero() {
+  const userSession = JSON.parse(localStorage.getItem("netto_user") || "null");
+
   const advantages = [
     { 
-      label: "Proses Cepat", 
-      desc: "Layanan express selesai dalam 6 jam", 
-      icon: Clock,
-      color: "bg-white/10 text-white" 
-    },
-    { 
-      label: "Harga Terjangkau", 
-      desc: "Tarif ramah di kantong & bersahabat", 
-      icon: DollarSign,
+      label: "Tracking Real-time", 
+      desc: "Pantau status cucian secara langsung", 
+      icon: Eye,
       color: "bg-white/10 text-white" 
     },
     { 
       label: "Promo Menarik", 
-      desc: "Dapatkan diskon khusus & hadiah menarik", 
+      desc: "Diskon khusus & penawaran spesial", 
       icon: Sparkles,
+      color: "bg-white/10 text-white" 
+    },
+    { 
+      label: "Poin Loyalitas", 
+      desc: "Kumpulkan poin di setiap transaksi", 
+      icon: Gift,
       color: "bg-white/10 text-white" 
     },
   ];
@@ -75,11 +78,11 @@ export default function Hero() {
             </div>
             
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-tight">
-              Laundry <span className="text-sky-100">Cepat</span>, Bersih, dan <span className="text-sky-100">Terpercaya</span>!
+                Laundry Makin Mudah, Bonus Makin Banyak
             </h1>
             
             <p className="text-[11px] sm:text-xs text-white/80 leading-relaxed max-w-lg font-bold">
-              Solusi perawatan pakaian modern. Kami memproses pakaian Anda secara higienis, cepat, dan rapi. Nikmati kemudahan melacak cucian real-time dan berbagai promo menarik.
+              Nikmati tracking cucian secara real-time, kumpulkan poin loyalitas, dan dapatkan promo menarik setiap kali menggunakan layanan Netto Express Laundry.
             </p>
 
             {/* Action Row: Buttons and Advantages responsive placement */}
@@ -88,18 +91,27 @@ export default function Hero() {
               {/* Group 1: Buttons side-by-side */}
               <div className="flex flex-row gap-2.5 sm:gap-3 flex-shrink-0 w-auto justify-start">
                 <a 
-                  href="#tentang-kami" 
+                  href="#layanan" 
                   className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-2.5 text-[10px] sm:text-xs font-bold text-[#3957ED] bg-white rounded-xl hover:bg-sky-50 hover:shadow-lg hover:translate-y-[-1px] transition-all duration-200"
                 >
-                  Pelajari Layanan
-                  <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  Cek Layanan
+                  <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />Laundry Jadi
                 </a>
-                <a 
-                  href="#layanan" 
-                  className="inline-flex items-center justify-center px-3 py-2 sm:px-5 sm:py-2.5 text-[10px] sm:text-xs font-bold text-white bg-[#3957ED]/25 border border-white/25 rounded-xl hover:bg-white/10 hover:translate-y-[-1px] transition-all duration-200 shadow-sm"
-                >
-                  Lihat Paket Harga
-                </a>
+                {userSession ? (
+                  <Link 
+                    to={userSession.role === "admin" ? "/dashboard" : "/"} 
+                    className="inline-flex items-center justify-center px-3 py-2 sm:px-5 sm:py-2.5 text-[10px] sm:text-xs font-bold text-white bg-[#3957ED]/25 border border-white/25 rounded-xl hover:bg-white/10 hover:translate-y-[-1px] transition-all duration-200 shadow-sm"
+                  >
+                    Dashboard
+                  </Link>
+                ) : (
+                  <Link 
+                    to="/login" 
+                    className="inline-flex items-center justify-center px-3 py-2 sm:px-5 sm:py-2.5 text-[10px] sm:text-xs font-bold text-white bg-[#3957ED]/25 border border-white/25 rounded-xl hover:bg-white/10 hover:translate-y-[-1px] transition-all duration-200 shadow-sm"
+                  >
+                    Login
+                  </Link>
+                )}
               </div>
 
               {/* Group 2: Advantages side-by-side */}
