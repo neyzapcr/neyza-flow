@@ -75,6 +75,7 @@ export default function App() {
         {/* ── Root: Landing Page Publik ── */}
         <Route path="/" element={<Landing />} />
 
+
         {/* ── Auth Routes — tidak bisa diakses kalau sudah login ── */}
         <Route element={<GuestRoute><AuthLayout /></GuestRoute>}>
           <Route path="/login"    element={<Login />} />
