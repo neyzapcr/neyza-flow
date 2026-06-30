@@ -17,6 +17,15 @@ export const usersAPI = {
         return response.data
     },
 
+    // GET user by id (UUID from Supabase Auth)
+    async fetchUserById(id) {
+        const response = await axios.get(
+            `${API_URL}?id=eq.${id}`,
+            { headers }
+        )
+        return response.data?.[0] ?? null
+    },
+
     // CREATE user (register / admin create user)
     async createUser(data) {
         const response = await axios.post(API_URL, data, { headers })

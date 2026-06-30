@@ -1,36 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { FileText, Download, Users, TrendingUp, RefreshCw, UserPlus, Send } from "lucide-react";
 import PageHeader from "../components/PageHeader";
-import rawCustomersData from "../data/customers.json";
-const customersData = rawCustomersData.flatMap((c) => {
-  const historyList = c.transactionHistory || [];
-  if (historyList.length === 0) {
-    return [{
-      ...c,
-      customerId: c.customerId || String(Math.random()),
-      joinDate: c.joinDate || "-",
-      totalTransactions: c.totalTransactions !== undefined ? c.totalTransactions : 0,
-      totalSpent: c.totalSpent !== undefined ? c.totalSpent : 0,
-      points: c.points !== undefined ? c.points : 0,
-      segment: c.segment || "New",
-      lastTransaction: c.lastTransaction || "-",
-      status: c.status || "active",
-    }];
-  }
-  return historyList.map((history) => ({
-    ...c,
-    customerId: history.customerId || c.customerId || String(Math.random()),
-    joinDate: history.joinDate || c.joinDate || "-",
-    totalTransactions: history.totalTransactions !== undefined ? history.totalTransactions : (c.totalTransactions || 0),
-    totalSpent: history.totalSpent !== undefined ? history.totalSpent : (c.totalSpent || 0),
-    points: history.points !== undefined ? history.points : (c.points || 0),
-    segment: history.segment || c.segment || "New",
-    lastTransaction: history.lastTransaction || c.lastTransaction || "-",
-    status: history.status || c.status || "active",
-  }));
-});
-import transactionsData from "../data/transactions.json";
 import Button from "../components/Button";
 import Badge from "../components/Badge";
 import Card from "../components/Card";
@@ -38,8 +9,11 @@ import ProgressBar from "../components/ProgressBar";
 import Avatar from "../components/Avatar";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../components/ui/chart";
 import Pagination from "../components/Pagination";
+import Table from "../components/Table";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
+import { getCustomers } from "../services/CustomerApi";
+import { getTransactions } from "../services/TransactionApi";
 
 const chartConfig = {
   pendapatan: {
@@ -53,7 +27,7 @@ const chartConfig = {
 };
 
 // --- Fungsi Export PDF & Word ---
-async function exportPDF({ totalRevenue, activeCustomers, newCustomers, retentionRate, period, monthlyData }) {
+async function exportPDF({ totalRevenue, activeCustomers, newCustomers, retentionRate, period, monthlyData, customers }) {
   await new Promise((resolve) => setTimeout(resolve, 800));
 
   const doc = new jsPDF();
@@ -128,7 +102,7 @@ async function exportPDF({ totalRevenue, activeCustomers, newCustomers, retentio
     head: [trendHeaders],
     body: trendRows,
     theme: "striped",
-    headStyles: { fillColor: [20, 34, 151], halign: "left" }, // Darker blue #142297
+    headStyles: { fillColor: [20, 34, 151], halign: "left" },
     styles: { font: "helvetica", fontSize: 9 },
     margin: { left: 14, right: 14 }
   });
@@ -141,11 +115,11 @@ async function exportPDF({ totalRevenue, activeCustomers, newCustomers, retentio
 
   const segmentHeaders = ["Segmen", "Jumlah", "Total Belanja", "Rata-rata Belanja", "Rata-rata Transaksi", "Kontribusi"];
   const segmentRows = ["VIP", "Loyal", "Regular", "New"].map((seg) => {
-    const sc = customersData.filter((c) => c.segment === seg);
-    const total = sc.reduce((s, c) => s + c.totalSpent, 0);
+    const sc = customers.filter((c) => c.segment === seg);
+    const total = sc.reduce((s, c) => s + Number(c.totalSpent || 0), 0);
     const avg = Math.round(total / (sc.length || 1));
-    const avgTrx = Math.round(sc.reduce((s, c) => s + c.totalTransactions, 0) / (sc.length || 1));
-    const pct = Math.round((sc.length / customersData.length) * 100);
+    const avgTrx = Math.round(sc.reduce((s, c) => s + Number(c.totalTransactions || 0), 0) / (sc.length || 1));
+    const pct = Math.round((sc.length / (customers.length || 1)) * 100);
 
     return [
       seg,
@@ -178,11 +152,11 @@ async function exportPDF({ totalRevenue, activeCustomers, newCustomers, retentio
   doc.text("Daftar Pelanggan Tidak Aktif (Perlu Tindakan)", 14, nextY);
 
   const inactiveHeaders = ["Nama Pelanggan", "Status", "Terakhir Bertransaksi"];
-  const inactiveCustomers = customersData.filter((c) => c.status === "inactive");
+  const inactiveCustomers = customers.filter((c) => c.status === "inactive");
   const inactiveRows = inactiveCustomers.map(c => [
     c.customerName,
     "Tidak Aktif",
-    c.lastTransaction
+    c.lastTransaction || "-"
   ]);
 
   doc.autoTable({
@@ -190,7 +164,7 @@ async function exportPDF({ totalRevenue, activeCustomers, newCustomers, retentio
     head: [inactiveHeaders],
     body: inactiveRows,
     theme: "striped",
-    headStyles: { fillColor: [239, 68, 68], halign: "left" }, // red-500
+    headStyles: { fillColor: [239, 68, 68], halign: "left" },
     styles: { font: "helvetica", fontSize: 9 },
     margin: { left: 14, right: 14 }
   });
@@ -198,7 +172,7 @@ async function exportPDF({ totalRevenue, activeCustomers, newCustomers, retentio
   doc.save(`Laporan_CRM_${period}_${new Date().toISOString().split("T")[0]}.pdf`);
 }
 
-function exportWord({ totalRevenue, activeCustomers, newCustomers, retentionRate, period, monthlyData }) {
+function exportWord({ totalRevenue, activeCustomers, newCustomers, retentionRate, period, monthlyData, customers }) {
   const dateStr = new Date().toLocaleDateString("id-ID", {
     year: "numeric",
     month: "long",
@@ -208,11 +182,11 @@ function exportWord({ totalRevenue, activeCustomers, newCustomers, retentionRate
   });
 
   const segmentRowsHtml = ["VIP", "Loyal", "Regular", "New"].map((seg) => {
-    const sc = customersData.filter((c) => c.segment === seg);
-    const total = sc.reduce((s, c) => s + c.totalSpent, 0);
+    const sc = customers.filter((c) => c.segment === seg);
+    const total = sc.reduce((s, c) => s + Number(c.totalSpent || 0), 0);
     const avg = Math.round(total / (sc.length || 1));
-    const avgTrx = Math.round(sc.reduce((s, c) => s + c.totalTransactions, 0) / (sc.length || 1));
-    const pct = Math.round((sc.length / customersData.length) * 100);
+    const avgTrx = Math.round(sc.reduce((s, c) => s + Number(c.totalTransactions || 0), 0) / (sc.length || 1));
+    const pct = Math.round((sc.length / (customers.length || 1)) * 100);
 
     return `
       <tr>
@@ -226,6 +200,15 @@ function exportWord({ totalRevenue, activeCustomers, newCustomers, retentionRate
     `;
   }).join("");
 
+  const inactiveCustomers = customers.filter((c) => c.status === "inactive");
+  const inactiveRowsHtml = inactiveCustomers.map(c => `
+    <tr>
+      <td style="padding:8px; border:1px solid #ddd;">${c.customerName}</td>
+      <td style="padding:8px; border:1px solid #ddd; color:red;">Tidak Aktif</td>
+      <td style="padding:8px; border:1px solid #ddd;">${c.lastTransaction || "-"}</td>
+    </tr>
+  `).join("");
+
   const trendRowsHtml = (monthlyData || []).map(d => `
     <tr>
       <td style="padding:8px; border:1px solid #ddd;">${d.month}</td>
@@ -235,34 +218,25 @@ function exportWord({ totalRevenue, activeCustomers, newCustomers, retentionRate
     </tr>
   `).join("");
 
-  const inactiveCustomers = customersData.filter((c) => c.status === "inactive");
-  const inactiveRowsHtml = inactiveCustomers.map(c => `
-    <tr>
-      <td style="padding:8px; border:1px solid #ddd;">${c.customerName}</td>
-      <td style="padding:8px; border:1px solid #ddd; color:red;">Tidak Aktif</td>
-      <td style="padding:8px; border:1px solid #ddd;">${c.lastTransaction}</td>
-    </tr>
-  `).join("");
-
   const htmlContent = `
     <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
     <head>
-      <title>Laporan CRM  Netto Laundry</title>
+      <title>Laporan CRM</title>
+      <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>90</w:Zoom></w:WordDocument></xml><![endif]-->
       <style>
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; line-height: 1.6; }
-        h1 { color: #2940D3; border-bottom: 2px solid #2940D3; padding-bottom: 5px; }
-        h2 { color: #142297; margin-top: 20px; }
-        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
-        th { background-color: #2940D3; color: white; text-align: left; padding: 10px; font-weight: bold; }
-        td { padding: 10px; border: 1px solid #ddd; }
-        .meta { color: #666; font-size: 12px; margin-bottom: 20px; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; margin: 20px; }
+        h1 { color: #2940D3; font-size: 20px; border-bottom: 2px solid #2940D3; padding-bottom: 5px; }
+        h2 { color: #333; font-size: 14px; margin-top: 25px; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th { background-color: #2940D3; color: white; text-align: left; padding: 8px; font-size: 11px; }
+        td { padding: 8px; border: 1px solid #ddd; font-size: 10px; }
       </style>
     </head>
     <body>
-      <h1>LAPORAN CRM - Netto LAUNDRY</h1>
-      <p class="meta">Dicetak pada: ${dateStr} | Filter Periode: ${period.toUpperCase()}</p>
-
-      <h2>Ringkasan Performa Bisnis</h2>
+      <h1>LAPORAN PERFORMA CRM LAUNDRY</h1>
+      <p style="font-size:10px; color:#666;">Dicetak pada: ${dateStr} | Filter Periode: ${period.toUpperCase()}</p>
+      
+      <h2>Ringkasan Eksekutif</h2>
       <table>
         <thead>
           <tr>
@@ -271,18 +245,30 @@ function exportWord({ totalRevenue, activeCustomers, newCustomers, retentionRate
           </tr>
         </thead>
         <tbody>
-          <tr><td><b>Total Pendapatan</b></td><td>Rp ${totalRevenue.toLocaleString("id-ID")}</td></tr>
-          <tr><td><b>Pelanggan Aktif</b></td><td>${activeCustomers} Pelanggan</td></tr>
-          <tr><td><b>Pelanggan Baru</b></td><td>${newCustomers} Pelanggan</td></tr>
-          <tr><td><b>Tingkat Retensi</b></td><td>${retentionRate}% dari total pelanggan</td></tr>
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd;">Total Pendapatan</td>
+            <td style="padding:8px; border:1px solid #ddd;"><b>Rp ${totalRevenue.toLocaleString("id-ID")}</b></td>
+          </tr>
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd;">Pelanggan Aktif</td>
+            <td style="padding:8px; border:1px solid #ddd;">${activeCustomers} Pelanggan</td>
+          </tr>
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd;">Pelanggan Baru</td>
+            <td style="padding:8px; border:1px solid #ddd;">${newCustomers} Pelanggan</td>
+          </tr>
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd;">Tingkat Retensi</td>
+            <td style="padding:8px; border:1px solid #ddd;">${retentionRate}%</td>
+          </tr>
         </tbody>
       </table>
 
-      <h2>Detail Tren Aktivitas (${period.toUpperCase()})</h2>
+      <h2>Tren Aktivitas (${period.toUpperCase()})</h2>
       <table>
         <thead>
           <tr>
-            <th style="background-color:#142297; color:white;">Periode / Label</th>
+            <th style="background-color:#142297; color:white;">Periode</th>
             <th style="background-color:#142297; color:white;">Pelanggan Baru</th>
             <th style="background-color:#142297; color:white;">Total Transaksi</th>
             <th style="background-color:#142297; color:white;">Total Pendapatan</th>
@@ -327,7 +313,7 @@ function exportWord({ totalRevenue, activeCustomers, newCustomers, retentionRate
     </html>
   `;
 
-  const blob = new Blob(['\\ufeff' + htmlContent], {
+  const blob = new Blob(['\ufeff' + htmlContent], {
     type: 'application/msword'
   });
 
@@ -342,16 +328,36 @@ function exportWord({ totalRevenue, activeCustomers, newCustomers, retentionRate
 }
 
 export default function Reports() {
+  const [customers, setCustomers] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [period, setPeriod] = useState("bulan");
   const [exporting, setExporting] = useState(null);
   const [inactivePage, setInactivePage] = useState(1);
+  const [loading, setLoading] = useState(true);
 
-  const maxDateStr = transactionsData.map(t => t.date).filter(Boolean).sort().pop() || "2026-05-31";
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true);
+        const custs = await getCustomers();
+        const trxs = await getTransactions();
+        setCustomers(custs || []);
+        setTransactions(trxs || []);
+      } catch (err) {
+        console.error("Failed to load reports data:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  const maxDateStr = transactions.map(t => t.receivedDate || t.date).filter(Boolean).sort().pop() || new Date().toISOString().split("T")[0];
   const [yr, mt, dy] = maxDateStr.split("-").map(Number);
 
   let monthlyData = [];
 
-  if (period === "hari") {
+  if (period === "hari" && transactions.length > 0) {
     const days = Array.from({ length: 7 }, (_, i) => {
       const d = new Date(yr, mt - 1, dy - (6 - i));
       return d;
@@ -359,16 +365,16 @@ export default function Reports() {
 
     monthlyData = days.map((date) => {
       const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-      const dayTrxs = transactionsData.filter((t) => t.date === dateStr);
-      const dayCusts = customersData.filter((c) => c.joinDate === dateStr);
+      const dayTrxs = transactions.filter((t) => (t.receivedDate || t.date) === dateStr);
+      const dayCusts = customers.filter((c) => c.joinDate === dateStr);
       return {
         month: date.toLocaleDateString("id-ID", { weekday: "short" }),
         pelangganBaru: dayCusts.length,
         transaksi: dayTrxs.length,
-        pendapatan: dayTrxs.reduce((s, t) => s + t.total, 0),
+        pendapatan: dayTrxs.reduce((s, t) => s + Number(t.total || 0), 0),
       };
     });
-  } else if (period === "minggu") {
+  } else if (period === "minggu" && transactions.length > 0) {
     const weeks = Array.from({ length: 4 }, (_, i) => {
       const wEnd = new Date(yr, mt - 1, dy - (3 - i) * 7);
       const wStart = new Date(wEnd.getTime() - 6 * 24 * 60 * 60 * 1000);
@@ -376,12 +382,13 @@ export default function Reports() {
     });
 
     monthlyData = weeks.map((w) => {
-      const weekTrxs = transactionsData.filter((t) => {
-        if (!t.date) return false;
-        const d = new Date(t.date);
+      const weekTrxs = transactions.filter((t) => {
+        const dStr = t.receivedDate || t.date;
+        if (!dStr) return false;
+        const d = new Date(dStr);
         return d >= w.start && d <= w.end;
       });
-      const weekCusts = customersData.filter((c) => {
+      const weekCusts = customers.filter((c) => {
         if (!c.joinDate) return false;
         const d = new Date(c.joinDate);
         return d >= w.start && d <= w.end;
@@ -390,193 +397,216 @@ export default function Reports() {
         month: w.label,
         pelangganBaru: weekCusts.length,
         transaksi: weekTrxs.length,
-        pendapatan: weekTrxs.reduce((s, t) => s + t.total, 0),
+        pendapatan: weekTrxs.reduce((s, t) => s + Number(t.total || 0), 0),
       };
     });
-  } else {
+  } else if (transactions.length > 0) {
     const months = Array.from({ length: 6 }, (_, i) => {
       const d = new Date(yr, mt - 1 - (5 - i), 1);
       return {
         year: d.getFullYear(),
         month: d.getMonth(),
-        label: d.toLocaleDateString("id-ID", { month: "short" })
+        label: d.toLocaleDateString("id-ID", { month: "short" }),
       };
     });
 
     monthlyData = months.map((m) => {
-      const monthTrxs = transactionsData.filter((t) => {
-        if (!t.date) return false;
-        const [y, mNum] = t.date.split("-").map(Number);
-        return y === m.year && (mNum - 1) === m.month;
+      const mTrxs = transactions.filter((t) => {
+        const dStr = t.receivedDate || t.date;
+        if (!dStr) return false;
+        const d = new Date(dStr);
+        return d.getFullYear() === m.year && d.getMonth() === m.month;
       });
-      const monthCusts = customersData.filter((c) => {
+      const mCusts = customers.filter((c) => {
         if (!c.joinDate) return false;
-        const [y, mNum] = c.joinDate.split("-").map(Number);
-        return y === m.year && (mNum - 1) === m.month;
+        const d = new Date(c.joinDate);
+        return d.getFullYear() === m.year && d.getMonth() === m.month;
       });
       return {
-        month: `${m.label} ${String(m.year).substring(2)}`,
-        pelangganBaru: monthCusts.length,
-        transaksi: monthTrxs.length,
-        pendapatan: monthTrxs.reduce((s, t) => s + t.total, 0),
+        month: m.label,
+        pelangganBaru: mCusts.length,
+        transaksi: mTrxs.length,
+        pendapatan: mTrxs.reduce((s, t) => s + Number(t.total || 0), 0),
       };
     });
   }
 
-  const totalRevenue = transactionsData.reduce((s, t) => s + t.total, 0);
-  const activeCustomers = customersData.filter((c) => c.status === "active").length;
-  const newCustomers = customersData.filter((c) => c.joinDate >= "2025-01-01").length;
-  const retentionRate = Math.round((activeCustomers / customersData.length) * 100);
+  // --- Aggregate Stats ---
+  const totalRevenue = transactions.reduce((s, t) => s + Number(t.total || 0), 0);
+  const activeCustomers = customers.filter(c => c.status === "active").length;
+  const newCustomers = customers.filter(c => {
+    if (!c.joinDate) return false;
+    const d = new Date(c.joinDate);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return d >= thirtyDaysAgo;
+  }).length;
+  const retentionRate = Math.round((activeCustomers / (customers.length || 1)) * 100);
 
-  const handleExport = async (type) => {
-    setExporting(type);
-    const args = { totalRevenue, activeCustomers, newCustomers, retentionRate, period, monthlyData };
-    type === "pdf" ? await exportPDF(args) : exportWord(args);
-    setExporting(null);
+  const itemsPerPage = 5;
+  const inactiveCustomers = customers.filter(c => c.status === "inactive");
+  const paginatedInactive = inactiveCustomers.slice((inactivePage - 1) * itemsPerPage, inactivePage * itemsPerPage);
+
+  const handleExportPDF = async () => {
+    setExporting("pdf");
+    try {
+      await exportPDF({ totalRevenue, activeCustomers, newCustomers, retentionRate, period, monthlyData, customers });
+    } finally {
+      setExporting(null);
+    }
   };
+
+  const handleExportWord = async () => {
+    setExporting("word");
+    try {
+      await exportWord({ totalRevenue, activeCustomers, newCustomers, retentionRate, period, monthlyData, customers });
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  if (loading && customers.length === 0) {
+    return (
+      <div className="space-y-6 animate-pulse text-left">
+        <div className="h-10 w-48 bg-gray-200 rounded-xl"></div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(n => <div key={n} className="h-24 bg-gray-200 rounded-2xl"></div>)}
+        </div>
+        <div className="h-96 bg-gray-200 rounded-2xl"></div>
+      </div>
+    );
+  }
 
   return (
     <div>
-      <PageHeader title="Laporan CRM" subtitle="Analisis performa bisnis dan data pelanggan">
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
-            {["hari", "minggu", "bulan"].map((p) => (
-              <button key={p} onClick={() => setPeriod(p)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${period === p ? "bg-white text-[#2940D3] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
-                {p}
-              </button>
-            ))}
-          </div>
-          <Button variant="danger" size="sm" icon={<FileText size={13} />} loading={exporting === "pdf"} onClick={() => handleExport("pdf")}>PDF</Button>
-          <Button variant="secondary" size="sm" icon={<Download size={13} />} loading={exporting === "word"} onClick={() => handleExport("word")}>Word</Button>
+      <PageHeader title="Laporan CRM & Analitik" subtitle="Unduh laporan performa bisnis dan pertumbuhan pelanggan">
+        <div className="flex gap-2">
+          <Button variant="outline" disabled={exporting !== null} loading={exporting === "word"} icon={<FileText size={15} />} onClick={handleExportWord}>Word</Button>
+          <Button variant="primary" disabled={exporting !== null} loading={exporting === "pdf"} icon={<Download size={15} />} onClick={handleExportPDF}>PDF</Button>
         </div>
       </PageHeader>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 text-left">
         {[
-          { label: "Total Pendapatan", value: `Rp ${totalRevenue.toLocaleString("id-ID")}`, Icon: TrendingUp, sub: "↑ 12% vs bulan lalu", subColor: "text-green-500", color: "bg-blue-50", iconColor: "text-[#2940D3]" },
-          { label: "Pelanggan Aktif", value: activeCustomers, Icon: Users, sub: `${retentionRate}% retensi`, subColor: "text-[#2940D3]", color: "bg-green-50", iconColor: "text-green-500" },
-          { label: "Pelanggan Baru", value: newCustomers, Icon: UserPlus, sub: "Tahun 2025", subColor: "text-purple-500", color: "bg-purple-50", iconColor: "text-purple-500" },
-          { label: "Tingkat Retensi", value: `${retentionRate}%`, Icon: RefreshCw, sub: "Pelanggan kembali", subColor: "text-orange-500", color: "bg-orange-50", iconColor: "text-orange-500" },
-        ].map((s) => (
-          <div key={s.label} className={`${s.color} rounded-2xl p-4 border border-white`}>
-            <s.Icon size={20} className={`${s.iconColor} mb-2`} />
-            <p className="text-xl font-bold text-gray-800">{s.value}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
-            <p className={`text-xs font-medium mt-1 ${s.subColor}`}>{s.sub}</p>
+          { label: "Total Pendapatan", value: `Rp ${totalRevenue.toLocaleString("id-ID")}`, Icon: TrendingUp, color: "bg-blue-50 text-[#2940D3]" },
+          { label: "Pelanggan Aktif", value: `${activeCustomers} member`, Icon: Users, color: "bg-green-50 text-green-500" },
+          { label: "Pelanggan Baru", value: `${newCustomers} member`, Icon: UserPlus, color: "bg-purple-50 text-purple-500" },
+          { label: "Tingkat Retensi", value: `${retentionRate}%`, Icon: RefreshCw, color: "bg-yellow-50 text-yellow-500" }
+        ].map(k => (
+          <div key={k.label} className={`${k.color.split(" ")[0]} rounded-2xl p-5 border border-white bg-white text-left`}>
+            <k.Icon size={22} className={`${k.color.split(" ")[1]} mb-2.5`} />
+            <p className="text-2xl font-bold text-gray-800 leading-none">{k.value}</p>
+            <p className="text-xs text-gray-400 mt-2 font-medium">{k.label}</p>
           </div>
         ))}
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-        <Card>
+      {/* Period Filter Card */}
+      <Card className="mb-4">
+        <div className="flex justify-between items-center bg-white">
+          <p className="font-bold text-gray-800 text-sm">Visualisasi Tren</p>
+          <div className="flex gap-1">
+            {["hari", "minggu", "bulan"].map(p => (
+              <button key={p} onClick={() => setPeriod(p)} className={`px-3 py-1.5 rounded-xl text-xs font-semibold uppercase transition-all ${period === p ? "bg-[#2940D3] text-white shadow-sm" : "bg-gray-100 text-gray-400 hover:bg-gray-200"}`}>{p}</button>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 text-left">
+        {/* Recharts Revenue Trends */}
+        <Card className="lg:col-span-2">
           <p className="font-bold text-gray-800 mb-1">Tren Pendapatan</p>
-          <p className="text-xs text-gray-400 mb-4">
-            {period === "hari" ? "Pendapatan per hari (7 hari terakhir)" : period === "minggu" ? "Pendapatan per minggu (4 minggu terakhir)" : "Pendapatan per bulan (6 bulan terakhir)"}
-          </p>
-          <ChartContainer config={chartConfig} className="h-[200px] w-full">
-            <BarChart data={monthlyData} barSize={20}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-              <YAxis hide />
-              <ChartTooltip content={<ChartTooltipContent formatter={(value) => `Rp ${value.toLocaleString("id-ID")}`} />} />
-              <Bar dataKey="pendapatan" fill="var(--color-pendapatan)" radius={[6, 6, 0, 0]} />
-            </BarChart>
+          <p className="text-xs text-gray-400 mb-4 bg-white">Estimasi total omzet bersih pengerjaan laundry</p>
+          <ChartContainer config={chartConfig} className="h-60 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={monthlyData} margin={{ left: -10, right: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(val) => val} />
+                <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+                <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                <Bar dataKey="pendapatan" fill="#2940D3" radius={4} />
+              </BarChart>
+            </ResponsiveContainer>
           </ChartContainer>
         </Card>
+
+        {/* Customer Growth Trends */}
         <Card>
           <p className="font-bold text-gray-800 mb-1">Pertumbuhan Pelanggan</p>
-          <p className="text-xs text-gray-400 mb-4">
-            {period === "hari" ? "Pelanggan baru per hari (7 hari terakhir)" : period === "minggu" ? "Pelanggan baru per minggu (4 minggu terakhir)" : "Pelanggan baru per bulan (6 bulan terakhir)"}
-          </p>
-          <ChartContainer config={chartConfig} className="h-[200px] w-full">
-            <LineChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-              <YAxis hide />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Line type="monotone" dataKey="pelangganBaru" stroke="var(--color-pelangganBaru)" strokeWidth={2.5} dot={{ fill: "var(--color-pelangganBaru)", r: 4 }} />
-            </LineChart>
+          <p className="text-xs text-gray-400 mb-4 bg-white">Registrasi baru member laundry</p>
+          <ChartContainer config={chartConfig} className="h-60 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={monthlyData} margin={{ left: -10, right: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+                <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+                <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                <Line type="monotone" dataKey="pelangganBaru" stroke="#2940D3" strokeWidth={2.5} dot={{ fill: "#2940D3" }} />
+              </LineChart>
+            </ResponsiveContainer>
           </ChartContainer>
         </Card>
       </div>
 
-      {/* Segment Report Table */}
-      <Card className="mb-4">
-        <p className="font-bold text-gray-800 mb-4">Laporan per Segmen</p>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50">
-              <tr className="text-left text-xs text-gray-400">
-                <th className="px-4 py-3 font-semibold rounded-l-xl">Segmen</th>
-                <th className="px-4 py-3 font-semibold">Jumlah</th>
-                <th className="px-4 py-3 font-semibold">Total Belanja</th>
-                <th className="px-4 py-3 font-semibold">Rata-rata Belanja</th>
-                <th className="px-4 py-3 font-semibold">Rata-rata Transaksi</th>
-                <th className="px-4 py-3 font-semibold rounded-r-xl">% dari Total</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {["VIP", "Loyal", "Regular", "New"].map((seg) => {
-                const sc = customersData.filter((c) => c.segment === seg);
-                const total = sc.reduce((s, c) => s + c.totalSpent, 0);
-                const avg = Math.round(total / (sc.length || 1));
-                const avgTrx = Math.round(sc.reduce((s, c) => s + c.totalTransactions, 0) / (sc.length || 1));
-                const pct = Math.round((sc.length / customersData.length) * 100);
-                return (
-                  <tr key={seg} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3"><Badge variant={seg}>{seg}</Badge></td>
-                    <td className="px-4 py-3 font-semibold text-gray-800">{sc.length}</td>
-                    <td className="px-4 py-3 font-semibold text-gray-800">Rp {total.toLocaleString("id-ID")}</td>
-                    <td className="px-4 py-3 text-gray-600">Rp {avg.toLocaleString("id-ID")}</td>
-                    <td className="px-4 py-3 text-gray-600">{avgTrx}x</td>
-                    <td className="px-4 py-3"><ProgressBar value={pct} height="sm" className="w-16" /></td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 text-left">
+        {/* Segment Table */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden lg:col-span-2 bg-white">
+          <div className="px-5 py-4 border-b border-gray-100 bg-white"><p className="font-bold text-gray-800 text-sm">Analisis Nilai Segmen</p></div>
+          <Table headers={["Segmen", "Jumlah Pelanggan", "Total Belanja", "Rata-rata Belanja", "Rata-rata Transaksi"]}>
+            {["VIP", "Loyal", "Regular", "New"].map((seg) => {
+              const sc = customers.filter(c => c.segment === seg);
+              const total = sc.reduce((s, c) => s + Number(c.totalSpent || 0), 0);
+              const avg = Math.round(total / (sc.length || 1));
+              const avgTrx = Math.round(sc.reduce((s, c) => s + Number(c.totalTransactions || 0), 0) / (sc.length || 1));
+              return (
+                <tr key={seg} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-5 py-4 font-semibold text-gray-800">{seg}</td>
+                  <td className="px-5 py-4 text-gray-600">{sc.length} member</td>
+                  <td className="px-5 py-4 font-bold text-gray-800">Rp {total.toLocaleString("id-ID")}</td>
+                  <td className="px-5 py-4 text-gray-600">Rp {avg.toLocaleString("id-ID")}</td>
+                  <td className="px-5 py-4 text-gray-600">{avgTrx}x</td>
+                </tr>
+              );
+            })}
+          </Table>
         </div>
-      </Card>
 
-      {/* Inactive Reminder */}
-      <Card>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="font-bold text-gray-800">Pelanggan Tidak Aktif</p>
-            <p className="text-xs text-gray-400">Tidak bertransaksi lebih dari 30 hari</p>
-          </div>
-          <Button variant="ghost" size="sm" icon={<Send size={13} />}>Kirim Reminder</Button>
-        </div>
-        <div className="space-y-3">
-          {(() => {
-            const inactiveCustomers = customersData.filter((c) => c.status === "inactive");
-            const paginatedInactive = inactiveCustomers.slice((inactivePage - 1) * 5, inactivePage * 5);
-            return (
-              <>
-                {paginatedInactive.map((c) => (
-                  <div key={c.customerId} className="flex items-center justify-between p-3 bg-red-50 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <Avatar name={c.customerName} size="md" color="bg-red-100" className="text-red-500" />
-                      <div><p className="font-semibold text-sm">{c.customerName}</p><p className="text-xs text-gray-500">Terakhir: {c.lastTransaction}</p></div>
-                    </div>
-                    <Button size="sm" icon={<Send size={11} />}>Pesan</Button>
+        {/* Inactive Customers Alert */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden bg-white">
+          <div className="px-5 py-4 border-b border-gray-100 bg-white"><p className="font-bold text-gray-800 text-sm">Pelanggan Tidak Aktif</p></div>
+          <div className="divide-y divide-gray-50">
+            {paginatedInactive.map((c) => (
+              <div key={c.id} className="px-5 py-3.5 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-3 bg-white">
+                  <Avatar name={c.customerName} size="md" color="bg-red-50 text-red-500" />
+                  <div className="flex-1 min-w-0 bg-white">
+                    <p className="font-semibold text-gray-800 text-sm truncate">{c.customerName}</p>
+                    <p className="text-xs text-gray-400 truncate">Terakhir: {c.lastTransaction || "-"}</p>
                   </div>
-                ))}
-                <Pagination
-                  currentPage={inactivePage}
-                  totalItems={inactiveCustomers.length}
-                  itemsPerPage={5}
-                  onPageChange={setInactivePage}
-                  itemName="pelanggan tidak aktif"
-                />
-              </>
-            );
-          })()}
+                  <Badge variant="red">Tidak Aktif</Badge>
+                </div>
+              </div>
+            ))}
+            {inactiveCustomers.length === 0 && (
+              <div className="py-8 text-center text-gray-400">
+                <Users size={24} className="mx-auto mb-2 opacity-30" />
+                <p className="text-sm">Semua pelanggan aktif!</p>
+              </div>
+            )}
+          </div>
+          {inactiveCustomers.length > 0 && (
+            <Pagination
+              currentPage={inactivePage}
+              totalItems={inactiveCustomers.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setInactivePage}
+              itemName="pelanggan"
+            />
+          )}
         </div>
-      </Card>
+      </div>
     </div>
   );
 }

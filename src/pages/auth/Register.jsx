@@ -1,15 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { usersAPI } from "../../services/usersApi";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function Register() {
   const navigate = useNavigate();
+  const { signUp, role } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [dataForm, setDataForm] = useState({
     name: "", email: "", password: "", confirm: "",
   });
+
+  /* ── redirect setelah role tersedia ── */
+  useEffect(() => {
+    if (role === "Member") {
+      navigate("/member/dashboard", { replace: true });
+    }
+  }, [role, navigate]);
 
   const handleChange = (evt) => {
     const { name, value } = evt.target;
@@ -35,40 +43,15 @@ export default function Register() {
 
     setLoading(true);
     try {
-      // Cek apakah email sudah terdaftar
-      const allUsers = await usersAPI.fetchUsers();
-      const emailExists = allUsers.some(
-        (u) => u.email && u.email.toLowerCase() === dataForm.email.toLowerCase()
-      );
-      if (emailExists) {
-        setError("Email sudah terdaftar. Silakan gunakan email lain.");
-        setLoading(false);
-        return;
-      }
-
-      // Payload untuk Supabase
-      const payload = {
-        fullname: dataForm.name,
+      await signUp({
         email: dataForm.email,
         password: dataForm.password,
-        role: "member",
-      };
-
-      await usersAPI.createUser(payload);
-
-      // Setelah berhasil mendaftar, ambil data pengguna yang baru dibuat untuk mendapatkan ID dan data lengkapnya
-      const users = await usersAPI.login(dataForm.email, dataForm.password);
-      if (users && users.length > 0) {
-        const createdUser = users[0];
-        localStorage.setItem("netto_auth", "true");
-        localStorage.setItem("netto_user", JSON.stringify(createdUser));
-        navigate("/");
-      } else {
-        throw new Error("User tidak ditemukan setelah registrasi.");
-      }
+        fullName: dataForm.name,
+        role: "Member",
+      });
     } catch (err) {
       console.error("Registration error:", err);
-      setError("Registrasi gagal. Pastikan koneksi internet aktif dan silakan coba lagi.");
+      setError(err.message || "Registrasi gagal. Silakan coba lagi.");
     } finally {
       setLoading(false);
     }
@@ -96,6 +79,7 @@ export default function Register() {
       </div>
 
       {/* Form container */}
+      <div className="w-full max-w-2xl">
         {/* Judul Form */}
         <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Register</h2>
 
@@ -112,7 +96,7 @@ export default function Register() {
                 name="name"
                 value={dataForm.name}
                 onChange={handleChange}
-                placeholder="Nama admin"
+                placeholder="Nama lengkap"
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 transition-all"
               />
             </div>
@@ -123,7 +107,7 @@ export default function Register() {
                 name="email"
                 value={dataForm.email}
                 onChange={handleChange}
-                placeholder="admin@netto.com"
+                placeholder="namaemail@gmail.com"
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 transition-all"
               />
             </div>
@@ -171,5 +155,6 @@ export default function Register() {
           </Link>
         </p>
       </div>
+    </div>
   );
 }

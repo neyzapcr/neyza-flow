@@ -1,9 +1,10 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Pencil, Trash2, Phone, MapPin, Calendar, Receipt, Mail, TrendingUp, Star, Gift } from "lucide-react";
-import customersData from "../data/customers.json";
-import transactionsData from "../data/transactions.json";
 import PageHeader from "../components/PageHeader";
+import { supabase } from "../services/supabaseClient";
+import { updateCustomer, deleteCustomer } from "../services/CustomerApi";
+import { getTransactionByCustomer } from "../services/TransactionApi";
 import {
   Dialog,
   DialogContent,
@@ -37,54 +38,89 @@ export default function CustomerDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [customer, setCustomer] = useState(null);
+  const [customerTrx, setCustomerTrx] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [localForm, setLocalForm] = useState({});
 
-  useEffect(() => {
-    const flattenedList = customersData.flatMap((c) => {
-      const historyList = c.transactionHistory || [];
-      if (historyList.length === 0) {
-        return [{
-          ...c,
-          customerId: c.customerId || String(Math.random()),
-          joinDate: c.joinDate || "-",
-          totalTransactions: c.totalTransactions !== undefined ? c.totalTransactions : 0,
-          totalSpent: c.totalSpent !== undefined ? c.totalSpent : 0,
-          points: c.points !== undefined ? c.points : 0,
-          segment: c.segment || "New",
-          lastTransaction: c.lastTransaction || "-",
-          status: c.status || "active",
-        }];
-      }
-      return historyList.map((history) => ({
-        ...c,
-        customerId: history.customerId || c.customerId || String(Math.random()),
-        joinDate: history.joinDate || c.joinDate || "-",
-        totalTransactions: history.totalTransactions !== undefined ? history.totalTransactions : (c.totalTransactions || 0),
-        totalSpent: history.totalSpent !== undefined ? history.totalSpent : (c.totalSpent || 0),
-        points: history.points !== undefined ? history.points : (c.points || 0),
-        segment: history.segment || c.segment || "New",
-        lastTransaction: history.lastTransaction || c.lastTransaction || "-",
-        status: history.status || c.status || "active",
-      }));
-    });
+  const loadCustomerData = async () => {
+    try {
+      setLoading(true);
+      // Resolve customer record by customerCode (which matches URL param 'id')
+      const { data: cust, error: custErr } = await supabase
+        .from("customers")
+        .select("*")
+        .eq("customerCode", id)
+        .maybeSingle();
 
-    const found = flattenedList.find((c) => String(c.customerId) === String(id));
-    if (!found) setError("Pelanggan tidak ditemukan.");
-    else {
-      setCustomer(found);
-      setLocalForm(found);
+      if (custErr) throw custErr;
+      if (!cust) {
+        setError("Pelanggan tidak ditemukan.");
+        return;
+      }
+
+      const mappedCust = {
+        ...cust,
+        customerId: cust.customerCode,
+        status: cust.status === "Active" ? "active" : "inactive"
+      };
+
+      setCustomer(mappedCust);
+      setLocalForm(mappedCust);
+
+      // Fetch transaction list for customer using customer UUID id
+      const trxs = await getTransactionByCustomer(cust.id);
+      setCustomerTrx(trxs);
+    } catch (err) {
+      console.error("Failed to load customer details:", err);
+      setError("Gagal memuat detail pelanggan.");
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    loadCustomerData();
   }, [id]);
 
-  if (error) return <div className="text-center py-20 font-semibold">{error} <Link to="/customers" className="text-[#2940D3] block mt-2 hover:underline">Kembali</Link></div>;
-  if (!customer) return <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#2940D3] border-t-transparent rounded-full animate-spin" /></div>;
+  const handleUpdate = async () => {
+    if (!customer) return;
+    try {
+      setLoading(true);
+      const updated = await updateCustomer(customer.id, localForm);
+      setCustomer(updated);
+      setLocalForm(updated);
+      toast("success", "Pelanggan Diperbarui", "Data berhasil disimpan.");
+      setEditOpen(false);
+      await loadCustomerData();
+    } catch (err) {
+      console.error("Failed to update customer:", err);
+      toast("error", "Gagal Memperbarui", "Terjadi kesalahan saat menyimpan data.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const customerTrx = transactionsData.filter(
-    (t) => String(t.customerId) === String(customer.customerId)
-  );
+  const handleDelete = async () => {
+    if (!customer) return;
+    try {
+      setLoading(true);
+      await deleteCustomer(customer.id);
+      toast("warning", "Pelanggan Dihapus", "Data berhasil dihapus.");
+      setDeleteConfirm(false);
+      navigate("/customers");
+    } catch (err) {
+      console.error("Failed to delete customer:", err);
+      toast("error", "Gagal Menghapus", "Terjadi kesalahan saat menghapus data.");
+      setLoading(false);
+    }
+  };
+
+  if (error) return <div className="text-center py-20 font-semibold">{error} <Link to="/customers" className="text-[#2940D3] block mt-2 hover:underline">Kembali</Link></div>;
+  if (loading && !customer) return <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#2940D3] border-t-transparent rounded-full animate-spin" /></div>;
+  if (!customer) return null;
 
   return (
     <div>
@@ -96,7 +132,7 @@ export default function CustomerDetail() {
         </div>
       </PageHeader>
 
-      <Card className="p-6 mb-5">
+      <Card className="p-6 mb-5 text-left">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <Avatar name={customer.customerName} size="xl" shape="circle" color="bg-gradient-to-br from-[#2940D3] to-[#142297]" className="shadow-lg ring-4 ring-[#2940D3]/20" />
           <div className="flex-1 min-w-0 text-center sm:text-left">
@@ -121,13 +157,13 @@ export default function CustomerDetail() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5 text-left">
         <StatCard Icon={TrendingUp} label="Total Transaksi" value={customer.totalTransactions + "x"} />
-        <StatCard Icon={Receipt} iconBg="bg-green-50" iconColor="text-green-500" label="Total Belanja" value={`Rp ${customer.totalSpent.toLocaleString("id-ID")}`} />
-        <StatCard Icon={Star} iconBg="bg-yellow-50" iconColor="text-yellow-500" label="Poin Loyalitas" value={`${customer.points} poin`} />
-        <StatCard Icon={Gift} iconBg="bg-purple-50" iconColor="text-purple-500" label="Nilai Poin" value={`Rp ${(Math.floor(customer.points / 100) * 5000).toLocaleString("id-ID")}`} />
+        <StatCard Icon={Receipt} iconBg="bg-green-50" iconColor="text-green-500" label="Total Belanja" value={`Rp ${(customer.totalSpent || 0).toLocaleString("id-ID")}`} />
+        <StatCard Icon={Star} iconBg="bg-yellow-50" iconColor="text-yellow-500" label="Poin Loyalitas" value={`${customer.points || 0} poin`} />
+        <StatCard Icon={Gift} iconBg="bg-purple-50" iconColor="text-purple-500" label="Nilai Poin" value={`Rp ${(Math.floor((customer.points || 0) / 100) * 5000).toLocaleString("id-ID")}`} />
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-white">
           <div className="text-left"><p className="font-bold text-gray-800">Riwayat Transaksi</p><p className="text-xs text-gray-400 mt-0.5">{customerTrx.length} ditemukan</p></div>
           <Link to="/transactions" className="text-xs text-[#2940D3] font-semibold hover:underline">Lihat Semua</Link>
         </div>
@@ -135,8 +171,8 @@ export default function CustomerDetail() {
           <Table headers={["ID", "Tanggal", "Layanan", "Berat", "Total", "Pembayaran", "Status"]}>
             {customerTrx.map((t) => (
               <tr key={t.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-5 py-3.5 font-mono text-xs text-gray-400">{t.id}</td>
-                <td className="px-5 py-3.5 text-gray-600 text-xs">{t.date}</td>
+                <td className="px-5 py-3.5 font-mono text-xs text-gray-400">{t.transactionId}</td>
+                <td className="px-5 py-3.5 text-gray-600 text-xs">{t.receivedDate}</td>
                 <td className="px-5 py-3.5 text-gray-700 text-xs">{t.service}</td>
                 <td className="px-5 py-3.5 text-gray-600">{t.weight} kg</td>
                 <td className="px-5 py-3.5 font-semibold text-gray-800">Rp {t.total.toLocaleString("id-ID")}</td>
@@ -150,11 +186,11 @@ export default function CustomerDetail() {
 
       <Dialog open={editOpen} onOpenChange={(openState) => { if (!openState) setEditOpen(false); }}>
         <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col font-lagusans p-0 gap-0 overflow-hidden bg-white rounded-2xl border-none shadow-2xl">
-          <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0 text-left">
+          <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0 text-left bg-white">
             <DialogTitle className="text-base font-bold text-gray-800">Edit Pelanggan</DialogTitle>
           </DialogHeader>
 
-          <div className="px-6 py-5 overflow-y-auto flex-1 text-sm text-gray-700">
+          <div className="px-6 py-5 overflow-y-auto flex-1 text-sm text-gray-700 text-left bg-white">
             <DynamicForm
               initialData={customer}
               onChange={setLocalForm}
@@ -170,10 +206,10 @@ export default function CustomerDetail() {
             />
           </div>
 
-          <div className="px-6 pb-6 flex-shrink-0">
+          <div className="px-6 pb-6 flex-shrink-0 bg-white">
             <div className="flex gap-3 w-full">
               <Button variant="outline" className="flex-1" onClick={() => setEditOpen(false)}>Batal</Button>
-              <Button variant="primary" className="flex-1" onClick={() => { setCustomer(localForm); setEditOpen(false); toast("success", "Pelanggan Diperbarui", "Data disimpan."); }}>Simpan</Button>
+              <Button variant="primary" className="flex-1" onClick={handleUpdate}>Simpan</Button>
             </div>
           </div>
         </DialogContent>
@@ -197,7 +233,7 @@ export default function CustomerDetail() {
               </Button>
             </AlertDialogCancel>
             <AlertDialogAction asChild>
-              <Button variant="danger" className="flex-1" onClick={() => { toast("warning", "Pelanggan Dihapus", "Data dihapus."); navigate("/customers"); }}>
+              <Button variant="danger" className="flex-1" onClick={handleDelete}>
                 Hapus
               </Button>
             </AlertDialogAction>

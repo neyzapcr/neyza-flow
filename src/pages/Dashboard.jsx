@@ -1,25 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
   LineChart, Line, PieChart, Pie, Cell,
 } from "recharts";
 import { DollarSign, Users, ClipboardList, Star, Plus, Check } from "lucide-react";
 import PageHeader from "../components/PageHeader";
-import rawCustomers from "../data/customers.json";
-const customers = rawCustomers.flatMap(c => (c.transactionHistory?.length ? c.transactionHistory : [{}]).map(h => ({
-  ...c,
-  customerId: h.customerId || c.customerId || String(Math.random()),
-  joinDate: h.joinDate || c.joinDate || "-",
-  totalTransactions: h.totalTransactions ?? c.totalTransactions ?? 0,
-  totalSpent: h.totalSpent ?? c.totalSpent ?? 0,
-  points: h.points ?? c.points ?? 0,
-  segment: h.segment || c.segment || "New",
-  lastTransaction: h.lastTransaction || c.lastTransaction || "-",
-  status: h.status || c.status || "active",
-})));
-import transactions from "../data/transactions.json";
-import feedback from "../data/feedback.json";
+import { getCustomers, createCustomer } from "../services/CustomerApi";
+import { getTransactions, createTransaction } from "../services/TransactionApi";
+import { getFeedback } from "../services/FeedbackApi";
+import { createNotification } from "../services/NotificationApi";
+import { supabase } from "../services/supabaseClient";
+import { useAuth } from "../hooks/useAuth";
 import {
   Dialog,
   DialogContent,
@@ -95,10 +87,40 @@ const Legend = ({ period }) => {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [period, setPeriod] = useState("minggu");
+  const [customers, setCustomers] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [feedback, setFeedback] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showTambah, setShowTambah] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [localForm, setLocalForm] = useState({});
+  const [selectedCustomerId, setSelectedCustomerId] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdTransaction, setCreatedTransaction] = useState(null);
 
-  // ── Perhitungan Data Grafik Dinamis dari File JSON ────────────────────────
-  const maxDateStr = transactions.map(t => t.date).filter(Boolean).sort().pop() || "2026-05-31";
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      try {
+        const custs = await getCustomers();
+        const trxs = await getTransactions();
+        const fbs = await getFeedback();
+        setCustomers(custs);
+        setTransactions(trxs);
+        setFeedback(fbs);
+      } catch (err) {
+        console.error("Failed to load dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  // ── Perhitungan Data Grafik Dinamis dari Database ────────────────────────
+  const maxDateStr = transactions.map(t => t.receivedDate || t.date).filter(Boolean).sort().pop() || "2026-06-30";
   const [yr, mt, dy] = maxDateStr.split("-").map(Number);
 
   let revenueData = [];
@@ -116,8 +138,8 @@ export default function Dashboard() {
       const prevDate = new Date(date.getTime() - 7 * 24 * 60 * 60 * 1000);
       const prevDateStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, "0")}-${String(prevDate.getDate()).padStart(2, "0")}`;
 
-      const thisWeekVal = transactions.filter(t => t.date === dateStr).reduce((s, t) => s + t.total, 0);
-      const lastWeekVal = transactions.filter(t => t.date === prevDateStr).reduce((s, t) => s + t.total, 0);
+      const thisWeekVal = transactions.filter(t => (t.receivedDate || t.date) === dateStr).reduce((s, t) => s + Number(t.total), 0);
+      const lastWeekVal = transactions.filter(t => (t.receivedDate || t.date) === prevDateStr).reduce((s, t) => s + Number(t.total), 0);
 
       return {
         day: date.toLocaleDateString("id-ID", { weekday: "short" }),
@@ -131,8 +153,8 @@ export default function Dashboard() {
       const prevDate = new Date(date.getTime() - 7 * 24 * 60 * 60 * 1000);
       const prevDateStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, "0")}-${String(prevDate.getDate()).padStart(2, "0")}`;
 
-      const thisWeekVal = transactions.filter(t => t.date === dateStr).length;
-      const lastWeekVal = transactions.filter(t => t.date === prevDateStr).length;
+      const thisWeekVal = transactions.filter(t => (t.receivedDate || t.date) === dateStr).length;
+      const lastWeekVal = transactions.filter(t => (t.receivedDate || t.date) === prevDateStr).length;
 
       return {
         day: date.toLocaleDateString("id-ID", { weekday: "short" }),
@@ -150,12 +172,13 @@ export default function Dashboard() {
 
     const getRangeStats = (start, end) => {
       const txs = transactions.filter(t => {
-        if (!t.date) return false;
-        const d = new Date(t.date);
+        const tDate = t.receivedDate || t.date;
+        if (!tDate) return false;
+        const d = new Date(tDate);
         return d >= start && d <= end;
       });
       return {
-        revenue: txs.reduce((s, t) => s + t.total, 0),
+        revenue: txs.reduce((s, t) => s + Number(t.total), 0),
         count: txs.length
       };
     };
@@ -198,12 +221,13 @@ export default function Dashboard() {
 
     const getMonthStats = (year, month) => {
       const txs = transactions.filter(t => {
-        if (!t.date) return false;
-        const [y, m] = t.date.split("-").map(Number);
+        const tDate = t.receivedDate || t.date;
+        if (!tDate) return false;
+        const [y, m] = tDate.split("-").map(Number);
         return y === year && (m - 1) === month;
       });
       return {
-        revenue: txs.reduce((s, t) => s + t.total, 0),
+        revenue: txs.reduce((s, t) => s + Number(t.total), 0),
         count: txs.length
       };
     };
@@ -251,10 +275,6 @@ export default function Dashboard() {
     const avg = fbs.length ? fbs.reduce((s, f) => s + f.rating, 0) / fbs.length : 4;
     return { name: cat, value: Math.round((avg / 5) * 100), color: idx % 2 === 0 ? "#2940D3" : "#142297" };
   });
-  const [showTambah, setShowTambah] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [localForm, setLocalForm] = useState({});
-  const [selectedCustomerId, setSelectedCustomerId] = useState("");
 
   const handleInputChange = (name, val) => {
     setLocalForm(prev => ({ ...prev, [name]: val }));
@@ -273,28 +293,156 @@ export default function Dashboard() {
   const seen = new Set();
   const customerOptions = [
     { label: "+ Tambah Pelanggan Baru", value: "new_customer" },
-    ...customers.filter(c => !seen.has(c.customerName) && seen.add(c.customerName))
+    ...customers.filter(c => c.customerName && !seen.has(c.customerName) && seen.add(c.customerName))
                 .map(c => ({ label: `${c.customerName} (${c.phone})`, value: c.customerId }))
   ];
 
   const total = localForm.weight ? Math.round(parseFloat(localForm.weight) * priceMap[localForm.service || SERVICES[0]]) : 0;
-  const totalRevenue = transactions.reduce((s, t) => s + t.total, 0);
+  const totalRevenue = transactions.reduce((s, t) => s + Number(t.total), 0);
   const activeCustomers = customers.filter((c) => c.status === "active").length;
-  const avgRating = (feedback.reduce((s, f) => s + f.rating, 0) / feedback.length).toFixed(1);
+  const avgRating = feedback.length ? (feedback.reduce((s, f) => s + f.rating, 0) / feedback.length).toFixed(1) : "5.0";
   const pendingOrders = transactions.filter((t) => t.status !== "selesai").length;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!localForm.customerName || !localForm.phone || !localForm.weight) return;
     setSaved(true);
-    toast("laundry", "Cucian Baru Ditambahkan!", `${localForm.customerName} · ${localForm.service || SERVICES[0]} · ${localForm.weight} kg · Rp ${total.toLocaleString("id-ID")}`, 6000);
-    setTimeout(() => { 
-      setShowTambah(false); 
+
+    try {
+      let custId = selectedCustomerId;
+      let targetCustomer = null;
+
+      if (selectedCustomerId === "new_customer" || !selectedCustomerId) {
+        const phoneKey = localForm.phone || "";
+        const emailKey = localForm.email || "";
+
+        // First find in local state
+        targetCustomer = customers.find(c => (phoneKey && c.phone === phoneKey) || (emailKey && c.email === emailKey));
+
+        if (!targetCustomer) {
+          // Verify with database directly
+          const { data: dbCust, error: dbCustErr } = await supabase
+            .from("customers")
+            .select("*")
+            .or(`phone.eq.${phoneKey},email.eq.${emailKey}`)
+            .maybeSingle();
+
+          if (dbCustErr) throw dbCustErr;
+          if (dbCust) {
+            targetCustomer = {
+              ...dbCust,
+              customerId: dbCust.customerCode
+            };
+          }
+        }
+
+        if (targetCustomer) {
+          custId = targetCustomer.customerId;
+        } else {
+          // Create new customer
+          const newCustId = `CUST-${String(Math.floor(1000 + Math.random() * 9000))}`;
+          const newCust = {
+            customerId: newCustId,
+            userId: null,
+            customerName: localForm.customerName,
+            phone: localForm.phone,
+            email: localForm.email || null,
+            address: localForm.address || null,
+            customerType: localForm.customerType || "Umum",
+            maritalStatus: null,
+            joinDate: new Date().toISOString().split("T")[0],
+            points: 0,
+            totalTransactions: 0,
+            totalSpent: 0,
+            segment: "New",
+            status: "active"
+          };
+          const created = await createCustomer(newCust);
+          custId = created.customerId;
+          targetCustomer = created;
+          setCustomers([created, ...customers]);
+        }
+      } else {
+        targetCustomer = customers.find(c => c.customerId === selectedCustomerId);
+      }
+
+      const trxId = `TRX-${String(Math.floor(100000 + Math.random() * 900000))}`;
+      const service = localForm.service || SERVICES[0];
+      const weight = parseFloat(localForm.weight);
+      const price = priceMap[service] || 8000;
+      const totalCost = Math.round(weight * price);
+      const paymentMethod = localForm.paymentMethod || PAYMENT_METHODS[0];
+
+      const newTrx = {
+        transactionId: trxId,
+        customerId: custId,
+        customerName: localForm.customerName,
+        service,
+        weight,
+        pricePerKg: price,
+        total: totalCost,
+        paymentMethod,
+        receivedDate: new Date().toISOString().split("T")[0],
+        estimatedDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+        completedDate: null,
+        status: "menunggu",
+        qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(window.location.origin + '/tracking/' + trxId)}`,
+        createdBy: user?.id || null,
+        notes: localForm.notes || ""
+      };
+
+      const createdTrx = await createTransaction(newTrx);
+
+      // Create notification
+      if (targetCustomer) {
+        try {
+          await createNotification({
+            customerId: targetCustomer.id,
+            transactionId: createdTrx.id,
+            title: "Pesanan Berhasil Dibuat",
+            message: "Pesanan laundry Anda telah diterima dan sedang menunggu proses.",
+            type: "Tracking"
+          });
+        } catch (notifErr) {
+          console.error("Failed to create notification:", notifErr);
+        }
+      }
+
+      toast("laundry", "Cucian Baru Ditambahkan!", `${localForm.customerName} · ${service} · ${weight} kg · Rp ${totalCost.toLocaleString("id-ID")}`, 6000);
+      
+      // Update local state instantly without full reload
+      setTransactions([createdTrx, ...transactions]);
+      setCreatedTransaction(createdTrx);
+      
+      // Close forms and open success modal
+      setShowTambah(false);
       setSaved(false);
       setLocalForm({});
-      navigate("/tracking"); 
-    }, 1400);
+      setSelectedCustomerId("");
+      setShowSuccessModal(true);
+    } catch (err) {
+      console.error("Failed to add transaction:", err);
+      setSaved(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-pulse text-left">
+        <div className="h-10 w-48 bg-gray-200 rounded-xl"></div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="h-28 bg-gray-200 rounded-2xl"></div>
+          <div className="h-28 bg-gray-200 rounded-2xl"></div>
+          <div className="h-28 bg-gray-200 rounded-2xl"></div>
+          <div className="h-28 bg-gray-200 rounded-2xl"></div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 h-[350px] bg-gray-200 rounded-2xl"></div>
+          <div className="h-[350px] bg-gray-200 rounded-2xl"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -312,7 +460,7 @@ export default function Dashboard() {
         </div>
       </PageHeader>
 
-      {/* Stat Cards dengan Sub-Teks Naik Turun Performa */}
+      {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard Icon={DollarSign} iconBg="bg-[#2940D3]/10" label="Total Pendapatan" value={`Rp ${totalRevenue.toLocaleString("id-ID")}`} sub="↑ 2.1% vs minggu lalu" subColor="text-green-500" />
         <StatCard Icon={Users} iconBg="bg-[#142297]/10" iconColor="text-[#142297]" label="Pelanggan Aktif" value={activeCustomers} sub="↑ 3 pelanggan baru" subColor="text-green-500" />
@@ -372,7 +520,6 @@ export default function Dashboard() {
         </Card>
       </div>
 
-
       {/* Charts Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Rating Bars */}
@@ -418,11 +565,11 @@ export default function Dashboard() {
         </div>
         <Table headers={["ID", "Pelanggan", "Layanan", "Total", "Status"]}>
           {transactions.slice(0, 5).map((t) => (
-            <tr key={t.id} className="hover:bg-gray-50 transition-colors">
-              <td className="px-5 py-3 text-xs text-gray-400 font-mono">{t.id}</td>
-              <td className="px-5 py-3 font-medium text-gray-700">{t.customerName}</td>
+            <tr key={t.transactionId} className="hover:bg-gray-50 transition-colors">
+              <td className="px-5 py-3 text-xs text-gray-400 font-mono">{t.transactionId}</td>
+              <td className="px-5 py-3 font-medium text-gray-700">{t.customerName || t.customerId}</td>
               <td className="px-5 py-3 text-gray-500 text-xs">{t.service}</td>
-              <td className="px-5 py-3 font-semibold text-gray-800">Rp {t.total.toLocaleString("id-ID")}</td>
+              <td className="px-5 py-3 font-semibold text-gray-800">Rp {Number(t.total).toLocaleString("id-ID")}</td>
               <td className="px-5 py-3"><Badge variant={statusMap[t.status] || "gray"} className="capitalize">{t.status}</Badge></td>
             </tr>
           ))}
@@ -431,7 +578,7 @@ export default function Dashboard() {
 
       {/* Tambah Cucian Modal */}
       <Dialog open={showTambah} onOpenChange={(openState) => { if (!openState) { setShowTambah(false); setLocalForm({}); setSelectedCustomerId(""); } }}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col font-lagusans p-0 gap-0 overflow-hidden bg-white rounded-2xl border-none shadow-2xl">
+        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col font-Montserrat p-0 gap-0 overflow-hidden bg-white rounded-2xl border-none shadow-2xl">
           <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0 text-left">
             <DialogTitle className="text-base font-bold text-gray-800">Tambah Cucian Baru</DialogTitle>
             <DialogDescription className="text-xs text-gray-400 mt-0.5">Isi data pelanggan dan detail cucian</DialogDescription>
@@ -460,7 +607,7 @@ export default function Dashboard() {
 
                   {/* Show text inputs if new_customer or custom customer is being filled */}
                   {(selectedCustomerId === "new_customer" || !selectedCustomerId) && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-1 bg-white">
                       <Input
                         label="Nama Pelanggan"
                         name="customerName"
@@ -478,6 +625,31 @@ export default function Dashboard() {
                         placeholder="08xxxxxxxxxx"
                         required
                       />
+                      <Input
+                        label="Email (opsional)"
+                        name="email"
+                        type="email"
+                        value={localForm.email || ""}
+                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        placeholder="email@contoh.com"
+                      />
+                      <Select
+                        label="Jenis Pelanggan (opsional)"
+                        name="customerType"
+                        value={localForm.customerType || "Umum"}
+                        onChange={(val) => handleInputChange("customerType", val)}
+                        options={["Umum", "Pelajar", "Pekerja", "Ibu Rumah Tangga"]}
+                      />
+                      <div className="sm:col-span-2">
+                        <TextArea
+                          label="Alamat (opsional)"
+                          name="address"
+                          value={localForm.address || ""}
+                          onChange={(e) => handleInputChange("address", e.target.value)}
+                          placeholder="Alamat lengkap tempat tinggal..."
+                          rows={2}
+                        />
+                      </div>
                     </div>
                   )}
 
@@ -552,6 +724,65 @@ export default function Dashboard() {
                 </div>
               </form>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Berhasil (Quick Order Details) */}
+      <Dialog open={showSuccessModal} onOpenChange={(openState) => { if (!openState) { setShowSuccessModal(false); setCreatedTransaction(null); } }}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col font-Montserrat p-0 gap-0 overflow-hidden bg-white rounded-2xl border-none shadow-2xl">
+          <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0 text-left bg-white">
+            <DialogTitle className="text-base font-bold text-gray-800">Detail Transaksi Baru</DialogTitle>
+            <DialogDescription className="text-xs text-gray-400 mt-0.5">Pesanan laundry berhasil disimpan di database</DialogDescription>
+          </DialogHeader>
+
+          {createdTransaction && (
+            <div className="px-6 py-5 overflow-y-auto flex-1 text-sm text-gray-750 text-left bg-white">
+              <div className="flex flex-col items-center text-center p-4 bg-gray-50 rounded-2xl mb-4 border border-gray-100">
+                <img src={createdTransaction.qrCode} alt="QR Code Tracking" className="w-40 h-40 shadow rounded-xl border-2 border-white mb-2" />
+                <p className="font-mono font-bold text-gray-800 text-sm tracking-wide">{createdTransaction.transactionId}</p>
+                <Badge variant="yellow" className="mt-1.5 capitalize">{createdTransaction.status}</Badge>
+              </div>
+
+              <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 space-y-2 mb-5">
+                {[
+                  { label: "Nomor Transaksi", value: createdTransaction.transactionId, font: "font-mono" },
+                  { label: "Nama Pelanggan", value: createdTransaction.customerName },
+                  { label: "Estimasi Selesai", value: createdTransaction.estimatedDate },
+                ].map((item) => (
+                  <div key={item.label} className="flex justify-between text-xs">
+                    <span className="text-gray-500">{item.label}</span>
+                    <span className={`font-semibold text-gray-800 ${item.font || ""}`}>{item.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 mb-2 bg-white">
+                <Button variant="outline" className="text-xs font-bold" onClick={() => {
+                  const w = window.open();
+                  w.document.write(`<div style="text-align:center;padding:50px;"><img src="${createdTransaction.qrCode}" width="200" /><p style="font-family:sans-serif;font-weight:bold;margin-top:10px;">${createdTransaction.transactionId}</p><p style="font-family:sans-serif;font-size:12px;color:#666;">Pelanggan: ${createdTransaction.customerName}</p></div>`);
+                  w.document.close();
+                  w.print();
+                  w.close();
+                }}>Cetak QR</Button>
+                <Button variant="outline" className="text-xs font-bold" onClick={() => {
+                  const a = document.createElement("a");
+                  a.href = createdTransaction.qrCode;
+                  a.download = `QR_${createdTransaction.transactionId}.png`;
+                  a.target = "_blank";
+                  a.click();
+                }}>Download QR</Button>
+              </div>
+
+              <Button variant="primary" className="w-full text-xs font-bold bg-[#25D366] hover:bg-[#20BA5A] border-none text-white mb-2" onClick={() => {
+                const msg = `Halo ${createdTransaction.customerName}, pesanan laundry Anda dengan kode ${createdTransaction.transactionId} telah kami terima. Lacak status cucian Anda di: ${window.location.origin}/tracking/${createdTransaction.transactionId}`;
+                window.open(`https://api.whatsapp.com/send?phone=${createdTransaction.phone || ""}&text=${encodeURIComponent(msg)}`);
+              }}>Bagikan WhatsApp</Button>
+            </div>
+          )}
+
+          <div className="px-6 pb-6 flex-shrink-0 bg-white">
+            <Button variant="outline" className="w-full text-xs font-bold" onClick={() => { setShowSuccessModal(false); setCreatedTransaction(null); }}>Tutup</Button>
           </div>
         </DialogContent>
       </Dialog>

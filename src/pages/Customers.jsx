@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Eye, Pencil, Trash2, Plus, Users, CheckCircle, Crown, Search, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import PageHeader from "../components/PageHeader";
-import customersData from "../data/customers.json";
+import { getCustomers, createCustomer, updateCustomer, deleteCustomer } from "../services/CustomerApi";
 import Button from "../components/Button";
 import SearchInput from "../components/SearchInput";
 import {
@@ -36,35 +36,8 @@ const statusVariant = { active: "green", inactive: "red" };
 const customerTypeVariant = { Pelajar: "yellow", Pekerja: "blue", "Ibu Rumah Tangga": "purple", Umum: "gray" };
 
 export default function Customers() {
-  const [customers, setCustomers] = useState(() => {
-    return customersData.flatMap((c) => {
-      const historyList = c.transactionHistory || [];
-      if (historyList.length === 0) {
-        return [{
-          ...c,
-          customerId: c.customerId || String(Math.random()),
-          joinDate: c.joinDate || "-",
-          totalTransactions: c.totalTransactions !== undefined ? c.totalTransactions : 0,
-          totalSpent: c.totalSpent !== undefined ? c.totalSpent : 0,
-          points: c.points !== undefined ? c.points : 0,
-          segment: c.segment || "New",
-          lastTransaction: c.lastTransaction || "-",
-          status: c.status || "active",
-        }];
-      }
-      return historyList.map((history) => ({
-        ...c,
-        customerId: history.customerId || c.customerId || String(Math.random()),
-        joinDate: history.joinDate || c.joinDate || "-",
-        totalTransactions: history.totalTransactions !== undefined ? history.totalTransactions : (c.totalTransactions || 0),
-        totalSpent: history.totalSpent !== undefined ? history.totalSpent : (c.totalSpent || 0),
-        points: history.points !== undefined ? history.points : (c.points || 0),
-        segment: history.segment || c.segment || "New",
-        lastTransaction: history.lastTransaction || c.lastTransaction || "-",
-        status: history.status || c.status || "active",
-      }));
-    });
-  });
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterSegment, setFilterSegment] = useState("Semua");
   const [filterType, setFilterType] = useState("Semua");
@@ -74,6 +47,21 @@ export default function Customers() {
   const [localForm, setLocalForm] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
+
+  useEffect(() => {
+    async function loadCustomers() {
+      setLoading(true);
+      try {
+        const data = await getCustomers();
+        setCustomers(data);
+      } catch (err) {
+        console.error("Failed to load customers:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadCustomers();
+  }, []);
 
   const customerFields = [
     { name: "customerName", label: "Nama Lengkap", type: "text", placeholder: "Masukkan nama lengkap", required: true },
@@ -86,7 +74,7 @@ export default function Customers() {
   ];
 
   const filtered = customers.filter((c) => {
-    const matchSearch  = c.customerName.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search);
+    const matchSearch  = (c.customerName || "").toLowerCase().includes(search.toLowerCase()) || (c.phone || "").includes(search);
     const matchSegment = filterSegment === "Semua" || c.segment === filterSegment;
     const matchType = filterType === "Semua" || c.customerType === filterType;
     return matchSearch && matchSegment && matchType;
@@ -132,16 +120,52 @@ export default function Customers() {
     return pageNumbers;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editCustomer) {
-      setCustomers(customers.map((c) => c.customerId === editCustomer.customerId ? { ...c, ...localForm } : c));
-      toast("success", "Pelanggan Diperbarui", `Data ${localForm.customerName} berhasil disimpan.`);
+      try {
+        const updated = await updateCustomer(editCustomer.id, localForm);
+        setCustomers(customers.map((c) => c.id === editCustomer.id ? { ...c, ...updated } : c));
+        toast("success", "Pelanggan Diperbarui", `Data ${localForm.customerName} berhasil disimpan.`);
+      } catch (err) {
+        console.error("Error updating customer:", err);
+      }
     } else {
-      setCustomers([...customers, { ...localForm, customerId: Date.now(), totalTransactions: 0, totalSpent: 0, points: 0, joinDate: new Date().toISOString().split("T")[0], lastTransaction: "-" }]);
-      toast("success", "Pelanggan Ditambahkan", `${localForm.customerName} berhasil didaftarkan.`);
+      try {
+        const newCustId = `CUST-${String(Math.floor(1000 + Math.random() * 9000))}`;
+        const newCust = {
+          ...localForm,
+          customerId: newCustId,
+          userId: null,
+          totalTransactions: 0,
+          totalSpent: 0,
+          points: 0,
+          joinDate: new Date().toISOString().split("T")[0],
+          lastTransaction: "-",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        const created = await createCustomer(newCust);
+        setCustomers([...customers, created]);
+        toast("success", "Pelanggan Ditambahkan", `${localForm.customerName} berhasil didaftarkan.`);
+      } catch (err) {
+        console.error("Error creating customer:", err);
+      }
     }
     setShowModal(false);
     setEditCustomer(null);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteConfirm) return;
+    try {
+      await deleteCustomer(deleteConfirm);
+      setCustomers(customers.filter(c => c.id !== deleteConfirm));
+      toast("warning", "Pelanggan Dihapus", "Data berhasil dihapus.");
+    } catch (err) {
+      console.error("Error deleting customer:", err);
+    } finally {
+      setDeleteConfirm(null);
+    }
   };
 
   const stats = [
@@ -149,6 +173,20 @@ export default function Customers() {
     { label: "Pelanggan Murni Aktif", value: customers.filter((c) => c.status === "active").length, Icon: CheckCircle, color: "bg-green-50", iconColor: "text-green-500" },
     { label: "Pelanggan VIP", value: customers.filter((c) => c.segment === "VIP").length, Icon: Crown, color: "bg-purple-50", iconColor: "text-purple-500" },
   ];
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-pulse text-left">
+        <div className="h-10 w-48 bg-gray-200 rounded-xl"></div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="h-32 bg-gray-200 rounded-2xl"></div>
+          <div className="h-32 bg-gray-200 rounded-2xl"></div>
+          <div className="h-32 bg-gray-200 rounded-2xl"></div>
+        </div>
+        <div className="h-96 bg-gray-200 rounded-2xl"></div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -207,14 +245,14 @@ export default function Customers() {
               <td className="px-5 py-4 text-left"><Badge variant={segmentVariant[c.segment] || "gray"}>{c.segment}</Badge></td>
               <td className="px-5 py-4 text-left"><Badge variant={customerTypeVariant[c.customerType] || "gray"}>{c.customerType}</Badge></td>
               <td className="px-5 py-4 text-left font-semibold text-gray-700">{c.totalTransactions}x</td>
-              <td className="px-5 py-4 text-left font-semibold text-gray-800">Rp {c.totalSpent.toLocaleString("id-ID")}</td>
+              <td className="px-5 py-4 text-left font-semibold text-gray-800">Rp {(c.totalSpent || 0).toLocaleString("id-ID")}</td>
               <td className="px-5 py-4 text-left"><span className="text-[#2940D3] font-semibold">{c.points}</span><span className="text-xs text-gray-400 ml-1">poin</span></td>
               <td className="px-5 py-4 text-left"><Badge variant={statusVariant[c.status] || "gray"}>{c.status === "active" ? "Aktif" : "Tidak Aktif"}</Badge></td>
               <td className="px-5 py-4 text-left">
                 <div className="flex gap-1">
                   <Link to={`/customers/${c.customerId}`} className="w-8 h-8 rounded-lg bg-blue-50 text-[#2940D3] flex items-center justify-center hover:bg-blue-100 transition-colors"><Eye size={14} /></Link>
                   <button onClick={() => { setEditCustomer(c); setLocalForm(c); setShowModal(true); }} className="w-8 h-8 rounded-lg bg-yellow-50 text-yellow-600 flex items-center justify-center hover:bg-yellow-100 transition-colors"><Pencil size={14} /></button>
-                  <button onClick={() => setDeleteConfirm(c.customerId)} className="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors"><Trash2 size={14} /></button>
+                  <button onClick={() => setDeleteConfirm(c.id)} className="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors"><Trash2 size={14} /></button>
                 </div>
               </td>
             </tr>
@@ -339,7 +377,7 @@ export default function Customers() {
               </Button>
             </AlertDialogCancel>
             <AlertDialogAction asChild>
-              <Button variant="danger" className="flex-1" onClick={() => { setCustomers(customers.filter(c => c.customerId !== deleteConfirm)); setDeleteConfirm(null); toast("warning", "Pelanggan Dihapus", "Data berhasil dihapus."); }}>
+              <Button variant="danger" className="flex-1" onClick={handleDelete}>
                 Hapus
               </Button>
             </AlertDialogAction>

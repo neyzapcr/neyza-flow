@@ -1,7 +1,9 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Loading from "./components/Loading";
+import { useAuth } from "./hooks/useAuth";
 import { applyTheme } from "./utils/theme";
+import { useEffect } from "react";
 
 // Layouts
 import MainLayout from "./layouts/MainLayout";
@@ -25,40 +27,44 @@ const Reports       = lazy(() => import("./pages/Reports"));
 const Settings      = lazy(() => import("./pages/Settings"));
 const NotFound      = lazy(() => import("./pages/NotFound"));
 const CustomerDetail = lazy(() => import("./pages/CustomerDetail"));
-const Landing       = lazy(() => import("./pages/guest/Landing"));
 const Users         = lazy(() => import("./pages/Users"));
 
-// ── Cek status login dari localStorage ───────────────────────────────────
-const getUserSession = () => {
-  try {
-    return JSON.parse(localStorage.getItem("netto_user"));
-  } catch (e) {
-    return null;
-  }
-};
+// Lazy-loaded pages — Member
+const MemberLayout       = lazy(() => import("./layouts/MemberLayout"));
+const MemberDashboard    = lazy(() => import("./pages/member/MemberDashboard"));
+const MemberTracking     = lazy(() => import("./pages/member/MemberTracking"));
+const MemberTransactions = lazy(() => import("./pages/member/MemberTransactions"));
+const MemberLoyalty      = lazy(() => import("./pages/member/MemberLoyalty"));
+const MemberPromos       = lazy(() => import("./pages/member/MemberPromos"));
+const MemberProfile      = lazy(() => import("./pages/member/MemberProfile"));
 
-const isLoggedIn = () => getUserSession() !== null;
+// Lazy-loaded pages — Guest / Public
+const Landing       = lazy(() => import("./pages/guest/Landing"));
+const PublicTracking = lazy(() => import("./pages/PublicTracking"));
 
-// ── Guard: halaman admin — khusus admin, redirect ke / jika member ───────────
+// ── Route guards ─────────────────────────────────────────────────────────────
 function AdminRoute({ children }) {
-  const user = getUserSession();
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-  if (user.role !== "admin") {
-    return <Navigate to="/" replace />;
-  }
+  const { isAuthenticated, isAdmin, loading } = useAuth();
+  if (loading) return <Loading />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAdmin) return <Navigate to="/member/dashboard" replace />;
   return children;
 }
 
-// ── Guard: halaman auth — redirect ke dashboard/landing page kalau sudah login ────────
+function MemberRoute({ children }) {
+  const { isAuthenticated, isMember, loading } = useAuth();
+  if (loading) return <Loading />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isMember) return <Navigate to="/dashboard" replace />;
+  return children;
+}
+
 function GuestRoute({ children }) {
-  const user = getUserSession();
-  if (user) {
-    if (user.role === "admin") {
-      return <Navigate to="/dashboard" replace />;
-    }
-    return <Navigate to="/" replace />;
+  const { isAuthenticated, role, loading } = useAuth();
+  if (loading) return <Loading />;
+  if (isAuthenticated) {
+    if (role === "Member") return <Navigate to="/member/dashboard" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
   return children;
 }
@@ -75,6 +81,8 @@ export default function App() {
         {/* ── Root: Landing Page Publik ── */}
         <Route path="/" element={<Landing />} />
 
+        {/* ── Public Tracking via QR Code ── */}
+        <Route path="/tracking/:transactionId" element={<PublicTracking />} />
 
         {/* ── Auth Routes — tidak bisa diakses kalau sudah login ── */}
         <Route element={<GuestRoute><AuthLayout /></GuestRoute>}>
@@ -83,8 +91,7 @@ export default function App() {
           <Route path="/forgot"   element={<Forgot />} />
         </Route>
 
-
-        {/* ── Admin Routes — harus login dulu ── */}
+        {/* ── Admin Routes ── */}
         <Route element={<AdminRoute><MainLayout /></AdminRoute>}>
           <Route path="/dashboard"     element={<Dashboard />} />
           <Route path="/customers"     element={<Customers />} />
@@ -100,7 +107,17 @@ export default function App() {
           <Route path="/users"         element={<Users />} />
         </Route>
 
-        {/* ── 404 — URL tidak dikenal ── */}
+        {/* ── Member Routes ── */}
+        <Route element={<MemberRoute><MemberLayout /></MemberRoute>}>
+          <Route path="/member/dashboard"     element={<MemberDashboard />} />
+          <Route path="/member/tracking"      element={<MemberTracking />} />
+          <Route path="/member/transactions"  element={<MemberTransactions />} />
+          <Route path="/member/loyalty"       element={<MemberLoyalty />} />
+          <Route path="/member/promos"        element={<MemberPromos />} />
+          <Route path="/member/profile"       element={<MemberProfile />} />
+        </Route>
+
+        {/* ── 404 ── */}
         <Route path="*" element={<NotFound />} />
 
       </Routes>

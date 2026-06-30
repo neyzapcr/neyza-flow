@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageSquare, CheckCircle, Clock } from "lucide-react";
 import PageHeader from "../components/PageHeader";
-import feedbackData from "../data/feedback.json";
 import {
   Dialog,
   DialogContent,
@@ -14,15 +13,58 @@ import Badge from "../components/Badge";
 import Card from "../components/Card";
 import ProgressBar from "../components/ProgressBar";
 import Avatar from "../components/Avatar";
+import { getFeedback, replyFeedback } from "../services/FeedbackApi";
 
 export default function Feedback() {
-  const [feedbacks, setFeedbacks] = useState(feedbackData);
+  const [feedbacks, setFeedbacks] = useState([]);
   const [filterRating, setFilterRating] = useState(0);
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [replyModal, setReplyModal] = useState(null);
+  const [replyForm, setReplyForm] = useState({ replyText: "" });
+  const [loading, setLoading] = useState(true);
+
+  const fetchFeedbackList = async () => {
+    try {
+      setLoading(true);
+      const data = await getFeedback();
+      // Normalize statuses to lowercase to match filter
+      const mapped = (data || []).map(f => ({
+        ...f,
+        status: (f.status || "menunggu").toLowerCase()
+      }));
+      setFeedbacks(mapped);
+    } catch (err) {
+      console.error("Failed to fetch feedback:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFeedbackList();
+  }, []);
+
+  const handleSendReply = async () => {
+    if (!replyModal || !replyForm.replyText) return;
+    try {
+      setLoading(true);
+      await replyFeedback(replyModal.id, replyForm.replyText);
+      setReplyModal(null);
+      setReplyForm({ replyText: "" });
+      await fetchFeedbackList();
+    } catch (err) {
+      console.error("Failed to send feedback reply:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filtered = feedbacks.filter(f => (filterRating === 0 || f.rating === filterRating) && (filterStatus === "Semua" || f.status === filterStatus));
-  const avgRating = (feedbacks.reduce((s, f) => s + f.rating, 0) / feedbacks.length).toFixed(1);
+  
+  const totalCount = feedbacks.length || 1;
+  const avgRating = feedbacks.length > 0 
+    ? (feedbacks.reduce((s, f) => s + f.rating, 0) / feedbacks.length).toFixed(1)
+    : "5.0";
 
   const renderStars = (rating) => (
     <div className="flex gap-0.5">
@@ -32,15 +74,25 @@ export default function Feedback() {
     </div>
   );
 
+  if (loading && feedbacks.length === 0) {
+    return (
+      <div className="space-y-6 animate-pulse text-left">
+        <div className="h-10 w-48 bg-gray-200 rounded-xl"></div>
+        <div className="h-48 bg-gray-200 rounded-2xl"></div>
+        <div className="h-64 bg-gray-200 rounded-2xl"></div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <PageHeader title="Feedback & Rating" subtitle="Pantau kepuasan dan ulasan pelanggan" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 text-left">
         <Card className="flex items-center gap-4">
           <div className="text-center">
             <p className="text-5xl font-bold text-[#2940D3]">{avgRating}</p>
-            {renderStars(Math.round(avgRating))}
+            {renderStars(Math.round(parseFloat(avgRating)))}
             <p className="text-xs text-gray-400 mt-1">{feedbacks.length} ulasan</p>
           </div>
           <div className="flex-1 space-y-1.5">
@@ -49,7 +101,7 @@ export default function Feedback() {
               return (
                 <div key={r} className="flex items-center gap-2">
                   <span className="text-xs text-gray-500 w-4">{r}</span>
-                  <ProgressBar value={Math.round((count / feedbacks.length) * 100)} color="#FBBF24" height="sm" className="flex-1" />
+                  <ProgressBar value={Math.round((count / totalCount) * 100)} color="#FBBF24" height="sm" className="flex-1" />
                   <span className="text-xs text-gray-400 w-6">{count}</span>
                 </div>
               );
@@ -63,7 +115,7 @@ export default function Feedback() {
             { label: "Sudah Dibalas", value: feedbacks.filter(f => f.status === "dibalas").length, Icon: CheckCircle, color: "bg-green-50 text-green-500" },
             { label: "Menunggu Balasan", value: feedbacks.filter(f => f.status === "menunggu").length, Icon: Clock, color: "bg-yellow-50 text-yellow-500" }
           ].map(s => (
-            <div key={s.label} className={`${s.color.split(" ")[0]} rounded-2xl p-4 border border-white`}>
+            <div key={s.label} className={`${s.color.split(" ")[0]} rounded-2xl p-4 border border-white bg-white`}>
               <s.Icon size={20} className={`${s.color.split(" ")[1]} mb-2`} />
               <p className="text-2xl font-bold text-gray-800">{s.value}</p>
               <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
@@ -89,15 +141,15 @@ export default function Feedback() {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-left">
         {filtered.map((f) => (
           <Card key={f.id} className="hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between mb-3">
+            <div className="flex items-start justify-between mb-3 bg-white">
               <div className="flex items-center gap-3">
                 <Avatar name={f.customerName} size="md" shape="rounded" color="bg-[#2940D3]/10" className="text-[#2940D3]" />
                 <div>
                   <p className="font-semibold text-gray-800 text-sm">{f.customerName}</p>
-                  <p className="text-xs text-gray-400">{f.date} · {f.transactionId}</p>
+                  <p className="text-xs text-gray-400">{(f.createdAt || "").split("T")[0]} · {f.transactionCode || f.transactionId || "-"}</p>
                 </div>
               </div>
               <div className="flex flex-col items-end gap-1">
@@ -106,7 +158,13 @@ export default function Feedback() {
               </div>
             </div>
             <Badge variant={f.category === "Kebersihan" ? "blue" : f.category === "Kecepatan" ? "purple" : "green"} className="mb-2">{f.category}</Badge>
-            <p className="text-sm text-gray-600 leading-relaxed">{f.comment}</p>
+            <p className="text-sm text-gray-600 leading-relaxed mb-2">{f.comment}</p>
+            {f.reply && (
+              <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 mt-2 text-left">
+                <p className="text-xs text-gray-400 font-semibold uppercase mb-1">Balasan Admin</p>
+                <p className="text-xs text-gray-700 leading-relaxed">{f.reply}</p>
+              </div>
+            )}
             {f.status === "menunggu" && (
               <button onClick={() => setReplyModal(f)} className="mt-3 w-full py-2 rounded-xl bg-[#2940D3]/10 text-[#2940D3] text-xs font-semibold hover:bg-[#2940D3]/20 transition-colors flex items-center justify-center gap-1.5"><MessageSquare size={13} /> Balas Feedback</button>
             )}
@@ -117,26 +175,30 @@ export default function Feedback() {
 
       <Dialog open={!!replyModal} onOpenChange={(openState) => { if (!openState) setReplyModal(null); }}>
         <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col font-lagusans p-0 gap-0 overflow-hidden bg-white rounded-2xl border-none shadow-2xl">
-          <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0 text-left">
+          <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0 text-left bg-white">
             <DialogTitle className="text-base font-bold text-gray-800">Balas Feedback</DialogTitle>
           </DialogHeader>
 
-          <div className="px-6 py-5 overflow-y-auto flex-1 text-sm text-gray-700">
+          <div className="px-6 py-5 overflow-y-auto flex-1 text-sm text-gray-700 text-left bg-white">
             {replyModal && (
               <>
                 <div className="bg-gray-50 rounded-xl p-3 mb-4 text-left">
-                  <div className="flex items-center gap-2 mb-1"><span className="text-xs text-gray-500">{replyModal.customerName}</span>{renderStars(replyModal.rating)}</div>
+                  <div className="flex items-center gap-2 mb-1 bg-white"><span className="text-xs text-gray-500">{replyModal.customerName}</span>{renderStars(replyModal.rating)}</div>
                   <p className="text-sm text-gray-700">{replyModal.comment}</p>
                 </div>
-                <DynamicForm fields={[{ name: "replyText", label: "Tulis Balasan Anda", type: "textarea", placeholder: "Tulis balasan Anda...", rows: 4 }]} />
+                <DynamicForm 
+                  initialData={replyForm}
+                  onChange={setReplyForm}
+                  fields={[{ name: "replyText", label: "Tulis Balasan Anda", type: "textarea", placeholder: "Tulis balasan Anda...", rows: 4 }]} 
+                />
               </>
             )}
           </div>
 
-          <div className="px-6 pb-6 flex-shrink-0">
+          <div className="px-6 pb-6 flex-shrink-0 bg-white">
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" onClick={() => setReplyModal(null)}>Batal</Button>
-              <Button variant="primary" className="flex-1" onClick={() => { setFeedbacks(feedbacks.map(f => f.id === replyModal.id ? { ...f, status: "dibalas" } : f)); setReplyModal(null); }}>Kirim Balasan</Button>
+              <Button variant="primary" className="flex-1" onClick={handleSendReply}>Kirim Balasan</Button>
             </div>
           </div>
         </DialogContent>

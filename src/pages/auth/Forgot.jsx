@@ -1,26 +1,51 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle, KeyRound } from "lucide-react";
+import { supabase } from "../../services/supabaseClient";
 
 export default function Forgot() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    setError("");
+
+    try {
+      const { data, error: queryError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("email", email)
+        .maybeSingle();
+
+      if (queryError) throw queryError;
+      if (!data) {
+        throw new Error("Email tidak terdaftar dalam sistem.");
+      }
+
       setSent(true);
-    }, 1200);
+    } catch (err) {
+      console.error("Reset password error:", err);
+      setError(err.message || "Gagal memproses permintaan reset password.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const loadingInfo = loading ? (
     <div className="bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-xl px-4 py-3 mb-4 flex items-center gap-2">
       <div className="w-4 h-4 border-2 border-[#2940D3] border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
       Mohon Tunggu...
+    </div>
+  ) : null;
+
+  const errorInfo = error ? (
+    <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 mb-4 flex items-center gap-2">
+      <span>⚠</span> {error}
     </div>
   ) : null;
 
@@ -45,12 +70,16 @@ export default function Forgot() {
         </div>
       ) : (
         <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-md">
-          
+          <div className="w-14 h-14 bg-[#2940D3]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <KeyRound size={26} className="text-[#2940D3]" />
+          </div>
+
           <h2 className="text-2xl font-bold text-gray-800 mb-1 text-center">Forgot Your Password?</h2>
           <p className="text-sm text-gray-400 mb-6 text-center">
             Enter your email address and we'll send you a link to reset your password.
           </p>
 
+          {errorInfo}
           {loadingInfo}
 
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -2,26 +2,34 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X, ChevronDown, User, LogOut, Check, Settings } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../../../components/ui/dialog";
+import { useAuth } from "../../../hooks/useAuth";
 import { usersAPI } from "../../../services/usersApi";
 import Logo from "../../../components/Logo";
 
 export default function Navbar() {
+  const { session, profile, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
-  const userSession = JSON.parse(localStorage.getItem("netto_user") || "null");
+  const isLoggedIn = !!session;
 
   const [profileForm, setProfileForm] = useState({
-    fullname: userSession?.fullname || "",
-    email: userSession?.email || "",
-    password: userSession?.password || "",
+    fullName: profile?.fullName || "",
+    email: profile?.email || "",
   });
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    setProfileForm({
+      fullName: profile?.fullName || "",
+      email: profile?.email || "",
+    });
+  }, [profile]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -33,9 +41,8 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("netto_auth");
-    localStorage.removeItem("netto_user");
+  const handleLogout = async () => {
+    await signOut();
     window.location.reload();
   };
 
@@ -44,7 +51,7 @@ export default function Navbar() {
     setSaveError("");
     setSaveSuccess(false);
 
-    if (!profileForm.fullname || !profileForm.email || !profileForm.password) {
+    if (!profileForm.fullName || !profileForm.email) {
       setSaveError("Semua field wajib diisi.");
       return;
     }
@@ -54,7 +61,7 @@ export default function Navbar() {
       // Cek apakah email sudah terdaftar oleh user lain
       const allUsers = await usersAPI.fetchUsers();
       const emailExists = allUsers.some(
-        (u) => u.id !== userSession.id && u.email && u.email.toLowerCase() === profileForm.email.toLowerCase()
+        (u) => u.id !== profile?.id && u.email && u.email.toLowerCase() === profileForm.email.toLowerCase()
       );
       if (emailExists) {
         setSaveError("Email sudah digunakan oleh pengguna lain.");
@@ -63,20 +70,10 @@ export default function Navbar() {
       }
 
       // Update user di database Supabase
-      await usersAPI.updateUser(userSession.id, {
-        fullname: profileForm.fullname,
+      await usersAPI.updateUser(profile?.id, {
+        fullName: profileForm.fullName,
         email: profileForm.email,
-        password: profileForm.password,
       });
-
-      // Update di localStorage
-      const updatedUser = {
-        ...userSession,
-        fullname: profileForm.fullname,
-        email: profileForm.email,
-        password: profileForm.password,
-      };
-      localStorage.setItem("netto_user", JSON.stringify(updatedUser));
 
       setSaveSuccess(true);
       setTimeout(() => {
@@ -123,7 +120,7 @@ export default function Navbar() {
 
         {/* Desktop Auth Buttons */}
         <div className="hidden md:flex items-center gap-3">
-          {userSession ? (
+          {isLoggedIn ? (
             <div className="relative" ref={dropdownRef}>
               <button 
                 onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -131,14 +128,14 @@ export default function Navbar() {
               >
                 <div className="flex flex-col text-right">
                   <span className="text-[10px] font-extrabold text-gray-800 leading-tight">
-                    {userSession.fullname}
+                    {profile?.fullName}
                   </span>
                   <span className="text-[9px] font-medium text-gray-400 leading-none mt-0.5">
-                    {userSession.email}
+                    {profile?.email}
                   </span>
                 </div>
                 <div className="w-8 h-8 rounded-xl bg-[#3957ED] flex items-center justify-center shadow-sm flex-shrink-0 text-white font-extrabold text-xs">
-                  {userSession.fullname?.charAt(0).toUpperCase()}
+                  {profile?.fullName?.charAt(0).toUpperCase()}
                 </div>
                 <ChevronDown size={12} className={`text-gray-400 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
               </button>
@@ -146,16 +143,15 @@ export default function Navbar() {
               {dropdownOpen && (
                 <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                   <div className="px-4 py-3 bg-gradient-to-r from-[#3957ED]/10 to-[#2940D3]/10 border-b border-gray-100 text-left">
-                    <p className="font-extrabold text-gray-800 text-xs">{userSession.fullname}</p>
-                    <p className="text-[10px] text-gray-400 truncate mt-0.5">{userSession.email}</p>
+                    <p className="font-extrabold text-gray-800 text-xs">{profile?.fullName}</p>
+                    <p className="text-[10px] text-gray-400 truncate mt-0.5">{profile?.email}</p>
                   </div>
                   <div className="py-1 text-left">
                     <button
                       onClick={() => {
                         setProfileForm({ 
-                          fullname: userSession.fullname || "", 
-                          email: userSession.email || "", 
-                          password: userSession.password || "" 
+                          fullName: profile?.fullName || "", 
+                          email: profile?.email || "", 
                         });
                         setSaveError("");
                         setSaveSuccess(false);
@@ -166,7 +162,7 @@ export default function Navbar() {
                     >
                       <User size={14} className="text-gray-400" /> Edit Profil
                     </button>
-                    {userSession.role === "admin" && (
+                    {(profile?.role === "Admin" || profile?.role === "Karyawan") && (
                       <Link 
                         to="/dashboard"
                         className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-[#3957ED] hover:bg-blue-50 transition-colors"
@@ -239,18 +235,18 @@ export default function Navbar() {
           ))}
         </div>
         <hr className="border-gray-100 my-3.5" />
-        {userSession ? (
+        {isLoggedIn ? (
           <div className="flex flex-col gap-3 py-2 text-left">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-[#3957ED] flex items-center justify-center text-white font-extrabold text-xs">
-                {userSession.fullname?.charAt(0).toUpperCase()}
+                {profile?.fullName?.charAt(0).toUpperCase()}
               </div>
               <div className="flex flex-col text-left">
                 <span className="text-xs font-extrabold text-gray-800 block">
-                  {userSession.fullname}
+                  {profile?.fullName}
                 </span>
                 <span className="text-[10px] font-medium text-gray-400 block mt-0.5">
-                  {userSession.email}
+                  {profile?.email}
                 </span>
               </div>
             </div>
@@ -258,9 +254,8 @@ export default function Navbar() {
               <button 
                 onClick={() => {
                   setProfileForm({ 
-                    fullname: userSession.fullname || "", 
-                    email: userSession.email || "", 
-                    password: userSession.password || "" 
+                    fullName: profile?.fullName || "", 
+                    email: profile?.email || "", 
                   });
                   setSaveError("");
                   setSaveSuccess(false);
@@ -271,7 +266,7 @@ export default function Navbar() {
               >
                 Edit Profil
               </button>
-              {userSession.role === "admin" ? (
+              {(profile?.role === "Admin" || profile?.role === "Karyawan") ? (
                 <Link 
                   to="/dashboard"
                   onClick={() => setMenuOpen(false)}
@@ -288,7 +283,7 @@ export default function Navbar() {
                 </button>
               )}
             </div>
-            {userSession.role === "admin" && (
+            {(profile?.role === "Admin" || profile?.role === "Karyawan") && (
               <button 
                 onClick={handleLogout}
                 className="w-full py-2 text-center text-[10px] font-extrabold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-all uppercase tracking-wider cursor-pointer"
@@ -322,7 +317,7 @@ export default function Navbar() {
         <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col font-Montserrat p-0 gap-0 overflow-hidden bg-white rounded-2xl border-none shadow-2xl">
           <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0 text-left">
             <DialogTitle className="text-base font-bold text-gray-800">Ubah Profil Saya</DialogTitle>
-            <DialogDescription className="text-xs text-gray-400 mt-0.5">Perbarui nama, email, dan password akun Anda</DialogDescription>
+            <DialogDescription className="text-xs text-gray-400 mt-0.5">Perbarui nama dan email akun Anda</DialogDescription>
           </DialogHeader>
 
           <div className="px-6 py-5 overflow-y-auto flex-1 text-sm text-gray-700">
@@ -347,8 +342,8 @@ export default function Navbar() {
                     <label className="text-xs font-semibold text-gray-600 mb-1 block">Nama Lengkap</label>
                     <input 
                       type="text" 
-                      value={profileForm.fullname} 
-                      onChange={(e) => setProfileForm({ ...profileForm, fullname: e.target.value })} 
+                      value={profileForm.fullName} 
+                      onChange={(e) => setProfileForm({ ...profileForm, fullName: e.target.value })} 
                       placeholder="Nama lengkap Anda"
                       required
                       className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-[#3957ED] focus:ring-2 focus:ring-[#3957ED]/10 transition-all"
@@ -362,18 +357,6 @@ export default function Navbar() {
                       value={profileForm.email} 
                       onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })} 
                       placeholder="email@domain.com"
-                      required
-                      className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-[#3957ED] focus:ring-2 focus:ring-[#3957ED]/10 transition-all"
-                    />
-                  </div>
-
-                  <div className="text-left">
-                    <label className="text-xs font-semibold text-gray-600 mb-1 block">Password Baru</label>
-                    <input 
-                      type="password" 
-                      value={profileForm.password} 
-                      onChange={(e) => setProfileForm({ ...profileForm, password: e.target.value })} 
-                      placeholder="Min. 6 karakter"
                       required
                       className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-[#3957ED] focus:ring-2 focus:ring-[#3957ED]/10 transition-all"
                     />

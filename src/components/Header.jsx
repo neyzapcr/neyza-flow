@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import {
   Search, Bell, ChevronDown, User, Settings,
   LogOut, X, Check, Menu, Users, Receipt,
@@ -163,6 +164,7 @@ const typeBadge = {
 // ─────────────────────────────────────────────────────────────────────────
 export default function Header({ onMenuClick }) {
   const navigate = useNavigate();
+  const { profile, signOut } = useAuth();
 
   const [search, setSearch]         = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -174,13 +176,25 @@ export default function Header({ onMenuClick }) {
   const notifRef                    = useRef(null);
   const unread                      = notifs.filter((n) => !n.read).length;
 
-  const userSession = JSON.parse(localStorage.getItem("netto_user") || "null");
   const [profileOpen, setProfileOpen] = useState(false);
   const [editOpen,    setEditOpen]    = useState(false);
-  const [adminName,   setAdminName]   = useState(userSession?.fullname || "Admin");
-  const [adminRole,   setAdminRole]   = useState(userSession?.role || "Netto Laundry");
-  const [editForm,    setEditForm]    = useState({ name: userSession?.fullname || "Admin", role: userSession?.role || "Netto Laundry" });
+  const [adminName,   setAdminName]   = useState(profile?.fullName || "Admin");
+  const [adminRole,   setAdminRole]   = useState(profile?.role || "Netto Laundry");
+  const [editForm,    setEditForm]    = useState({ name: profile?.fullName || "Admin", role: profile?.role || "Netto Laundry" });
   const profileRef                    = useRef(null);
+
+  useEffect(() => {
+    if (profile) {
+      setAdminName(profile.fullName || "Admin");
+      setAdminRole(profile.role || "Netto Laundry");
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    if (editOpen) {
+      setEditForm({ name: adminName, role: adminRole });
+    }
+  }, [editOpen, adminName, adminRole]);
 
   // ── Close panels on outside click ──
   useEffect(() => {
@@ -426,10 +440,9 @@ export default function Header({ onMenuClick }) {
                 </div>
                 <div className="border-t border-gray-100 py-1.5">
                   <button
-                    onClick={() => { 
+                    onClick={async () => { 
                       setProfileOpen(false); 
-                      localStorage.removeItem("netto_auth"); 
-                      localStorage.removeItem("netto_user");
+                      await signOut();
                       navigate("/login"); 
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"

@@ -1,50 +1,67 @@
-import { useState } from "react";
-import { 
-  Save, Plus, Trash2, RotateCcw, Settings2, Tag, Gift, Zap,
-  Palette, Image, Type, Paintbrush, LayoutDashboard, Shirt,
-  Wind, Sparkles, Package, Star, Medal, Users, ShieldCheck
+import { useState, useEffect } from "react";
+import {
+  Save, Store, Clock, Wallet, Gift, Tag,
+  AlertCircle, CheckCircle, Loader2, Zap, RotateCcw,
 } from "lucide-react";
-import { toast } from "sonner";
 import PageHeader from "../components/PageHeader";
 import Tabs from "../components/Tabs";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import Input from "../components/Input";
-import Select from "../components/Select";
-import { applyTheme } from "../utils/theme";
+import { getSettings, updateSettings } from "../services/SettingsApi";
 
-// ── Default settings ──────────────────────────────────────────────────────
-const DEFAULT_SERVICES = [
-  { id: 1, name: "Cuci + Setrika", regularPrice: 8000, expressPrice: 14000, active: true },
-  { id: 2, name: "Cuci Kering", regularPrice: 7000, expressPrice: 12000, active: true },
-  { id: 3, name: "Cuci + Setrika + Parfum", regularPrice: 12000, expressPrice: 18000, active: true },
-  { id: 4, name: "Setrika Saja", regularPrice: 5000, expressPrice: 9000, active: false },
-];
+// ── Toast (pakai window event, konsisten dengan halaman lain) ─────────────
+const toast = (type, title, desc, duration = 4000) =>
+  window.dispatchEvent(new CustomEvent("addToast", { detail: { type, title, desc, duration } }));
 
-const DEFAULT_DISCOUNTS = [
-  { id: 1, name: "Diskon Member VIP", type: "persen", value: 15, minTransaction: 50000, active: true },
-  { id: 2, name: "Diskon Pelanggan Loyal", type: "persen", value: 10, minTransaction: 30000, active: true },
-  { id: 3, name: "Promo Akhir Bulan", type: "persen", value: 20, minTransaction: 100000, active: false },
-  { id: 4, name: "Diskon Nominal", type: "nominal", value: 5000, minTransaction: 25000, active: true },
-];
-
-const DEFAULT_POINTS = {
-  pointsPerRp: 2000,
-  redeemRate: 100,
-  redeemValue: 5000,
-  bonusVIP: 2,
-  bonusLoyal: 1.5,
-  expressBonus: 1.5,
+// ── Nilai default — nama field HARUS sama persis dengan kolom Supabase ────
+const DEFAULTS = {
+  laundryName: "",
+  phone: "",
+  email: "",
+  address: "",
+  openTime: "07:00",
+  closeTime: "21:00",
+  washOnlyPrice: 7000,
+  washIronPrice: 8000,
+  ironOnlyPrice: 5000,
+  expressPrice: 12000,
+  pointPerTransaction: 10,
+  minimumRedeemPoint: 100,
+  promoTitle: "",
+  promoDescription: "",
+  promoDiscount: 0,
+  promoStatus: false,
 };
 
-// ── Komponen input harga ──────────────────────────────────────────────────
+// ── Nilai bawaan yang tampil saat tombol "Default" ditekan ────────────────
+const HARD_DEFAULTS = {
+  laundryName: "Netto Express Laundry",
+  phone: "082122448899",
+  email: "support@nettoexpresslaundry.com",
+  address: "Jl. Kuau No.2A, Kp. Melayu, Sukajadi, Kota Pekanbaru, Riau 28122",
+  openTime: "07:00",
+  closeTime: "21:00",
+  washOnlyPrice: 7000,
+  washIronPrice: 8000,
+  ironOnlyPrice: 5000,
+  expressPrice: 12000,
+  pointPerTransaction: 10,
+  minimumRedeemPoint: 100,
+  promoTitle: "",
+  promoDescription: "",
+  promoDiscount: 0,
+  promoStatus: false,
+};
+
+// ── PriceInput ─────────────────────────────────────────────────────────────
 function PriceInput({ value, onChange, prefix = "Rp" }) {
   return (
     <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#2940D3] focus-within:ring-2 focus-within:ring-[#2940D3]/20 transition-all">
       <span className="px-3 py-2.5 bg-gray-50 text-xs text-gray-500 border-r border-gray-200 font-medium">{prefix}</span>
       <input
         type="number"
-        value={value}
+        value={value ?? 0}
         onChange={(e) => onChange(Number(e.target.value))}
         min={0}
         className="flex-1 px-3 py-2.5 text-sm outline-none bg-white text-gray-800"
@@ -53,76 +70,141 @@ function PriceInput({ value, onChange, prefix = "Rp" }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────
+// ── Toggle switch ──────────────────────────────────────────────────────────
+function Toggle({ checked, onChange }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className={`w-10 h-6 rounded-full transition-all relative flex-shrink-0 ${checked ? "bg-[#2940D3]" : "bg-gray-200"}`}
+    >
+      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${checked ? "left-5" : "left-1"}`} />
+    </button>
+  );
+}
+
+// ── Validasi ───────────────────────────────────────────────────────────────
+function validate(form) {
+  const errors = {};
+  if (!form.laundryName?.trim()) errors.laundryName = "Nama laundry wajib diisi.";
+  if (!form.phone?.trim()) errors.phone = "Nomor WhatsApp wajib diisi.";
+  if (!form.email?.trim()) errors.email = "Email wajib diisi.";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = "Format email tidak valid.";
+  if (!form.address?.trim()) errors.address = "Alamat wajib diisi.";
+  if (!form.openTime) errors.openTime = "Jam buka wajib diisi.";
+  if (!form.closeTime) errors.closeTime = "Jam tutup wajib diisi.";
+  if (!(form.washOnlyPrice > 0)) errors.washOnlyPrice = "Harga harus lebih dari 0.";
+  if (!(form.washIronPrice > 0)) errors.washIronPrice = "Harga harus lebih dari 0.";
+  if (!(form.ironOnlyPrice > 0)) errors.ironOnlyPrice = "Harga harus lebih dari 0.";
+  if (!(form.expressPrice > 0)) errors.expressPrice = "Harga harus lebih dari 0.";
+  if (form.pointPerTransaction < 0) errors.pointPerTransaction = "Tidak boleh negatif.";
+  if (form.minimumRedeemPoint < 0) errors.minimumRedeemPoint = "Tidak boleh negatif.";
+  if (form.promoStatus) {
+    if (!form.promoTitle?.trim()) errors.promoTitle = "Judul promo wajib diisi jika promo aktif.";
+    if (form.promoDiscount <= 0 || form.promoDiscount > 100)
+      errors.promoDiscount = "Diskon harus 1–100%.";
+  }
+  return errors;
+}
+
+// ── Halaman Settings ───────────────────────────────────────────────────────
 export default function Settings() {
-  const [activeTab, setActiveTab] = useState("services");
-  
-  const [services, setServices] = useState(() => {
-    const saved = localStorage.getItem("netto_services");
-    return saved ? JSON.parse(saved) : DEFAULT_SERVICES;
-  });
-  
-  const [discounts, setDiscounts] = useState(() => {
-    const saved = localStorage.getItem("netto_discounts");
-    return saved ? JSON.parse(saved) : DEFAULT_DISCOUNTS;
-  });
-  
-  const [points, setPoints] = useState(() => {
-    const saved = localStorage.getItem("netto_points");
-    return saved ? JSON.parse(saved) : DEFAULT_POINTS;
-  });
+  const [activeTab, setActiveTab] = useState("info");
+  const [form, setForm] = useState(DEFAULTS);
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const [branding, setBranding] = useState(() => {
-    const configStr = localStorage.getItem("netto_branding");
-    return configStr ? JSON.parse(configStr) : {
-      themePrimary: "#2940D3",
-      themeSecondary: "#142297",
-      landingPrimary: "#3957ED",
-      landingSecondary: "#80C8F6",
-      logoType: "image",
-      logoUrlDark: "/img/logo Netto Dark.png",
-      logoUrlLight: "/img/logo Netto light.png",
-      logoText: "Netto Laundry",
-      logoIcon: "Shirt"
-    };
-  });
+  // Load dari Supabase
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      try {
+        const data = await getSettings();
+        if (data) setForm({ ...DEFAULTS, ...data });
+      } catch (err) {
+        toast("error", "Gagal Memuat Settings",
+          `Tidak dapat mengambil data: ${err.message}`, 6000);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
-  const handleSave = () => {
-    localStorage.setItem("netto_services", JSON.stringify(services));
-    localStorage.setItem("netto_discounts", JSON.stringify(discounts));
-    localStorage.setItem("netto_points", JSON.stringify(points));
-    localStorage.setItem("netto_branding", JSON.stringify(branding));
-    applyTheme();
-    toast.success("Pengaturan & branding berhasil disimpan!");
+  const set = (field) => (e) =>
+    setForm((prev) => ({ ...prev, [field]: e.target.value }));
+
+  const setNum = (field) => (val) =>
+    setForm((prev) => ({ ...prev, [field]: val }));
+
+  const setBool = (field) => (val) =>
+    setForm((prev) => ({ ...prev, [field]: val }));
+
+  const handleReset = () => {
+    setForm((prev) => ({ ...prev, ...HARD_DEFAULTS }));
+    setErrors({});
+    toast("info", "Form Direset",
+      "Data diisi dengan nilai default. Tekan Simpan untuk menyimpan.", 4000);
   };
 
-  // ── Service handlers ──
-  const updateService = (id, field, val) =>
-    setServices(services.map((s) => (s.id === id ? { ...s, [field]: val } : s)));
+  const handleSave = async () => {    const errs = validate(form);
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      toast("error", "Validasi Gagal",
+        "Periksa kembali field yang belum terisi dengan benar.", 5000);
+      return;
+    }
+    setErrors({});
+    setSaving(true);
 
-  const addService = () =>
-    setServices([...services, { id: Date.now(), name: "Layanan Baru", regularPrice: 0, expressPrice: 0, active: true }]);
+    // Hapus field metadata DB dari payload
+    const { id, createdAt, updatedAt, ...payload } = form;
 
-  const deleteService = (id) => setServices(services.filter((s) => s.id !== id));
+    try {
+      const saved = await updateSettings(payload);
+      setForm({ ...DEFAULTS, ...saved });
+      toast("success", "Pengaturan Berhasil Disimpan",
+        "Seluruh perubahan telah tersimpan ke database.", 4000);
+    } catch (err) {
+      toast("error", "Gagal Menyimpan",
+        `Terjadi kesalahan: ${err.message}`, 6000);
+    } finally {
+      setSaving(false);
+    }
+  };
 
-  // ── Discount handlers ──
-  const updateDiscount = (id, field, val) =>
-    setDiscounts(discounts.map((d) => (d.id === id ? { ...d, [field]: val } : d)));
-
-  const addDiscount = () =>
-    setDiscounts([...discounts, { id: Date.now(), name: "Diskon Baru", type: "persen", value: 0, minTransaction: 0, active: true }]);
-
-  const deleteDiscount = (id) => setDiscounts(discounts.filter((d) => d.id !== id));
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="h-10 w-48 bg-gray-200 rounded-xl" />
+        <div className="h-12 bg-gray-200 rounded-2xl" />
+        <div className="h-80 bg-gray-200 rounded-2xl" />
+      </div>
+    );
+  }
 
   return (
     <div>
-      <PageHeader title="Pengaturan" subtitle="Kelola harga layanan, diskon, dan program poin">
-        <Button
-          icon={<Save size={15} />}
-          onClick={handleSave}
-        >
-          Simpan Semua
-        </Button>
+      <PageHeader title="Pengaturan" subtitle="Kelola konfigurasi laundry, harga, loyalitas, dan promo">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            icon={<RotateCcw size={15} />}
+            onClick={handleReset}
+          >
+            Default
+          </Button>
+          <Button
+            icon={saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+            loading={saving}
+            onClick={handleSave}
+          >
+            {saving ? "Menyimpan..." : "Simpan Semua"}
+          </Button>
+        </div>
       </PageHeader>
 
       {/* Tab navigation */}
@@ -131,85 +213,155 @@ export default function Settings() {
         active={activeTab}
         onChange={setActiveTab}
         tabs={[
-          { key: "services", label: "Harga Layanan", icon: <Settings2 size={15} /> },
-          { key: "discounts", label: "Diskon & Promo", icon: <Tag size={15} /> },
-          { key: "points", label: "Program Poin", icon: <Gift size={15} /> },
-          { key: "branding", label: "Branding & Tampilan", icon: <Paintbrush size={15} /> },
+          { key: "info",      label: "Informasi Laundry", icon: <Store size={15} /> },
+          { key: "schedule",  label: "Jam Operasional",   icon: <Clock size={15} /> },
+          { key: "prices",    label: "Harga Layanan",     icon: <Wallet size={15} /> },
+          { key: "loyalty",   label: "Program Loyalitas", icon: <Gift size={15} /> },
+          { key: "promo",     label: "Promo",             icon: <Tag size={15} /> },
         ]}
       />
 
+      {/* ── TAB: Informasi Laundry ── */}
+      {activeTab === "info" && (
+        <div className="space-y-4">
+          <Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Nama Laundry"
+                required
+                value={form.laundryName}
+                onChange={set("laundryName")}
+                placeholder="Contoh: Netto Express Laundry"
+                error={errors.laundryName}
+              />
+              <Input
+                label="Nomor WhatsApp"
+                required
+                value={form.phone}
+                onChange={set("phone")}
+                placeholder="Contoh: 08123456789"
+                error={errors.phone}
+              />
+              <Input
+                label="Email"
+                type="email"
+                required
+                value={form.email}
+                onChange={set("email")}
+                placeholder="Contoh: laundry@email.com"
+                error={errors.email}
+              />
+              <div className="md:col-span-2">
+                <label className="text-xs font-semibold text-gray-600 mb-1.5 block">
+                  Alamat Lengkap <span className="text-red-400">*</span>
+                </label>
+                <textarea
+                  value={form.address ?? ""}
+                  onChange={set("address")}
+                  rows={3}
+                  placeholder="Jl. Contoh No. 123, Kota..."
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none
+                    focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 transition-all
+                    bg-white resize-none"
+                />
+                {errors.address && <p className="text-xs text-red-500 mt-1">{errors.address}</p>}
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* ── TAB: Jam Operasional ── */}
+      {activeTab === "schedule" && (
+        <div className="space-y-4">
+          <Card>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Jam Buka"
+                type="time"
+                required
+                value={form.openTime}
+                onChange={set("openTime")}
+                error={errors.openTime}
+              />
+              <Input
+                label="Jam Tutup"
+                type="time"
+                required
+                value={form.closeTime}
+                onChange={set("closeTime")}
+                error={errors.closeTime}
+              />
+            </div>
+            {form.openTime && form.closeTime && (
+              <div className="mt-4 bg-[#2940D3]/5 border border-[#2940D3]/20 rounded-xl px-4 py-3 flex items-center gap-2">
+                <CheckCircle size={14} className="text-[#2940D3] flex-shrink-0" />
+                <p className="text-sm text-gray-600">
+                  Laundry buka pukul{" "}
+                  <span className="font-semibold text-[#2940D3]">{form.openTime}</span>
+                  {" "}—{" "}
+                  <span className="font-semibold text-[#2940D3]">{form.closeTime}</span>
+                </p>
+              </div>
+            )}
+          </Card>
+        </div>
+      )}
+
       {/* ── TAB: Harga Layanan ── */}
-      {activeTab === "services" && (
+      {activeTab === "prices" && (
         <div className="space-y-4">
           <div className="bg-[#2940D3]/5 border border-[#2940D3]/20 rounded-2xl px-5 py-3 flex items-start gap-3">
             <Zap size={16} className="text-[#2940D3] mt-0.5 flex-shrink-0" />
             <p className="text-sm text-gray-600">
-              Harga <span className="font-semibold text-[#2940D3]">Regular</span> untuk pengerjaan normal (2–3 hari).
-              Harga <span className="font-semibold text-[#142297]">Express</span> untuk pengerjaan cepat (same day / next day).
+              Semua harga dalam satuan{" "}
+              <span className="font-semibold text-[#2940D3]">Rupiah per kilogram (Rp/kg)</span>.
             </p>
           </div>
 
           <Card padding={false} className="overflow-hidden">
             <div className="grid grid-cols-12 gap-4 px-5 py-3 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-400 uppercase tracking-wide">
-              <div className="col-span-4">Nama Layanan</div>
-              <div className="col-span-3">Harga Regular / kg</div>
-              <div className="col-span-3">Harga Express / kg</div>
-              <div className="col-span-1 text-center">Aktif</div>
-              <div className="col-span-1"></div>
+              <div className="col-span-6">Jenis Layanan</div>
+              <div className="col-span-6">Harga / kg</div>
             </div>
-
             <div className="divide-y divide-gray-50">
-              {services.map((svc) => (
-                <div key={svc.id} className={`grid grid-cols-12 gap-4 px-5 py-4 items-center transition-colors ${!svc.active ? "opacity-50" : ""}`}>
-                  <div className="col-span-4">
-                    <Input value={svc.name} onChange={(e) => updateService(svc.id, "name", e.target.value)} />
+              {[
+                { field: "washOnlyPrice",  label: "Cuci",             error: errors.washOnlyPrice },
+                { field: "washIronPrice",  label: "Cuci + Setrika",   error: errors.washIronPrice },
+                { field: "ironOnlyPrice",  label: "Setrika",          error: errors.ironOnlyPrice },
+                { field: "expressPrice",   label: "Express",          error: errors.expressPrice },
+              ].map((row) => (
+                <div key={row.field} className="grid grid-cols-12 gap-4 px-5 py-4 items-center">
+                  <div className="col-span-6">
+                    <p className="text-sm font-medium text-gray-700">{row.label}</p>
+                    {row.error && <p className="text-xs text-red-500 mt-0.5">{row.error}</p>}
                   </div>
-                  <div className="col-span-3">
-                    <PriceInput value={svc.regularPrice} onChange={(v) => updateService(svc.id, "regularPrice", v)} />
-                  </div>
-                  <div className="col-span-3">
-                    <PriceInput value={svc.expressPrice} onChange={(v) => updateService(svc.id, "expressPrice", v)} />
-                  </div>
-                  <div className="col-span-1 flex justify-center">
-                    <button
-                      onClick={() => updateService(svc.id, "active", !svc.active)}
-                      className={`w-10 h-6 rounded-full transition-all relative ${svc.active ? "bg-[#2940D3]" : "bg-gray-200"}`}
-                    >
-                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${svc.active ? "left-5" : "left-1"}`} />
-                    </button>
-                  </div>
-                  <div className="col-span-1 flex justify-center">
-                    <button
-                      onClick={() => deleteService(svc.id)}
-                      className="w-8 h-8 rounded-lg bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 transition-colors"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                  <div className="col-span-6">
+                    <PriceInput
+                      value={form[row.field]}
+                      onChange={setNum(row.field)}
+                    />
                   </div>
                 </div>
               ))}
             </div>
-            <div className="px-5 py-4 border-t border-gray-100">
-              <Button variant="outline" size="sm" icon={<Plus size={14}/>} onClick={addService}>Tambah Layanan</Button>
-            </div>
           </Card>
 
+          {/* Preview harga 3 kg */}
           <Card>
             <p className="font-bold text-gray-800 mb-3 text-sm">Preview Harga (contoh 3 kg)</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {services.filter((s) => s.active).map((s) => (
-                <div key={s.id} className="bg-gray-50 rounded-xl p-3">
-                  <p className="text-xs font-semibold text-gray-700 mb-2">{s.name}</p>
-                  <div className="flex gap-3">
-                    <div className="flex-1 bg-[#2940D3]/10 rounded-lg p-2 text-center">
-                      <p className="text-[10px] text-[#2940D3] font-medium">Regular</p>
-                      <p className="text-sm font-bold text-gray-800">Rp {(s.regularPrice * 3).toLocaleString("id-ID")}</p>
-                    </div>
-                    <div className="flex-1 bg-[#142297]/10 rounded-lg p-2 text-center">
-                      <p className="text-[10px] text-[#142297] font-medium">Express</p>
-                      <p className="text-sm font-bold text-gray-800">Rp {(s.expressPrice * 3).toLocaleString("id-ID")}</p>
-                    </div>
-                  </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { label: "Cuci",           price: form.washOnlyPrice },
+                { label: "Cuci + Setrika", price: form.washIronPrice },
+                { label: "Setrika",        price: form.ironOnlyPrice },
+                { label: "Express",        price: form.expressPrice },
+              ].map((s) => (
+                <div key={s.label} className="bg-gray-50 rounded-xl p-3 text-center">
+                  <p className="text-xs text-gray-500 mb-1">{s.label}</p>
+                  <p className="text-base font-bold text-gray-800">
+                    Rp {((s.price || 0) * 3).toLocaleString("id-ID")}
+                  </p>
                 </div>
               ))}
             </div>
@@ -217,65 +369,8 @@ export default function Settings() {
         </div>
       )}
 
-      {/* ── TAB: Diskon & Promo ── */}
-      {activeTab === "discounts" && (
-        <div className="space-y-4">
-          <Card padding={false} className="overflow-hidden">
-            <div className="grid grid-cols-12 gap-3 px-5 py-3 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-400 uppercase tracking-wide">
-              <div className="col-span-3">Nama Diskon</div>
-              <div className="col-span-2">Tipe</div>
-              <div className="col-span-2">Nilai</div>
-              <div className="col-span-3">Min. Transaksi</div>
-              <div className="col-span-2 text-center">Aksi</div>
-            </div>
-
-            <div className="divide-y divide-gray-50">
-              {discounts.map((d) => (
-                <div key={d.id} className={`grid grid-cols-12 gap-3 px-5 py-4 items-center ${!d.active ? "opacity-50" : ""}`}>
-                  <div className="col-span-3"><Input value={d.name} onChange={(e) => updateDiscount(d.id, "name", e.target.value)} /></div>
-                  <div className="col-span-2"><Select value={d.type} onChange={(e) => updateDiscount(d.id, "type", e.target.value)} options={[{label: "Persen (%)", value: "persen"}, {label: "Nominal (Rp)", value: "nominal"}]} /></div>
-                  <div className="col-span-2"><Input type="number" value={d.value} onChange={(e) => updateDiscount(d.id, "value", Number(e.target.value))} /></div>
-                  <div className="col-span-3"><PriceInput value={d.minTransaction} onChange={(v) => updateDiscount(d.id, "minTransaction", v)} /></div>
-                  <div className="col-span-2 flex items-center justify-center gap-3">
-                    <button
-                      onClick={() => updateDiscount(d.id, "active", !d.active)}
-                      className={`w-10 h-6 rounded-full transition-all relative ${d.active ? "bg-[#2940D3]" : "bg-gray-200"}`}
-                    >
-                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${d.active ? "left-5" : "left-1"}`} />
-                    </button>
-                    <button onClick={() => deleteDiscount(d.id)} className="text-red-400 hover:text-red-600"><Trash2 size={16}/></button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="px-5 py-4 border-t border-gray-100">
-              <Button variant="outline" size="sm" icon={<Plus size={14}/>} onClick={addDiscount}>Tambah Diskon</Button>
-            </div>
-          </Card>
-
-          <Card>
-            <p className="font-bold text-gray-800 mb-3 text-sm">Diskon Aktif</p>
-            <div className="flex flex-wrap gap-2">
-              {discounts.filter((d) => d.active).map((d) => (
-                <div key={d.id} className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
-                  <Tag size={12} className="text-green-600" />
-                  <span className="text-xs font-semibold text-green-700">{d.name}</span>
-                  <span className="text-xs text-green-600">
-                    {d.type === "persen" ? `${d.value}%` : `Rp ${d.value.toLocaleString("id-ID")}`}
-                  </span>
-                </div>
-              ))}
-              {discounts.filter((d) => d.active).length === 0 && (
-                <p className="text-sm text-gray-400">Tidak ada diskon aktif</p>
-              )}
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* ── TAB: Program Poin ── */}
-      {activeTab === "points" && (
+      {/* ── TAB: Program Loyalitas ── */}
+      {activeTab === "loyalty" && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card>
@@ -283,319 +378,180 @@ export default function Settings() {
                 <div className="w-8 h-8 rounded-xl bg-[#2940D3]/10 flex items-center justify-center">
                   <Gift size={16} className="text-[#2940D3]" />
                 </div>
-                <p className="font-bold text-gray-800">Aturan Dasar Poin</p>
+                <p className="font-bold text-gray-800">Pengaturan Poin</p>
               </div>
-
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs font-semibold text-gray-600 mb-1.5 block">1 Poin per Rp</label>
-                  <PriceInput value={points.pointsPerRp} onChange={(v) => setPoints({ ...points, pointsPerRp: v })} />
+                  <label className="text-xs font-semibold text-gray-600 mb-1.5 block">
+                    Poin per Transaksi
+                  </label>
+                  <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden
+                    focus-within:border-[#2940D3] focus-within:ring-2 focus-within:ring-[#2940D3]/20 transition-all">
+                    <input
+                      type="number"
+                      value={form.pointPerTransaction ?? 0}
+                      onChange={(e) => setNum("pointPerTransaction")(Number(e.target.value))}
+                      min={0}
+                      className="flex-1 px-3 py-2.5 text-sm outline-none bg-white text-gray-800"
+                    />
+                    <span className="px-3 py-2.5 bg-gray-50 text-xs text-gray-500 border-l border-gray-200 font-medium">
+                      poin
+                    </span>
+                  </div>
+                  {errors.pointPerTransaction && (
+                    <p className="text-xs text-red-500 mt-1">{errors.pointPerTransaction}</p>
+                  )}
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Poin tukar</label>
-                    <Input type="number" value={points.redeemRate} onChange={(e) => setPoints({ ...points, redeemRate: Number(e.target.value) })} />
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 mb-1.5 block">
+                    Minimum Redeem Point
+                  </label>
+                  <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden
+                    focus-within:border-[#2940D3] focus-within:ring-2 focus-within:ring-[#2940D3]/20 transition-all">
+                    <input
+                      type="number"
+                      value={form.minimumRedeemPoint ?? 0}
+                      onChange={(e) => setNum("minimumRedeemPoint")(Number(e.target.value))}
+                      min={0}
+                      className="flex-1 px-3 py-2.5 text-sm outline-none bg-white text-gray-800"
+                    />
+                    <span className="px-3 py-2.5 bg-gray-50 text-xs text-gray-500 border-l border-gray-200 font-medium">
+                      poin
+                    </span>
                   </div>
-                  <div>
-                    <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Nilai tukar</label>
-                    <PriceInput value={points.redeemValue} onChange={(v) => setPoints({ ...points, redeemValue: v })} />
-                  </div>
+                  {errors.minimumRedeemPoint && (
+                    <p className="text-xs text-red-500 mt-1">{errors.minimumRedeemPoint}</p>
+                  )}
                 </div>
               </div>
             </Card>
 
+            {/* Simulasi sederhana */}
             <Card>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 rounded-xl bg-[#142297]/10 flex items-center justify-center">
                   <Zap size={16} className="text-[#142297]" />
                 </div>
-                <p className="font-bold text-gray-800">Bonus Multiplier Poin</p>
+                <p className="font-bold text-gray-800">Simulasi Poin</p>
               </div>
-              <div className="space-y-4">
-                {[{ key: "bonusVIP", label: "VIP" }, { key: "bonusLoyal", label: "Loyal" }, { key: "expressBonus", label: "Express" }].map((item) => (
-                  <div key={item.key}>
-                    <label className="text-xs font-semibold">{item.label}</label>
-                    <Input type="number" value={points[item.key]} onChange={(e) => setPoints({ ...points, [item.key]: Number(e.target.value) })} />
+              <div className="space-y-3">
+                {[
+                  { label: "Transaksi 1x", tx: 1 },
+                  { label: "Transaksi 5x", tx: 5 },
+                  { label: "Transaksi 10x", tx: 10 },
+                ].map((sim) => (
+                  <div key={sim.label} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
+                    <span className="text-sm text-gray-600">{sim.label}</span>
+                    <span className="font-bold text-gray-800">
+                      {(form.pointPerTransaction || 0) * sim.tx} poin
+                    </span>
                   </div>
                 ))}
+                <div className="flex items-center justify-between bg-[#2940D3]/5 border border-[#2940D3]/20 rounded-xl px-4 py-3">
+                  <span className="text-sm text-gray-600">Bisa redeem mulai</span>
+                  <span className="font-bold text-[#2940D3]">
+                    {form.minimumRedeemPoint || 0} poin
+                  </span>
+                </div>
               </div>
             </Card>
           </div>
+        </div>
+      )}
 
+      {/* ── TAB: Promo ── */}
+      {activeTab === "promo" && (
+        <div className="space-y-4">
           <Card>
-            <p className="font-bold mb-3 text-sm">Simulasi Poin (transaksi Rp 50.000)</p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[ {l: "Biasa", v: 1}, {l: "Loyal", v: points.bonusLoyal}, {l: "VIP", v: points.bonusVIP}, {l: "Express", v: points.expressBonus} ].map((sim) => (
-                <div key={sim.l} className="bg-gray-50 rounded-xl p-3 text-center">
-                  <p className="text-xs text-gray-500 mb-1">{sim.l}</p>
-                  <p className="text-xl font-bold">{Math.round(25 * sim.v)}</p>
-                  <p className="text-xs text-gray-400">poin</p>
+            {/* Toggle aktif/non-aktif */}
+            <div className="flex items-center justify-between mb-5 pb-4 border-b border-gray-100">
+              <div>
+                <p className="text-sm font-bold text-gray-800">Status Promo</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {form.promoStatus ? "Promo sedang aktif dan terlihat oleh pelanggan" : "Promo tidak aktif"}
+                </p>
+              </div>
+              <Toggle
+                checked={!!form.promoStatus}
+                onChange={setBool("promoStatus")}
+              />
+            </div>
+
+            <div className={`space-y-4 transition-opacity ${form.promoStatus ? "opacity-100" : "opacity-40 pointer-events-none"}`}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="Judul Promo"
+                  required={!!form.promoStatus}
+                  value={form.promoTitle}
+                  onChange={set("promoTitle")}
+                  placeholder="Contoh: Promo Lebaran"
+                  error={errors.promoTitle}
+                />
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 mb-1.5 block">
+                    Besar Diskon <span className="text-red-400">*</span>
+                  </label>
+                  <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden
+                    focus-within:border-[#2940D3] focus-within:ring-2 focus-within:ring-[#2940D3]/20 transition-all">
+                    <input
+                      type="number"
+                      value={form.promoDiscount ?? 0}
+                      onChange={(e) => setNum("promoDiscount")(Number(e.target.value))}
+                      min={0}
+                      max={100}
+                      className="flex-1 px-3 py-2.5 text-sm outline-none bg-white text-gray-800"
+                    />
+                    <span className="px-3 py-2.5 bg-gray-50 text-xs text-gray-500 border-l border-gray-200 font-medium">
+                      %
+                    </span>
+                  </div>
+                  {errors.promoDiscount && (
+                    <p className="text-xs text-red-500 mt-1">{errors.promoDiscount}</p>
+                  )}
                 </div>
-              ))}
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-600 mb-1.5 block">
+                  Deskripsi Promo
+                </label>
+                <textarea
+                  value={form.promoDescription ?? ""}
+                  onChange={set("promoDescription")}
+                  rows={3}
+                  placeholder="Tuliskan detail promo di sini..."
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none
+                    focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 transition-all
+                    bg-white resize-none"
+                />
+              </div>
             </div>
           </Card>
 
-          <div className="flex justify-end">
-            <Button variant="ghost" onClick={() => setPoints(DEFAULT_POINTS)} icon={<RotateCcw size={14}/>}>Reset ke Default</Button>
-          </div>
+          {/* Preview banner promo */}
+          {form.promoStatus && form.promoTitle && (
+            <Card>
+              <p className="font-bold text-gray-800 mb-3 text-sm">Preview Banner Promo</p>
+              <div className="bg-gradient-to-r from-[#2940D3] to-[#142297] rounded-2xl p-5 text-white">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium opacity-70 mb-1">Promo Aktif</p>
+                    <p className="text-lg font-bold">{form.promoTitle}</p>
+                    {form.promoDescription && (
+                      <p className="text-sm opacity-80 mt-1">{form.promoDescription}</p>
+                    )}
+                  </div>
+                  {form.promoDiscount > 0 && (
+                    <div className="text-right flex-shrink-0 ml-4">
+                      <p className="text-3xl font-extrabold">{form.promoDiscount}%</p>
+                      <p className="text-xs opacity-70">DISKON</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Card>
+          )}
         </div>
       )}
-      {/* ── TAB: Branding & Tampilan ── */}
-      {activeTab === "branding" && (
-        <div className="space-y-6 animate-in fade-in duration-300">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            {/* Form Pengaturan Branding */}
-            <div className="lg:col-span-7 space-y-4">
-              <Card>
-                <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-3">
-                  <Palette size={18} className="text-[#2940D3]" />
-                  <p className="font-bold text-gray-800">Skema Warna Aplikasi</p>
-                </div>
-                
-                {/* Warna Dashboard Admin */}
-                <div className="mb-4">
-                  <p className="text-xs font-bold text-gray-700 mb-2">Dashboard & Panel Admin</p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-[10px] font-semibold text-gray-500 mb-1 block">Warna Utama (Primary)</label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={branding.themePrimary}
-                          onChange={(e) => setBranding({ ...branding, themePrimary: e.target.value })}
-                          className="w-8 h-8 rounded-lg cursor-pointer border border-gray-200"
-                        />
-                        <Input
-                          value={branding.themePrimary}
-                          onChange={(e) => setBranding({ ...branding, themePrimary: e.target.value })}
-                          placeholder="#2940D3"
-                          className="flex-1 !py-1 text-xs"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-semibold text-gray-500 mb-1 block">Warna Sekunder (Secondary)</label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={branding.themeSecondary}
-                          onChange={(e) => setBranding({ ...branding, themeSecondary: e.target.value })}
-                          className="w-8 h-8 rounded-lg cursor-pointer border border-gray-200"
-                        />
-                        <Input
-                          value={branding.themeSecondary}
-                          onChange={(e) => setBranding({ ...branding, themeSecondary: e.target.value })}
-                          placeholder="#142297"
-                          className="flex-1 !py-1 text-xs"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Warna Landing Page Publik */}
-                <div>
-                  <p className="text-xs font-bold text-gray-700 mb-2 border-t border-gray-50 pt-3">Landing Page Publik</p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-[10px] font-semibold text-gray-500 mb-1 block">Warna Utama (Primary)</label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={branding.landingPrimary || "#3957ED"}
-                          onChange={(e) => setBranding({ ...branding, landingPrimary: e.target.value })}
-                          className="w-8 h-8 rounded-lg cursor-pointer border border-gray-200"
-                        />
-                        <Input
-                          value={branding.landingPrimary || "#3957ED"}
-                          onChange={(e) => setBranding({ ...branding, landingPrimary: e.target.value })}
-                          placeholder="#3957ED"
-                          className="flex-1 !py-1 text-xs"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-semibold text-gray-500 mb-1 block">Warna Gradasi Sekunder</label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={branding.landingSecondary || "#80C8F6"}
-                          onChange={(e) => setBranding({ ...branding, landingSecondary: e.target.value })}
-                          className="w-8 h-8 rounded-lg cursor-pointer border border-gray-200"
-                        />
-                        <Input
-                          value={branding.landingSecondary || "#80C8F6"}
-                          onChange={(e) => setBranding({ ...branding, landingSecondary: e.target.value })}
-                          placeholder="#80C8F6"
-                          className="flex-1 !py-1 text-xs"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              <Card>
-                <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-3">
-                  <Image size={18} className="text-[#2940D3]" />
-                  <p className="font-bold text-gray-800">Identitas & Logo Brand</p>
-                </div>
-                
-                {/* Tipe Logo */}
-                <div className="mb-4">
-                  <label className="text-xs font-semibold text-gray-600 mb-2 block">Tipe Identitas Logo</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setBranding({ ...branding, logoType: "image" })}
-                      className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all font-semibold text-xs ${branding.logoType === "image" ? "border-[#2940D3] bg-[#2940D3]/5 text-[#2940D3]" : "border-gray-200 hover:border-gray-300 text-gray-600"}`}
-                    >
-                      <Image size={14} /> Logo Gambar (URL)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setBranding({ ...branding, logoType: "text" })}
-                      className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all font-semibold text-xs ${branding.logoType === "text" ? "border-[#2940D3] bg-[#2940D3]/5 text-[#2940D3]" : "border-gray-200 hover:border-gray-300 text-gray-600"}`}
-                    >
-                      <Type size={14} /> Logo Teks & Ikon
-                    </button>
-                  </div>
-                </div>
-
-                {branding.logoType === "image" ? (
-                  <div className="space-y-3 animate-in fade-in slide-in-from-top-1">
-                    <Input
-                      label="URL Logo Tema Gelap (Dark Mode / Sidebar)"
-                      value={branding.logoUrlDark}
-                      onChange={(e) => setBranding({ ...branding, logoUrlDark: e.target.value })}
-                      placeholder="Masukkan URL logo untuk latar putih..."
-                    />
-                    <Input
-                      label="URL Logo Tema Terang (Light Mode / Auth)"
-                      value={branding.logoUrlLight}
-                      onChange={(e) => setBranding({ ...branding, logoUrlLight: e.target.value })}
-                      placeholder="Masukkan URL logo untuk latar gelap..."
-                    />
-                  </div>
-                ) : (
-                  <div className="space-y-3 animate-in fade-in slide-in-from-top-1">
-                    <Input
-                      label="Nama Brand (Teks)"
-                      value={branding.logoText}
-                      onChange={(e) => setBranding({ ...branding, logoText: e.target.value })}
-                      placeholder="Contoh: Netto Laundry"
-                    />
-                    <div>
-                      <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Pilih Ikon Brand</label>
-                      <Select
-                        value={branding.logoIcon}
-                        onChange={(e) => setBranding({ ...branding, logoIcon: e.target.value })}
-                        options={[
-                          { label: "Kemeja (Shirt)", value: "Shirt" },
-                          { label: "Angin (Wind)", value: "Wind" },
-                          { label: "Kilau (Sparkles)", value: "Sparkles" },
-                          { label: "Paket (Package)", value: "Package" },
-                          { label: "Bintang (Star)", value: "Star" },
-                          { label: "Medali (Medal)", value: "Medal" },
-                          { label: "Kilat (Zap)", value: "Zap" },
-                          { label: "Pengguna (Users)", value: "Users" },
-                          { label: "Aman (ShieldCheck)", value: "ShieldCheck" }
-                        ]}
-                      />
-                    </div>
-                  </div>
-                )}
-              </Card>
-            </div>
-
-            {/* Live Preview Panel */}
-            <div className="lg:col-span-5">
-              <Card className="sticky top-4 border border-gray-100 shadow-sm h-full flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-3">
-                    <Settings2 size={18} className="text-[#2940D3]" />
-                    <p className="font-bold text-gray-800">Pratinjau Langsung (Real-Time Preview)</p>
-                  </div>
-                  
-                  {/* Preview Sidebar */}
-                  <p className="text-xs font-semibold text-gray-500 mb-2">Representasi Sidebar & Menu</p>
-                  <div className="border border-gray-100 rounded-2xl overflow-hidden shadow-sm bg-white mb-6">
-                    <div className="flex items-center px-4 h-14 border-b border-gray-100">
-                      {branding.logoType === "image" ? (
-                        <img src={branding.logoUrlDark || "/img/logo Netto Dark.png"} alt="Preview Logo" className="h-8 object-contain" />
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <div className="p-1.5 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${branding.themePrimary}1A` }}>
-                            {React.createElement(
-                              {
-                                Shirt, Wind, Sparkles, Package, Star, Medal, Zap, Users, ShieldCheck
-                              }[branding.logoIcon] || Shirt,
-                              { size: 18, style: { color: branding.themePrimary } }
-                            )}
-                          </div>
-                          <span className="font-extrabold text-sm text-gray-800" style={{ color: branding.themePrimary }}>{branding.logoText || "Netto Laundry"}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-2 space-y-1">
-                      <div className="flex items-center gap-3 px-3 py-2 rounded-xl text-white text-xs font-medium" style={{ backgroundColor: branding.themePrimary }}>
-                        <LayoutDashboard size={14} />
-                        <span>Dashboard (Aktif)</span>
-                      </div>
-                      <div className="flex items-center gap-3 px-3 py-2 rounded-xl text-gray-500 text-xs font-medium hover:bg-gray-50">
-                        <Users size={14} />
-                        <span>Pelanggan</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Preview Auth / Landing Page */}
-                  <p className="text-xs font-semibold text-gray-500 mb-2">Representasi Landing Page Hero</p>
-                  <div className="rounded-2xl p-6 text-center text-white overflow-hidden relative" style={{ background: `linear-gradient(135deg, ${branding.landingSecondary || "#80C8F6"}, ${branding.landingPrimary || "#3957ED"})` }}>
-                    <div className="relative z-10 flex flex-col items-center">
-                      <div className="mb-4 w-32 flex justify-center">
-                        {branding.logoType === "image" ? (
-                          <img src={branding.logoUrlLight || "/img/logo Netto light.png"} alt="Preview Logo Light" className="w-full object-contain" style={{ filter: "brightness(0) invert(1)" }} />
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <div className="p-2 rounded-xl bg-white/20 flex items-center justify-center">
-                              {React.createElement(
-                                {
-                                  Shirt, Wind, Sparkles, Package, Star, Medal, Zap, Users, ShieldCheck
-                                }[branding.logoIcon] || Shirt,
-                                { size: 24, className: "text-white" }
-                              )}
-                            </div>
-                            <span className="font-extrabold text-base text-white">{branding.logoText || "Netto Laundry"}</span>
-                          </div>
-                        )}
-                      </div>
-                      <h3 className="font-bold text-base">Netto Laundry</h3>
-                      <p className="text-[10px] text-white/80 mt-1">Laundry Cepat, Bersih, dan Terpercaya</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6 flex justify-end">
-                  <Button variant="outline" size="sm" icon={<RotateCcw size={14} />} onClick={() => setBranding({
-                    themePrimary: "#2940D3",
-                    themeSecondary: "#142297",
-                    landingPrimary: "#3957ED",
-                    landingSecondary: "#80C8F6",
-                    logoType: "image",
-                    logoUrlDark: "/img/logo Netto Dark.png",
-                    logoUrlLight: "/img/logo Netto light.png",
-                    logoText: "Netto Laundry",
-                    logoIcon: "Shirt"
-                  })}>Reset default branding</Button>
-                </div>
-              </Card>
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

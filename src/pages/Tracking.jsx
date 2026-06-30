@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle, Circle, Package } from "lucide-react";
 import PageHeader from "../components/PageHeader";
-import laundryData from "../data/laundryStatus.json";
 import SearchInput from "../components/SearchInput";
 import Badge from "../components/Badge";
 import Card from "../components/Card";
 import EmptyState from "../components/EmptyState";
+import { useAuth } from "../hooks/useAuth";
+import { getTransactions, updateTransaction } from "../services/TransactionApi";
+import { getTrackingHistory, updateTracking } from "../services/TrackingApi";
 
 const statusConfig = {
   menunggu: { variant: "yellow", label: "Menunggu" },
@@ -19,32 +21,136 @@ const statusColorClass = {
   selesai:  "bg-green-100 text-green-700",
 };
 
+const constantSteps = [
+  "Pesanan Diterima",
+  "Sedang Dicuci",
+  "Sedang Dikeringkan",
+  "Sedang Disetrika",
+  "Quality Check",
+  "Siap Diambil",
+  "Selesai"
+];
+
 export default function Tracking() {
-  const [orders, setOrders] = useState(laundryData);
+  const { user } = useAuth();
+  const [orders, setOrders] = useState([]);
   const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const fetchOrders = async () => {
+    try {
+      const data = await getTransactions();
+      // Map base steps for each transaction list item based on status
+      const mapped = data.map(o => {
+        const lowerStatus = (o.status || "").toLowerCase();
+        let lastDoneIdx = 0;
+        if (lowerStatus === "selesai") lastDoneIdx = 6;
+        else if (lowerStatus === "diproses") lastDoneIdx = 3;
+        
+        return {
+          ...o,
+          id: o.id, // Supabase UUID
+          currentStatus: lowerStatus,
+          steps: constantSteps.map((step, i) => ({
+            step,
+            done: i <= lastDoneIdx
+          }))
+        };
+      });
+      setOrders(mapped);
+      
+      // If there is currently a selected order, refresh its details
+      if (selected) {
+        const freshSelected = mapped.find(o => o.id === selected.id);
+        if (freshSelected) {
+          await fetchSelectedHistory(freshSelected);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load tracking list:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchSelectedHistory = async (transaction) => {
+    try {
+      const history = await getTrackingHistory(transaction.id);
+      const steps = constantSteps.map(step => {
+        const matched = history.find(h => h.step === step);
+        return {
+          step,
+          done: !!matched,
+          time: matched ? new Date(matched.time).toLocaleString("id-ID") : null
+        };
+      });
+
+      const lastDone = steps.filter(s => s.done).length;
+      const currentStatus = lastDone === 0 ? "menunggu" : lastDone === steps.length ? "selesai" : "diproses";
+
+      setSelected({
+        ...transaction,
+        steps,
+        currentStatus
+      });
+    } catch (err) {
+      console.error("Failed to fetch selected tracking history:", err);
+    }
+  };
+
+  const handleSelectOrder = async (order) => {
+    setSelected(order);
+    await fetchSelectedHistory(order);
+  };
+
+  const updateStep = async (transactionId, stepIndex) => {
+    if (!selected) return;
+    try {
+      setLoading(true);
+      const stepName = constantSteps[stepIndex];
+      const updatedBy = user?.id || null;
+
+      // 1. Update tracking progress and insert into history
+      await updateTracking(transactionId, stepName, updatedBy);
+
+      // 2. Compute overall status and update transactions table if necessary
+      let newStatus = "diproses";
+      if (stepName === "Selesai") {
+        newStatus = "selesai";
+      } else if (stepName === "Pesanan Diterima" && stepIndex === 0) {
+        newStatus = "menunggu";
+      }
+
+      await updateTransaction(transactionId, { status: newStatus });
+      await fetchOrders();
+    } catch (err) {
+      console.error("Failed to update tracking step:", err);
+      setLoading(false);
+    }
+  };
 
   const filtered = orders.filter(
     (o) =>
       o.customerName.toLowerCase().includes(search.toLowerCase()) ||
-      o.id.toLowerCase().includes(search.toLowerCase())
+      o.transactionId.toLowerCase().includes(search.toLowerCase())
   );
 
-  const updateStep = (orderId, stepIndex) => {
-    const updated = orders.map((o) => {
-      if (o.id !== orderId) return o;
-      const newSteps = o.steps.map((s, i) => ({
-        ...s,
-        done: i <= stepIndex,
-        time: i <= stepIndex && !s.time ? new Date().toLocaleString("id-ID") : s.time,
-      }));
-      const lastDone = newSteps.filter((s) => s.done).length;
-      const currentStatus = lastDone === 0 ? "menunggu" : lastDone === newSteps.length ? "selesai" : "diproses";
-      return { ...o, steps: newSteps, currentStatus };
-    });
-    setOrders(updated);
-    setSelected(updated.find((o) => o.id === orderId));
-  };
+  if (loading && orders.length === 0) {
+    return (
+      <div className="space-y-6 animate-pulse text-left">
+        <div className="h-10 w-48 bg-gray-200 rounded-xl"></div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="h-96 bg-gray-200 rounded-2xl"></div>
+          <div className="h-96 bg-gray-200 rounded-2xl"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -66,15 +172,15 @@ export default function Tracking() {
         />
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-left">
         <div className="space-y-3">
           {filtered.map((order) => (
-            <div key={order.id} onClick={() => setSelected(order)}
+            <div key={order.id} onClick={() => handleSelectOrder(order)}
               className={`bg-white rounded-2xl p-4 shadow-sm border cursor-pointer transition-all hover:shadow-md ${selected?.id === order.id ? "border-[#2940D3] ring-2 ring-[#2940D3]/20" : "border-gray-100"}`}>
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <p className="font-bold text-gray-800">{order.customerName}</p>
-                  <p className="text-xs text-gray-400 font-mono">{order.id}</p>
+                  <p className="text-xs text-gray-400 font-mono">{order.transactionId}</p>
                 </div>
                 <Badge variant={statusConfig[order.currentStatus]?.variant || "gray"}>
                   {statusConfig[order.currentStatus]?.label}
@@ -114,7 +220,6 @@ export default function Tracking() {
               <div className="bg-gray-50 rounded-xl p-3 mb-4 space-y-1.5">
                 {[
                   { label: "Pelanggan", value: selected.customerName },
-                  { label: "No. HP", value: selected.phone },
                   { label: "Layanan", value: selected.service },
                   { label: "Berat", value: `${selected.weight} kg` },
                 ].map((item) => (
@@ -139,7 +244,8 @@ export default function Tracking() {
                       <div className="flex items-center justify-between">
                         <p className={`text-sm font-semibold ${step.done ? "text-gray-800" : "text-gray-400"}`}>{step.step}</p>
                         <button onClick={() => updateStep(selected.id, i)}
-                          className={`text-xs px-2.5 py-1 rounded-lg transition-all ${step.done ? "bg-green-100 text-green-600 cursor-default" : "bg-[#2940D3]/10 text-[#2940D3] hover:bg-[#2940D3]/20"}`}>
+                          disabled={step.done}
+                          className={`text-xs px-2.5 py-1 rounded-lg transition-all ${step.done ? "bg-green-50 text-green-600 cursor-default" : "bg-[#2940D3]/10 text-[#2940D3] hover:bg-[#2940D3]/20"}`}>
                           {step.done ? "Selesai" : "Tandai"}
                         </button>
                       </div>

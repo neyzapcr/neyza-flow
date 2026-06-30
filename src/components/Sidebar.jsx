@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import Logo from "./Logo";
+import { useAuth } from "../hooks/useAuth";
 import {
   LayoutDashboard, Users, Receipt, Package, Star,
   Gift, PieChart, Bell, FileText, LogOut, Settings, UserCheck,
@@ -34,6 +35,7 @@ const menuItems = [
 //   mobileOpen  — apakah sidebar overlay mobile sedang terbuka
 //   onMobileClose — callback untuk menutup overlay mobile
 export default function Sidebar({ mobileOpen = false, onMobileClose }) {
+  const { signOut } = useAuth();
   const [hovered, setHovered] = useState(false);
 
   // Sidebar "expanded" kalau di-hover (desktop) ATAU mobile overlay terbuka
@@ -109,22 +111,20 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }) {
 
         {/* ── Footer — Keluar ── */}
         <div className="px-2 py-4 border-t border-gray-100">
-          <NavLink
-            to="/login"
+          <button
             title={!expanded ? "Keluar" : undefined}
-            onClick={() => { 
-              localStorage.removeItem("netto_auth"); 
-              localStorage.removeItem("netto_user");
+            onClick={async () => { 
+              await signOut();
               if (mobileOpen) onMobileClose?.(); 
             }}
-            className={`flex items-center rounded-xl text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all
+            className={`w-full flex items-center rounded-xl text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all
               ${expanded ? "gap-3 px-3 py-2.5" : "justify-center px-0 py-2.5 mx-1"}`}
           >
             <LogOut size={18} strokeWidth={2} className="flex-shrink-0" />
             <span className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${expanded ? "w-auto opacity-100" : "w-0 opacity-0"}`}>
               Keluar
             </span>
-          </NavLink>
+          </button>
         </div>
       </aside>
     </>

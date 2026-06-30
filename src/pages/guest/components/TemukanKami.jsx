@@ -1,8 +1,20 @@
-import { MapPin, Phone, Clock, Mail } from "lucide-react";
+import { MapPin, Phone, Clock } from "lucide-react";
 import BackgroundBubbles from "./BackgroundBubbles";
 import ScrollReveal from "./ScrollReveal";
+import { useSettings } from "../../../hooks/useSettings";
+
+// Format jam tampil: "07:00" → "07.00"
+function formatTime(t) {
+  if (!t) return "";
+  return t.replace(":", ".");
+}
 
 export default function TemukanKami() {
+  const { settings } = useSettings();
+
+  // Iframe embed tetap pakai fallback hardcoded — tidak ada kolom mapsEmbed di DB
+  const EMBED_SRC = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.661772409653!2d101.43567687349183!3d0.5075585637072189!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31d5afd54240f221%3A0x2cd0b2091bf7f6d7!2sNETTO%20EXPREES%20LAUNDRY%20KUAU!5e0!3m2!1sid!2sid!4v1782019568210!5m2!1sid!2sid";
+
   return (
     <section id="temukan-kami" className="py-16 bg-gradient-to-br from-[#80C8F6] to-[#3957ED] text-white relative overflow-hidden">
       
@@ -27,7 +39,7 @@ export default function TemukanKami() {
               Temukan Kami
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-white leading-tight">
-              Kunjungi Outlet Netto Express Laundry
+              Kunjungi Outlet {settings.laundryName}
             </h2>
             <p className="text-[11px] font-bold text-blue-100">
               Gunakan peta petunjuk arah di bawah ini untuk mempermudah kunjungan Anda ke outlet fisik kami.
@@ -51,10 +63,10 @@ export default function TemukanKami() {
                       Lokasi Usaha Kami
                     </h3>
                     <p className="text-[10px] sm:text-[11px] font-extrabold text-gray-700 mt-1">
-                      Netto Express Laundry KUAU
+                      {settings.laundryName}
                     </p>
                     <p className="text-[9.5px] sm:text-[10.5px] font-bold text-gray-500 mt-1 leading-relaxed">
-                      Jl. Kuau No.2A, Kp. Melayu, Sukajadi, Kota Pekanbaru, Riau 28122
+                      {settings.address}
                     </p>
                   </div>
                 </div>
@@ -68,7 +80,9 @@ export default function TemukanKami() {
                       Jam Operasional
                     </h3>
                     <p className="text-[9.5px] sm:text-[10.5px] font-bold text-gray-500 mt-1 leading-relaxed">
-                      Setiap Hari: 07.00 - 21.00 WIB
+                      {settings.openTime && settings.closeTime
+                        ? `Setiap Hari: ${formatTime(settings.openTime)} - ${formatTime(settings.closeTime)} WIB`
+                        : "Setiap Hari: 07.00 - 21.00 WIB"}
                     </p>
                   </div>
                 </div>
@@ -82,7 +96,7 @@ export default function TemukanKami() {
                       Hubungi Kami
                     </h3>
                     <p className="text-[9.5px] sm:text-[10.5px] font-bold text-gray-500 mt-1 leading-relaxed">
-                      WhatsApp: +62 821-2244-8899
+                      WhatsApp: {settings.phone || "+62 821-2244-8899"}
                     </p>
                   </div>
                 </div>
@@ -91,8 +105,8 @@ export default function TemukanKami() {
               {/* Right Side: Map Embed */}
               <div className="md:col-span-7 h-48 sm:h-56 w-full rounded-2xl overflow-hidden border border-slate-200/50 shadow-inner">
                 <iframe
-                  title="Netto Laundry Location Map"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.661772409653!2d101.43567687349183!3d0.5075585637072189!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31d5afd54240f221%3A0x2cd0b2091bf7f6d7!2sNETTO%20EXPREES%20LAUNDRY%20KUAU!5e0!3m2!1sid!2sid!4v1782019568210!5m2!1sid!2sid"
+                  title={`${settings.laundryName} Location Map`}
+                  src={EMBED_SRC}
                   className="w-full h-full border-0"
                   allowFullScreen=""
                   loading="lazy"

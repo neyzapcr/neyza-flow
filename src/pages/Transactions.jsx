@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, Download, Receipt, DollarSign, Weight, CheckCircle, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import Button from "../components/Button";
 import SearchInput from "../components/SearchInput";
 import Badge from "../components/Badge";
+import { getTransactions } from "../services/TransactionApi";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +14,6 @@ import {
 import Table from "../components/Table";
 import EmptyState from "../components/EmptyState";
 import Card from "../components/Card";
-import transactionsData from "../data/transactions.json";
 
 const statusVariant = {
   selesai: "green",
@@ -22,23 +22,39 @@ const statusVariant = {
 };
 
 export default function Transactions() {
-  const [transactions, setTransactions] = useState(transactionsData);
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [viewTrx, setViewTrx] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
+  useEffect(() => {
+    async function loadTransactions() {
+      setLoading(true);
+      try {
+        const data = await getTransactions();
+        setTransactions(data);
+      } catch (err) {
+        console.error("Failed to fetch transactions:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadTransactions();
+  }, []);
+
   const filtered = transactions.filter((t) => {
     const matchSearch =
-      t.customerName.toLowerCase().includes(search.toLowerCase()) ||
-      t.id.toLowerCase().includes(search.toLowerCase());
+      (t.customerName || "").toLowerCase().includes(search.toLowerCase()) ||
+      t.transactionId.toLowerCase().includes(search.toLowerCase());
     const matchStatus = filterStatus === "Semua" || t.status === filterStatus;
     return matchSearch && matchStatus;
   });
 
-  const totalRevenue = filtered.reduce((s, t) => s + t.total, 0);
-  const totalWeight = filtered.reduce((s, t) => s + t.weight, 0);
+  const totalRevenue = filtered.reduce((s, t) => s + Number(t.total), 0);
+  const totalWeight = filtered.reduce((s, t) => s + Number(t.weight), 0);
 
   // Pagination calculations
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
@@ -79,6 +95,21 @@ export default function Transactions() {
     }
     return pageNumbers;
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-pulse text-left">
+        <div className="h-10 w-48 bg-gray-200 rounded-xl"></div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="h-28 bg-gray-200 rounded-2xl"></div>
+          <div className="h-28 bg-gray-200 rounded-2xl"></div>
+          <div className="h-28 bg-gray-200 rounded-2xl"></div>
+          <div className="h-28 bg-gray-200 rounded-2xl"></div>
+        </div>
+        <div className="h-96 bg-gray-200 rounded-2xl"></div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -131,13 +162,13 @@ export default function Transactions() {
       <Card padding={false} className="overflow-hidden">
         <Table headers={["ID Transaksi", "Pelanggan", "Tanggal", "Layanan", "Berat", "Total", "Pembayaran", "Status", "Aksi"]}>
           {paginatedTransactions.map((t) => (
-            <tr key={t.id} className="hover:bg-gray-50 transition-colors">
-              <td className="px-5 py-4 font-mono text-xs text-gray-500 text-left">{t.id}</td>
-              <td className="px-5 py-4 font-semibold text-gray-800 text-left">{t.customerName}</td>
-              <td className="px-5 py-4 text-gray-500 text-xs text-left">{t.date}</td>
+            <tr key={t.transactionId} className="hover:bg-gray-50 transition-colors">
+              <td className="px-5 py-4 font-mono text-xs text-gray-500 text-left">{t.transactionId}</td>
+              <td className="px-5 py-4 font-semibold text-gray-800 text-left">{t.customerName || t.customerId}</td>
+              <td className="px-5 py-4 text-gray-500 text-xs text-left">{t.receivedDate}</td>
               <td className="px-5 py-4 text-gray-600 text-xs text-left">{t.service}</td>
               <td className="px-5 py-4 text-gray-700 text-left">{t.weight} kg</td>
-              <td className="px-5 py-4 font-bold text-gray-800 text-left">Rp {t.total.toLocaleString("id-ID")}</td>
+              <td className="px-5 py-4 font-bold text-gray-800 text-left">Rp {Number(t.total).toLocaleString("id-ID")}</td>
               <td className="px-5 py-4 text-left">
                 <Badge variant="gray">{t.paymentMethod}</Badge>
               </td>
@@ -229,7 +260,7 @@ export default function Transactions() {
       </Card>
 
       <Dialog open={!!viewTrx} onOpenChange={(openState) => { if (!openState) setViewTrx(null); }}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col font-lagusans p-0 gap-0 overflow-hidden bg-white rounded-2xl border-none shadow-2xl">
+        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col font-Montserrat p-0 gap-0 overflow-hidden bg-white rounded-2xl border-none shadow-2xl">
           <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0 text-left">
             <DialogTitle className="text-base font-bold text-gray-800">Detail Transaksi</DialogTitle>
           </DialogHeader>
@@ -238,12 +269,12 @@ export default function Transactions() {
             {viewTrx && (
               <div className="space-y-3">
                 {[
-                  { label: "ID Transaksi", value: viewTrx.id },
-                  { label: "Pelanggan", value: viewTrx.customerName },
-                  { label: "Tanggal", value: viewTrx.date },
+                  { label: "ID Transaksi", value: viewTrx.transactionId },
+                  { label: "Pelanggan", value: viewTrx.customerName || viewTrx.customerId },
+                  { label: "Tanggal", value: viewTrx.receivedDate },
                   { label: "Layanan", value: viewTrx.service },
                   { label: "Berat", value: `${viewTrx.weight} kg` },
-                  { label: "Harga/kg", value: `Rp ${viewTrx.pricePerKg.toLocaleString("id-ID")}` },
+                  { label: "Harga/kg", value: `Rp ${(viewTrx.pricePerKg || 0).toLocaleString("id-ID")}` },
                   { label: "Metode Bayar", value: viewTrx.paymentMethod },
                 ].map((item) => (
                   <div key={item.label} className="flex justify-between py-2 border-b border-gray-50 text-left">
@@ -251,20 +282,60 @@ export default function Transactions() {
                     <span className="text-sm font-semibold text-gray-800">{item.value}</span>
                   </div>
                 ))}
+                
                 <div className="flex justify-between py-3 bg-[#2940D3]/5 rounded-xl px-3 mt-2 text-left">
                   <span className="text-sm font-bold text-gray-700">Total Biaya</span>
-                  <span className="text-base font-bold text-[#2940D3]">Rp {viewTrx.total.toLocaleString("id-ID")}</span>
+                  <span className="text-base font-bold text-[#2940D3]">Rp {Number(viewTrx.total).toLocaleString("id-ID")}</span>
                 </div>
-                <div className="flex justify-between items-center text-left">
+                
+                <div className="flex justify-between items-center text-left py-2 border-b border-gray-50">
                   <span className="text-sm text-gray-500">Status</span>
                   <Badge variant={statusVariant[viewTrx.status] || "gray"} className="capitalize">{viewTrx.status}</Badge>
+                </div>
+
+                {/* QR Code Preview for public tracking */}
+                <div className="flex flex-col items-center justify-center p-4 bg-blue-50/20 border border-blue-50/50 rounded-2xl text-center space-y-2 mt-3">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(window.location.origin + '/tracking/' + viewTrx.transactionId)}`}
+                    alt="QR Code Tracking"
+                    className="w-32 h-32 bg-white p-2 rounded-xl shadow-sm border border-gray-100"
+                  />
+                  <div>
+                    <p className="text-xs font-bold text-gray-800">QR Code Tracking Publik</p>
+                    <p className="text-[10px] text-gray-400 max-w-[220px] mt-0.5">
+                      Arahkan kamera HP ke kode QR ini untuk melacak status laundry di halaman publik secara mandiri.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="px-6 pb-6 flex-shrink-0">
-            <Button variant="primary" className="w-full" onClick={() => setViewTrx(null)}>Tutup</Button>
+          <div className="px-6 pb-6 flex-shrink-0 space-y-2 bg-white">
+            <div className="grid grid-cols-2 gap-2 bg-white">
+              <Button variant="outline" className="text-xs font-bold" onClick={() => {
+                const w = window.open();
+                const qrUrl = viewTrx.qrCode || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(window.location.origin + '/tracking/' + viewTrx.transactionId)}`;
+                w.document.write(`<div style="text-align:center;padding:50px;"><img src="${qrUrl}" width="200" /><p style="font-family:sans-serif;font-weight:bold;margin-top:10px;">${viewTrx.transactionId}</p><p style="font-family:sans-serif;font-size:12px;color:#666;">Pelanggan: ${viewTrx.customerName || viewTrx.customerId}</p></div>`);
+                w.document.close();
+                w.print();
+                w.close();
+              }}>Cetak QR</Button>
+              <Button variant="outline" className="text-xs font-bold" onClick={() => {
+                const a = document.createElement("a");
+                a.href = viewTrx.qrCode || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(window.location.origin + '/tracking/' + viewTrx.transactionId)}`;
+                a.download = `QR_${viewTrx.transactionId}.png`;
+                a.target = "_blank";
+                a.click();
+              }}>Download QR</Button>
+            </div>
+            
+            <Button variant="primary" className="w-full text-xs font-bold bg-[#25D366] hover:bg-[#20BA5A] border-none text-white" onClick={() => {
+              const msg = `Halo ${viewTrx.customerName || "Pelanggan Netto"}, pesanan laundry Anda dengan kode ${viewTrx.transactionId} dapat dilacak di: ${window.location.origin}/tracking/${viewTrx.transactionId}`;
+              window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`);
+            }}>Bagikan WhatsApp</Button>
+            
+            <Button variant="outline" className="w-full text-xs font-bold" onClick={() => setViewTrx(null)}>Tutup</Button>
           </div>
         </DialogContent>
       </Dialog>

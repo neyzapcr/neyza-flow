@@ -1,16 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import { usersAPI } from "../../services/usersApi";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { signIn, role } = useAuth();
 
   /* ── state ── */
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [dataForm, setDataForm] = useState({ email: "", password: "" });
   const [showPass, setShowPass] = useState(false);
+
+  /* ── redirect setelah role tersedia ── */
+  useEffect(() => {
+    if (role) {
+      if (role === "Member") {
+        navigate("/member/dashboard", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
+    }
+  }, [role, navigate]);
 
   /* ── handleChange ── */
   const handleChange = (evt) => {
@@ -31,24 +43,10 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const users = await usersAPI.login(dataForm.email, dataForm.password);
-      if (users && users.length > 0) {
-        const user = users[0];
-        localStorage.setItem("netto_auth", "true");
-        localStorage.setItem("netto_user", JSON.stringify(user));
-        
-        // Cek role untuk redirection
-        if (user.role === "admin") {
-          navigate("/dashboard");
-        } else {
-          navigate("/");
-        }
-      } else {
-        setError("Email atau password salah. Silakan coba lagi.");
-      }
+      await signIn(dataForm.email, dataForm.password);
     } catch (err) {
       console.error("Login error:", err);
-      setError("Login gagal. Pastikan koneksi internet aktif dan silakan coba lagi.");
+      setError(err.message || "Email atau password salah. Silakan coba lagi.");
     } finally {
       setLoading(false);
     }
@@ -73,11 +71,11 @@ export default function Login() {
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-gray-800 mb-2">Selamat Datang</h1>
-        <p className="text-sm text-gray-400">Masuk ke panel admin Netto Laundry CRM</p>
+        <p className="text-sm text-gray-400">Masuk ke panel Netto Laundry CRM</p>
       </div>
 
       {/* Form container */}
-
+      <div className="w-full max-w-2xl">
         {/* Judul Form */}
         <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Login</h2>
 
@@ -157,5 +155,6 @@ export default function Login() {
           </Link>
         </p>
       </div>
+    </div>
   );
 }

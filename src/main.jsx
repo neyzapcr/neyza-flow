@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from './components/ui/sonner'
 import { toast } from 'sonner'
 import { TooltipProvider } from './components/ui/tooltip'
+import { AuthProvider } from './hooks/useAuth'
 import './assets/tailwind.css'
 import App from './App.jsx'
 
@@ -32,7 +33,9 @@ function Root() {
 
   return (
     <TooltipProvider>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
       <Toaster />
     </TooltipProvider>
   )
