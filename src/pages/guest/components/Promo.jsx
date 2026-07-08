@@ -1,10 +1,11 @@
 import { UserPlus, Trophy, Ticket, Star, Gift, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../../hooks/useAuth";
 import BackgroundBubbles from "./BackgroundBubbles";
 import ScrollReveal from "./ScrollReveal";
 
 export default function Promo() {
-  const userSession = JSON.parse(localStorage.getItem("netto_user") || "null");
+  const { isAuthenticated } = useAuth();
 
   const promoCards = [
     {
@@ -106,7 +107,7 @@ export default function Promo() {
                   </div>
 
                   {/* Optional Action inside card */}
-                  {idx === 0 && !userSession && (
+                  {idx === 0 && !isAuthenticated && (
                     <div className="mt-4 pt-3 border-t border-gray-100">
                       <Link 
                         to="/register" 

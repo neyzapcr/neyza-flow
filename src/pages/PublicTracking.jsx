@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 import { getTrackingHistory } from "../services/TrackingApi";
 import { useAuth } from "../hooks/useAuth";
+import FeedbackModal from "../components/FeedbackModal";
 import { ClipboardList, CheckCircle2, Clock, ArrowLeft, WashingMachine } from "lucide-react";
 import Card from "../components/Card";
 import Badge from "../components/Badge";
@@ -52,6 +53,39 @@ export default function PublicTracking() {
     }
     loadTrackingData();
   }, [transactionId]);
+
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackTarget, setFeedbackTarget] = useState(null);
+
+  useEffect(() => {
+    async function checkFeedbackNeeded() {
+      if (!trx) return;
+      if (trx.status?.toLowerCase() === "selesai") {
+        const skippedIds = JSON.parse(localStorage.getItem("netto_skipped_feedbacks") || "[]");
+        if (skippedIds.includes(trx.id)) return;
+
+        try {
+          const { data } = await supabase
+            .from("feedback")
+            .select("id")
+            .eq("transactionId", trx.id)
+            .maybeSingle();
+
+          if (!data) {
+            setFeedbackTarget({
+              transactionId: trx.id,
+              transactionCode: trx.transactionId || trx.transactionCode || trx.id,
+              customerId: trx.customerId
+            });
+            setShowFeedbackModal(true);
+          }
+        } catch (err) {
+          console.error("Error checking feedback in PublicTracking:", err);
+        }
+      }
+    }
+    checkFeedbackNeeded();
+  }, [trx]);
 
   const timelineSteps = [
     "Pesanan Diterima",
@@ -250,6 +284,22 @@ export default function PublicTracking() {
         )}
 
       </div>
+
+      {feedbackTarget && (
+        <FeedbackModal
+          open={showFeedbackModal}
+          onClose={() => {
+            setShowFeedbackModal(false);
+            setFeedbackTarget(null);
+          }}
+          transactionId={feedbackTarget.transactionId}
+          transactionCode={feedbackTarget.transactionCode}
+          customerId={feedbackTarget.customerId}
+          onSubmitSuccess={() => {
+            // refresh or no-op
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -7,7 +7,7 @@ import {
 import { DollarSign, Users, ClipboardList, Star, Plus, Check } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import { getCustomers, createCustomer } from "../services/CustomerApi";
-import { getTransactions, createTransaction } from "../services/TransactionApi";
+import { getTransactions, createTransaction, syncCustomerStats } from "../services/TransactionApi";
 import { getFeedback } from "../services/FeedbackApi";
 import { createNotification } from "../services/NotificationApi";
 import { supabase } from "../services/supabaseClient";
@@ -99,6 +99,54 @@ export default function Dashboard() {
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [createdTransaction, setCreatedTransaction] = useState(null);
+
+  // States for loyalty voucher auto-apply & validation
+  const [activeVoucher, setActiveVoucher] = useState(null);
+  const [verifyCodeInput, setVerifyCodeInput] = useState("");
+  const [verifiedVoucher, setVerifiedVoucher] = useState(null);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+
+  useEffect(() => {
+    async function checkActiveVoucher() {
+      if (!selectedCustomerId || selectedCustomerId === "new_customer") {
+        setActiveVoucher(null);
+        return;
+      }
+      try {
+        const cust = customers.find(c => c.customerId === selectedCustomerId);
+        if (!cust) {
+          setActiveVoucher(null);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from("loyalty_transactions")
+          .select("*")
+          .eq("customerId", cust.id)
+          .eq("type", "Tukar")
+          .like("description", "Klaim Reward:%Status: Ready to Use")
+          .order("createdAt", { ascending: false });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const desc = data[0].description;
+          const parts = desc.split(" | ");
+          const name = parts[0].replace("Klaim Reward: ", "");
+          const discount = parseInt(parts[1].replace("Discount: ", "").replace("%", ""), 10);
+          const code = parts[2].replace("Code: ", "");
+          const expiry = parts[3].replace("Expiry: ", "");
+          setActiveVoucher({ id: data[0].id, name, discount, code, expiry });
+        } else {
+          setActiveVoucher(null);
+        }
+      } catch (err) {
+        console.error("Failed to check active voucher:", err);
+        setActiveVoucher(null);
+      }
+    }
+    checkActiveVoucher();
+  }, [selectedCustomerId, customers]);
 
   useEffect(() => {
     async function loadData() {
@@ -297,11 +345,134 @@ export default function Dashboard() {
                 .map(c => ({ label: `${c.customerName} (${c.phone})`, value: c.customerId }))
   ];
 
-  const total = localForm.weight ? Math.round(parseFloat(localForm.weight) * priceMap[localForm.service || SERVICES[0]]) : 0;
+  const weight = parseFloat(localForm.weight) || 0;
+  const service = localForm.service || SERVICES[0];
+  const price = priceMap[service] || 8000;
+  const baseTotal = Math.round(weight * price);
+
+  const selectedCust = selectedCustomerId && selectedCustomerId !== "new_customer"
+    ? customers.find(c => c.customerId === selectedCustomerId)
+    : null;
+  const points = selectedCust ? (selectedCust.points || 0) : 0;
+
+  // 1. Promo berdasarkan nominal transaksi
+  let promoNominalPct = 0;
+  let promoNominalLabel = "";
+  if (baseTotal >= 500000) {
+    promoNominalPct = 0.15;
+    promoNominalLabel = "Diskon Transaksi 15%";
+  } else if (baseTotal >= 250000) {
+    promoNominalPct = 0.10;
+    promoNominalLabel = "Diskon Transaksi 10%";
+  }
+
+  // 2. Tentukan promo yang digunakan
+  let appliedDiscountPct = 0;
+  let appliedPromoLabel = "";
+  let promoType = ""; // "VOUCHER" or "NOMINAL"
+
+  if (activeVoucher) {
+    appliedDiscountPct = activeVoucher.discount / 100;
+    appliedPromoLabel = `Voucher: ${activeVoucher.name} (${activeVoucher.code})`;
+    promoType = "VOUCHER";
+  } else if (promoNominalPct > 0) {
+    appliedDiscountPct = promoNominalPct;
+    appliedPromoLabel = promoNominalLabel;
+    promoType = "NOMINAL";
+  }
+
+  const discountAmount = Math.round(baseTotal * appliedDiscountPct);
+  const total = baseTotal - discountAmount;
+
   const totalRevenue = transactions.reduce((s, t) => s + Number(t.total), 0);
   const activeCustomers = customers.filter((c) => c.status === "active").length;
   const avgRating = feedback.length ? (feedback.reduce((s, f) => s + f.rating, 0) / feedback.length).toFixed(1) : "5.0";
   const pendingOrders = transactions.filter((t) => t.status !== "selesai").length;
+
+  // Verification helper functions for in-store voucher redemption
+  const handleVerifyVoucher = async () => {
+    if (!verifyCodeInput.trim()) return;
+    setVerifyLoading(true);
+    setVerifiedVoucher(null);
+    try {
+      const { data, error } = await supabase
+        .from("loyalty_transactions")
+        .select("id, description, customerId, points")
+        .eq("type", "Tukar")
+        .like("description", `%Code: ${verifyCodeInput.trim()}%`);
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        toast("error", "Voucher Tidak Ditemukan", "Tidak ada voucher dengan kode tersebut di database.");
+        setVerifyLoading(false);
+        return;
+      }
+
+      const record = data[0];
+      const desc = record.description;
+      const parts = desc.split(" | ");
+      const name = parts[0].replace("Klaim Reward: ", "");
+      const discount = parseInt(parts[1].replace("Discount: ", "").replace("%", ""), 10);
+      const code = parts[2].replace("Code: ", "");
+      const expiry = parts[3].replace("Expiry: ", "");
+      const status = parts[4].replace("Status: ", "");
+
+      const { data: cust, error: custErr } = await supabase
+        .from("customers")
+        .select("customerName, customerCode")
+        .eq("id", record.customerId)
+        .single();
+
+      if (custErr) throw custErr;
+
+      setVerifiedVoucher({
+        id: record.id,
+        customerId: record.customerId,
+        customerName: cust?.customerName || "Member",
+        customerCode: cust?.customerCode || "-",
+        name,
+        discount,
+        code,
+        expiry,
+        status,
+        raw: desc
+      });
+    } catch (err) {
+      console.error("Verification error:", err);
+      toast("error", "Gagal Memverifikasi", "Terjadi kesalahan saat memproses data voucher.");
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
+
+  const handleUseVoucherInStore = async () => {
+    if (!verifiedVoucher || verifiedVoucher.status !== "Ready to Use") return;
+    setVerifyLoading(true);
+    try {
+      const updatedDesc = verifiedVoucher.raw.replace("Status: Ready to Use", "Status: Used");
+      const { error } = await supabase
+        .from("loyalty_transactions")
+        .update({ description: updatedDesc })
+        .eq("id", verifiedVoucher.id);
+
+      if (error) throw error;
+
+      await syncCustomerStats(verifiedVoucher.customerId);
+
+      const custs = await getCustomers();
+      setCustomers(custs);
+
+      toast("success", "Voucher Berhasil Digunakan", `Voucher ${verifiedVoucher.code} telah ditandai sebagai Used.`);
+      setVerifiedVoucher(prev => ({ ...prev, status: "Used", raw: updatedDesc }));
+      setVerifyCodeInput("");
+    } catch (err) {
+      console.error("Error updating voucher status:", err);
+      toast("error", "Gagal Menggunakan Voucher", "Terjadi kesalahan saat memperbarui database.");
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -370,8 +541,32 @@ export default function Dashboard() {
       const service = localForm.service || SERVICES[0];
       const weight = parseFloat(localForm.weight);
       const price = priceMap[service] || 8000;
-      const totalCost = Math.round(weight * price);
+      const baseTotal = Math.round(weight * price);
       const paymentMethod = localForm.paymentMethod || PAYMENT_METHODS[0];
+
+      // Calculate promo details for this customer using activeVoucher if available
+      let finalDiscountPct = 0;
+      let promoMetadata = "";
+
+      if (activeVoucher) {
+        finalDiscountPct = activeVoucher.discount / 100;
+        promoMetadata = `[PROMO_VOUCHER_USED:${activeVoucher.code}] [PROMO_TYPE:VOUCHER] [PROMO_DISCOUNT:${activeVoucher.discount}]`;
+      } else {
+        let pNominalPct = 0;
+        if (baseTotal >= 500000) pNominalPct = 0.15;
+        else if (baseTotal >= 250000) pNominalPct = 0.10;
+
+        if (pNominalPct > 0) {
+          finalDiscountPct = pNominalPct;
+          promoMetadata = `[PROMO_TYPE:NOMINAL] [PROMO_DISCOUNT:${pNominalPct * 100}]`;
+        }
+      }
+
+      const discountAmt = Math.round(baseTotal * finalDiscountPct);
+      const totalCost = baseTotal - discountAmt;
+
+      const promoText = promoMetadata ? `\n${promoMetadata}` : "";
+      const notes = localForm.notes ? `${localForm.notes}${promoText}` : promoMetadata;
 
       const newTrx = {
         transactionId: trxId,
@@ -388,10 +583,34 @@ export default function Dashboard() {
         status: "menunggu",
         qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(window.location.origin + '/tracking/' + trxId)}`,
         createdBy: user?.id || null,
-        notes: localForm.notes || ""
+        notes: notes
       };
 
       const createdTrx = await createTransaction(newTrx);
+
+      // If activeVoucher was used, update the voucher status to Used in database
+      if (activeVoucher) {
+        const { data: voucherRecord, error: getVoucherErr } = await supabase
+          .from("loyalty_transactions")
+          .select("description")
+          .eq("id", activeVoucher.id)
+          .single();
+
+        if (!getVoucherErr && voucherRecord) {
+          const updatedDesc = voucherRecord.description.replace("Status: Ready to Use", "Status: Used");
+          const { error: updVoucherErr } = await supabase
+            .from("loyalty_transactions")
+            .update({ description: updatedDesc })
+            .eq("id", activeVoucher.id);
+
+          if (updVoucherErr) {
+            console.error("Failed to mark voucher as Used:", updVoucherErr.message);
+          }
+        }
+        
+        // Reset active voucher state
+        setActiveVoucher(null);
+      }
 
       // Create notification
       if (targetCustomer) {
@@ -407,6 +626,10 @@ export default function Dashboard() {
           console.error("Failed to create notification:", notifErr);
         }
       }
+
+      // Reload customers to get fresh points/stats
+      const custs = await getCustomers();
+      setCustomers(custs);
 
       toast("laundry", "Cucian Baru Ditambahkan!", `${localForm.customerName} · ${service} · ${weight} kg · Rp ${totalCost.toLocaleString("id-ID")}`, 6000);
       
@@ -556,6 +779,77 @@ export default function Dashboard() {
           <Legend period={period} />
         </Card>
       </div>
+
+      {/* Verifikasi Voucher Loyalty Card */}
+      <Card className="mt-4 text-left">
+        <p className="text-xs text-gray-400 font-medium mb-1 bg-white">Layanan Toko</p>
+        <p className="text-sm font-bold text-gray-800 mb-4 bg-white font-Montserrat">Verifikasi & Validasi Voucher Loyalty</p>
+        
+        <div className="flex flex-col sm:flex-row gap-3 max-w-xl bg-white">
+          <Input
+            placeholder="Masukkan Kode Voucher (contoh: LY-100-A4B9)..."
+            value={verifyCodeInput}
+            onChange={(e) => setVerifyCodeInput(e.target.value)}
+            className="flex-1"
+          />
+          <Button
+            onClick={handleVerifyVoucher}
+            variant="primary"
+            className="h-10 px-5 font-semibold cursor-pointer"
+          >
+            Cari & Verifikasi
+          </Button>
+        </div>
+
+        {verifiedVoucher && (
+          <div className="mt-4 p-4 bg-gray-50 border border-gray-150 rounded-2xl max-w-xl text-left text-xs animate-in fade-in duration-200">
+            <h4 className="font-extrabold text-gray-800 text-sm mb-3 font-Montserrat">Informasi Voucher</h4>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <p className="text-gray-450 font-bold uppercase text-[9px] tracking-wider">Nama Voucher</p>
+                <p className="font-bold text-gray-800 text-sm mt-0.5">{verifiedVoucher.name}</p>
+              </div>
+              <div>
+                <p className="text-gray-450 font-bold uppercase text-[9px] tracking-wider">Potongan Diskon</p>
+                <p className="font-bold text-indigo-650 text-sm mt-0.5">{verifiedVoucher.discount}%</p>
+              </div>
+              <div>
+                <p className="text-gray-450 font-bold uppercase text-[9px] tracking-wider">Nama Pelanggan</p>
+                <p className="font-bold text-gray-750 text-sm mt-0.5">{verifiedVoucher.customerName}</p>
+              </div>
+              <div>
+                <p className="text-gray-450 font-bold uppercase text-[9px] tracking-wider">Kode Pelanggan</p>
+                <p className="font-bold text-gray-750 font-mono text-sm mt-0.5">{verifiedVoucher.customerCode}</p>
+              </div>
+              <div>
+                <p className="text-gray-450 font-bold uppercase text-[9px] tracking-wider">Tanggal Kedaluwarsa</p>
+                <p className="font-bold text-gray-800 text-sm mt-0.5">{verifiedVoucher.expiry}</p>
+              </div>
+              <div>
+                <p className="text-gray-450 font-bold uppercase text-[9px] tracking-wider">Status</p>
+                <div className="mt-0.5">
+                  <Badge variant={verifiedVoucher.status === "Ready to Use" ? "green" : "red"}>
+                    {verifiedVoucher.status === "Ready to Use" ? "SIAP DIGUNAKAN (READY)" : "SUDAH DIGUNAKAN (USED)"}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            {verifiedVoucher.status === "Ready to Use" ? (
+              <Button
+                onClick={handleUseVoucherInStore}
+                variant="primary"
+                className="w-full font-bold h-9 text-xs cursor-pointer"
+                loading={verifyLoading}
+              >
+                Gunakan Voucher Sekarang
+              </Button>
+            ) : (
+              <p className="text-red-500 font-bold text-center mt-2">Voucher ini sudah tidak berlaku atau telah digunakan.</p>
+            )}
+          </div>
+        )}
+      </Card>
 
       {/* Recent Transactions Table */}
       <Card className="mt-4">
@@ -711,10 +1005,22 @@ export default function Dashboard() {
                   />
                 </div>
 
-                {total > 0 && (
-                  <div className="flex items-center justify-between bg-[#2940D3]/5 border border-[#2940D3]/20 rounded-xl px-4 py-3 text-left">
-                    <span className="text-sm text-gray-600">Estimasi Total</span>
-                    <span className="text-base font-bold text-[#2940D3]">Rp {total.toLocaleString("id-ID")}</span>
+                 {baseTotal > 0 && (
+                  <div className="space-y-2 bg-[#2940D3]/5 border border-[#2940D3]/20 rounded-xl px-4 py-3 text-left">
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>Harga Awal</span>
+                      <span>Rp {baseTotal.toLocaleString("id-ID")}</span>
+                    </div>
+                    {appliedDiscountPct > 0 && (
+                      <div className="flex items-center justify-between text-xs text-green-600 font-bold animate-in fade-in duration-200">
+                        <span>Promo Otomatis: {appliedPromoLabel}</span>
+                        <span>- Rp {discountAmount.toLocaleString("id-ID")}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between pt-2 border-t border-gray-200/30">
+                      <span className="text-sm font-bold text-gray-700">Total Pembayaran</span>
+                      <span className="text-base font-bold text-[#2940D3]">Rp {total.toLocaleString("id-ID")}</span>
+                    </div>
                   </div>
                 )}
 

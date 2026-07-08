@@ -1,5 +1,6 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import { supabase } from "../services/supabaseClient";
+import { syncCustomerStats } from "../services/TransactionApi";
 
 const AuthContext = createContext(null);
 
@@ -32,29 +33,107 @@ export function AuthProvider({ children }) {
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Helper to link customer account by email or full name and phone number
+  const linkCustomerAccount = async (userId, userEmail, userFullname, userPhone) => {
+    try {
+      if (!userEmail) return;
+
+      // 1. Coba cari berdasarkan email
+      let { data: existingCust } = await supabase
+        .from("customers")
+        .select("*")
+        .eq("email", userEmail);
+
+      // 2. Jika tidak cocok, coba cari berdasarkan nama lengkap AND nomor telepon secara case-insensitive
+      if ((!existingCust || existingCust.length === 0) && userFullname && userPhone) {
+        const { data: matchedCust } = await supabase
+          .from("customers")
+          .select("*")
+          .ilike("customerName", userFullname)
+          .eq("phone", userPhone);
+
+        if (matchedCust && matchedCust.length > 0) {
+          existingCust = matchedCust;
+        }
+      }
+
+      // 3. Cadangan terakhir: jika tidak ada email/telepon yang cocok, coba cari nama lengkap saja
+      if ((!existingCust || existingCust.length === 0) && userFullname) {
+        const { data: nameCust } = await supabase
+          .from("customers")
+          .select("*")
+          .ilike("customerName", userFullname);
+
+        if (nameCust && nameCust.length > 0) {
+          existingCust = nameCust;
+        }
+      }
+
+      if (existingCust && existingCust.length > 0) {
+        // Sort existingCust to pick the primary one
+        existingCust.sort((a, b) => {
+          if (a.userId === userId && b.userId !== userId) return -1;
+          if (b.userId === userId && a.userId !== userId) return 1;
+          if (!a.userId && b.userId) return -1;
+          if (a.userId && !b.userId) return 1;
+          if (a.email === userEmail && b.email !== userEmail) return -1;
+          if (b.email === userEmail && a.email !== userEmail) return 1;
+          return (b.points || 0) - (a.points || 0);
+        });
+
+        const primary = existingCust[0];
+
+        // Link primary customer to userId and backfill email/phone if needed
+        const updatePayload = { userId, updatedAt: new Date().toISOString() };
+        if (!primary.email) {
+          updatePayload.email = userEmail;
+        }
+        if (userPhone && !primary.phone) {
+          updatePayload.phone = userPhone;
+        }
+        
+        await supabase
+          .from("customers")
+          .update(updatePayload)
+          .eq("id", primary.id);
+
+        // If there are duplicate records, merge all of their data into the primary record
+        if (existingCust.length > 1) {
+          const duplicates = existingCust.slice(1);
+          for (const dup of duplicates) {
+            // 1. Migrate transactions
+            await supabase
+              .from("transactions")
+              .update({ customerId: primary.id })
+              .eq("customerId", dup.id);
+
+            // 2. Migrate loyalty transactions
+            await supabase
+              .from("loyalty_transactions")
+              .update({ customerId: primary.id })
+              .eq("customerId", dup.id);
+
+            // 3. Delete duplicate customer record
+            await supabase
+              .from("customers")
+              .delete()
+              .eq("id", dup.id);
+          }
+        }
+
+        // Recalculate and synchronize customer stats for the primary record
+        await syncCustomerStats(primary.id);
+      }
+    } catch (err) {
+      console.error("Failed to link customer account:", err);
+    }
+  };
+
   // Load profile and customer details by matching userId and email
   const loadProfile = async (userId, userEmail) => {
     setLoading(true);
     try {
-      // 1. Link customer account if email matches
-      if (userEmail) {
-        const { data: existingCust } = await supabase
-          .from("customers")
-          .select("*")
-          .eq("email", userEmail);
-
-        if (existingCust && existingCust.length > 0) {
-          const target = existingCust[0];
-          if (!target.userId) {
-            await supabase
-              .from("customers")
-              .update({ userId, updatedAt: new Date().toISOString() })
-              .eq("id", target.id);
-          }
-        }
-      }
-
-      // 2. Load user details from public.users table using Supabase
+      // 1. Load user details from public.users table using Supabase
       const { data, error } = await supabase
         .from("users")
         .select("*")
@@ -64,6 +143,12 @@ export function AuthProvider({ children }) {
       if (error) throw error;
       
       const mappedUser = mapUser(data);
+
+      // 2. Link customer account
+      if (mappedUser) {
+        await linkCustomerAccount(userId, userEmail, mappedUser.fullName, null);
+      }
+
       setProfile(mappedUser ?? null);
       setRole(mappedUser?.role ?? null);
 
@@ -126,7 +211,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Initialize session from localStorage on application load
+  // Initialize session from localStorage on application load and verify existence
   useEffect(() => {
     const initSession = async () => {
       setLoading(true);
@@ -134,11 +219,31 @@ export function AuthProvider({ children }) {
         const storedUser = localStorage.getItem("netto_crm_user");
         if (storedUser) {
           const parsed = JSON.parse(storedUser);
-          const mapped = mapUser(parsed);
+          
+          // Verify with database that the user account still exists
+          const { data: dbUser, error: dbUserErr } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", parsed.id)
+            .maybeSingle();
+
+          if (dbUserErr || !dbUser) {
+            // User has been deleted from database, clear credentials
+            localStorage.removeItem("netto_crm_user");
+            setUser(null);
+            setSession(null);
+            setProfile(null);
+            setRole(null);
+            setCustomerProfile(null);
+            return;
+          }
+
+          const mapped = mapUser(dbUser);
           setUser(mapped);
           setSession(mapped);
           setProfile(mapped);
           setRole(mapped.role);
+          localStorage.setItem("netto_crm_user", JSON.stringify(dbUser));
 
           // Load related customer details
           const { data: custRaw } = await supabase
@@ -187,21 +292,8 @@ export function AuthProvider({ children }) {
 
       localStorage.setItem("netto_crm_user", JSON.stringify(data));
 
-      // Link customer if match found by email
-      const { data: existingCust } = await supabase
-        .from("customers")
-        .select("*")
-        .eq("email", mapped.email);
-
-      if (existingCust && existingCust.length > 0) {
-        const target = existingCust[0];
-        if (!target.userId) {
-          await supabase
-            .from("customers")
-            .update({ userId: mapped.id, updatedAt: new Date().toISOString() })
-            .eq("id", target.id);
-        }
-      }
+      // Link customer
+      await linkCustomerAccount(mapped.id, mapped.email, mapped.fullName, null);
 
       // Load customer details
       const { data: custRaw } = await supabase
@@ -226,7 +318,7 @@ export function AuthProvider({ children }) {
   };
 
   // Manual sign up inserting into public.users table directly
-  const signUp = async ({ email, password, fullName, role = "Member" }) => {
+  const signUp = async ({ email, password, fullName, phone, role = "Member" }) => {
     try {
       // Check if email already registered in public.users
       const { data: existing, error: checkError } = await supabase
@@ -262,30 +354,21 @@ export function AuthProvider({ children }) {
 
       localStorage.setItem("netto_crm_user", JSON.stringify(newUser));
 
-      // Link customer to the new user ID if email matches an existing customer (from Quick Order)
-      const { data: existingCust } = await supabase
+      // Link customer to the new user ID if email/name matches an existing customer
+      await linkCustomerAccount(mapped.id, email, fullName, phone);
+
+      // Load customer details
+      const { data: custRaw } = await supabase
         .from("customers")
         .select("*")
-        .eq("email", email)
+        .eq("userId", mapped.id)
         .maybeSingle();
 
-      if (existingCust) {
-        const { data: updatedCust, error: updateCustErr } = await supabase
-          .from("customers")
-          .update({
-            userId: mapped.id,
-            updatedAt: new Date().toISOString()
-          })
-          .eq("id", existingCust.id)
-          .select()
-          .single();
-
-        if (updateCustErr) throw updateCustErr;
-
+      if (custRaw) {
         setCustomerProfile({
-          ...updatedCust,
-          customerId: updatedCust.customerCode,
-          status: updatedCust.status === "Active" ? "active" : "inactive"
+          ...custRaw,
+          customerId: custRaw.customerCode,
+          status: custRaw.status === "Active" ? "active" : "inactive"
         });
       } else {
         // Create new customer record
@@ -294,7 +377,7 @@ export function AuthProvider({ children }) {
           customerCode: generatedCustId,
           userId: mapped.id,
           customerName: fullName,
-          phone: "",
+          phone: phone || "",
           email: email,
           address: "",
           customerType: "Umum",

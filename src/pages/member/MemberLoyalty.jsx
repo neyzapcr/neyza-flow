@@ -1,14 +1,19 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { getPointHistory } from "../../services/LoyaltyApi";
+import { supabase } from "../../services/supabaseClient";
+import { syncCustomerStats } from "../../services/TransactionApi";
 import { Gift, Medal, ArrowUpRight, ArrowDownRight, Award } from "lucide-react";
 import Card from "../../components/Card";
 import Badge from "../../components/Badge";
 import ProgressBar from "../../components/ProgressBar";
 import Table from "../../components/Table";
 
+const toast = (type, title, desc) =>
+  window.dispatchEvent(new CustomEvent("addToast", { detail: { type, title, desc } }));
+
 export default function MemberLoyalty() {
-  const { customerProfile } = useAuth();
+  const { customerProfile, refreshProfile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [loyaltyHistory, setLoyaltyHistory] = useState([]);
 
@@ -43,7 +48,53 @@ export default function MemberLoyalty() {
   const nextTier = tiers[tiers.indexOf(currentTier) + 1] || null;
   const progress = nextTier ? Math.round(((currentPoints - currentTier.min) / (nextTier.min - currentTier.min)) * 100) : 100;
 
-  if (loading) {
+  const handleRedeem = async (reward) => {
+    if (currentPoints < reward.points) {
+      toast("error", "Poin Tidak Cukup", `Anda membutuhkan ${reward.points} poin untuk menukarkan reward ini.`);
+      return;
+    }
+
+    const confirmRedeem = window.confirm(`Apakah Anda yakin ingin menukarkan ${reward.points} poin untuk ${reward.name}?`);
+    if (!confirmRedeem) return;
+
+    try {
+      setLoading(true);
+      // Generate a voucher code: LY-[Points]-[4 random chars]
+      const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+      const code = `LY-${reward.points}-${randomPart}`;
+      const expiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+      const description = `Klaim Reward: ${reward.name} | Discount: ${reward.pct}% | Code: ${code} | Expiry: ${expiry} | Status: Ready to Use`;
+
+      // Insert record to loyalty_transactions
+      const { error: insErr } = await supabase
+        .from("loyalty_transactions")
+        .insert([{
+          customerId: customerProfile.id,
+          points: reward.points,
+          type: "Tukar",
+          description
+        }]);
+
+      if (insErr) throw insErr;
+
+      // Sync customer stats and refresh profile
+      await syncCustomerStats(customerProfile.id);
+      await refreshProfile();
+
+      toast("success", "Reward Berhasil Ditukar!", `Kode voucher Anda: ${code}. Cek di halaman Dashboard.`);
+      
+      // Reload loyalty history list
+      const hist = await getPointHistory(customerProfile.id);
+      setLoyaltyHistory(hist || []);
+    } catch (err) {
+      console.error("Failed to redeem points:", err);
+      toast("error", "Gagal Menukar Poin", "Terjadi kesalahan saat memproses penukaran.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading && loyaltyHistory.length === 0) {
     return (
       <div className="space-y-6 animate-pulse text-left">
         <div className="h-10 w-48 bg-gray-200 rounded-xl"></div>
@@ -113,18 +164,66 @@ export default function MemberLoyalty() {
           <div className="space-y-3 mt-2 text-xs bg-transparent">
             <div className="flex justify-between border-b border-gray-100 pb-2 bg-transparent">
               <span className="text-gray-500 bg-transparent">Poin Per Transaksi</span>
-              <span className="font-bold text-gray-800 bg-transparent">1 poin / Rp 2.000</span>
+              <span className="font-bold text-gray-800 bg-transparent">1 poin / Rp 10.000</span>
             </div>
             <div className="flex justify-between border-b border-gray-100 pb-2 bg-transparent">
-              <span className="text-gray-500 bg-transparent">Tukar Voucher</span>
-              <span className="font-bold text-gray-800 bg-transparent">100 poin = Rp 5.000</span>
+              <span className="text-gray-500 bg-transparent">Promo Poin (Loyalty)</span>
+              <span className="font-bold text-gray-800 bg-transparent">100 (5%), 200 (10%), 300 (15%)</span>
             </div>
             <div className="flex justify-between bg-transparent">
-              <span className="text-gray-500 bg-transparent">Bonus Tier Platinum</span>
-              <span className="font-bold text-[#2940D3] bg-transparent">Double (2x) Poin</span>
+              <span className="text-gray-500 bg-transparent">Promo Nominal Transaksi</span>
+              <span className="font-bold text-[#2940D3] bg-transparent">≥250rb (10%), ≥500rb (15%)</span>
             </div>
           </div>
         </Card>
+      </div>
+
+      {/* Tukar Poin Keanggotaan Section */}
+      <div className="space-y-4">
+        <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2 font-Montserrat">
+          <Gift size={16} className="text-[#2940D3]" /> Tukar Poin Keanggotaan
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { name: "Diskon Loyalty 5%", points: 100, pct: 5, bg: "from-blue-50 to-indigo-50", textColor: "text-blue-700" },
+            { name: "Diskon Loyalty 10%", points: 200, pct: 10, bg: "from-purple-50 to-pink-50", textColor: "text-purple-700" },
+            { name: "Diskon Loyalty 15%", points: 300, pct: 15, bg: "from-amber-50 to-orange-50", textColor: "text-amber-700" },
+          ].map((reward) => {
+            const canRedeem = currentPoints >= reward.points;
+            return (
+              <Card key={reward.name} className={`bg-gradient-to-br ${reward.bg} border-none relative overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow`}>
+                <div className="absolute -right-6 -bottom-6 w-20 h-20 rounded-full bg-white/20" />
+                
+                <div className="relative z-10 pb-4 bg-transparent">
+                  <span className="px-2 py-0.5 rounded-full bg-white/50 text-[10px] font-extrabold uppercase tracking-wide text-gray-600">
+                    Voucher Diskon
+                  </span>
+                  <h4 className="text-base font-extrabold text-gray-800 mt-2 bg-transparent">{reward.name}</h4>
+                  <p className="text-xs text-gray-500 mt-1 bg-transparent">Potongan harga untuk cucian Anda berikutnya.</p>
+                </div>
+                
+                <div className="relative z-10 pt-4 border-t border-gray-200/20 flex items-center justify-between bg-transparent">
+                  <div className="bg-transparent">
+                    <p className="text-[10px] text-gray-400 font-bold uppercase bg-transparent">Biaya</p>
+                    <p className="text-lg font-black text-[#2940D3] bg-transparent">{reward.points} <span className="text-xs font-normal text-gray-400 bg-transparent">pts</span></p>
+                  </div>
+                  <button
+                    onClick={() => handleRedeem(reward)}
+                    disabled={!canRedeem}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all ${
+                      canRedeem
+                        ? "bg-[#2940D3] text-white hover:bg-[#142297] shadow-sm cursor-pointer"
+                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    }`}
+                  >
+                    Tukar
+                  </button>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
       </div>
 
       {/* Point History Log */}

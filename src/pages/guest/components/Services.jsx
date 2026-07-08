@@ -1,9 +1,24 @@
 import { Sparkles, Shirt, Droplets, Check, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../hooks/useAuth";
 import BackgroundBubbles from "./BackgroundBubbles";
 import ScrollReveal from "./ScrollReveal";
 import Button from "../../../components/Button";
 
 export default function Services() {
+  const navigate = useNavigate();
+  const { isAuthenticated, role } = useAuth();
+
+  const handlePesan = () => {
+    if (!isAuthenticated) {
+      navigate("/login");
+    } else if (role === "Admin" || role === "Karyawan") {
+      navigate("/dashboard");
+    } else {
+      navigate("/member/dashboard");
+    }
+  };
+
   const serviceList = [
     {
       title: "Cuci Kiloan (Reguler)",
@@ -139,6 +154,7 @@ export default function Services() {
                   {/* Card Action Button */}
                   <Button 
                     variant={service.popular ? "primary" : "ghost"}
+                    onClick={handlePesan}
                     className={`w-full !py-1 sm:!py-2.5 rounded-lg sm:rounded-xl text-[8.5px] sm:text-xs font-black transition-all flex items-center justify-center gap-1 sm:gap-1.5 ${
                       service.popular
                         ? "bg-gradient-to-r from-[#80C8F6] to-[#3957ED] !text-white hover:shadow-md hover:shadow-[#3957ED]/25"

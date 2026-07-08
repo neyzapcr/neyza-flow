@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { getTransactionByCustomer } from "../../services/TransactionApi";
 import { getTrackingHistory } from "../../services/TrackingApi";
+import { supabase } from "../../services/supabaseClient";
+import FeedbackModal from "../../components/FeedbackModal";
 import { ClipboardList, CheckCircle2, Clock, Calendar, Box } from "lucide-react";
 import Card from "../../components/Card";
 import Badge from "../../components/Badge";
@@ -38,6 +40,39 @@ export default function MemberTracking() {
     }
     loadTrackingData();
   }, [customerProfile]);
+
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackTarget, setFeedbackTarget] = useState(null);
+
+  useEffect(() => {
+    async function checkFeedbackNeeded() {
+      if (!selectedTrx || !customerProfile) return;
+      if (selectedTrx.status?.toLowerCase() === "selesai") {
+        const skippedIds = JSON.parse(localStorage.getItem("netto_skipped_feedbacks") || "[]");
+        if (skippedIds.includes(selectedTrx.id)) return;
+
+        try {
+          const { data } = await supabase
+            .from("feedback")
+            .select("id")
+            .eq("transactionId", selectedTrx.id)
+            .maybeSingle();
+
+          if (!data) {
+            setFeedbackTarget({
+              transactionId: selectedTrx.id,
+              transactionCode: selectedTrx.transactionId || selectedTrx.transactionCode || selectedTrx.id,
+              customerId: customerProfile.id
+            });
+            setShowFeedbackModal(true);
+          }
+        } catch (err) {
+          console.error("Error checking feedback in MemberTracking:", err);
+        }
+      }
+    }
+    checkFeedbackNeeded();
+  }, [selectedTrx, customerProfile]);
 
   useEffect(() => {
     async function loadHistory() {
@@ -240,6 +275,22 @@ export default function MemberTracking() {
             Anda belum memiliki riwayat transaksi laundry pada sistem kami. Segera lakukan pemesanan laundry Anda pertama kali!
           </p>
         </Card>
+      )}
+
+      {feedbackTarget && (
+        <FeedbackModal
+          open={showFeedbackModal}
+          onClose={() => {
+            setShowFeedbackModal(false);
+            setFeedbackTarget(null);
+          }}
+          transactionId={feedbackTarget.transactionId}
+          transactionCode={feedbackTarget.transactionCode}
+          customerId={feedbackTarget.customerId}
+          onSubmitSuccess={() => {
+            // refresh page state or do nothing since modal handles DB update
+          }}
+        />
       )}
     </div>
   );

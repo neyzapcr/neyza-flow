@@ -9,7 +9,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [dataForm, setDataForm] = useState({
-    name: "", email: "", password: "", confirm: "",
+    name: "", email: "", phone: "", password: "", confirm: "",
   });
 
   /* ── redirect setelah role tersedia ── */
@@ -28,7 +28,7 @@ export default function Register() {
     e.preventDefault();
     setError("");
 
-    if (!dataForm.name || !dataForm.email || !dataForm.password || !dataForm.confirm) {
+    if (!dataForm.name || !dataForm.email || !dataForm.phone || !dataForm.password || !dataForm.confirm) {
       setError("Semua field wajib diisi.");
       return;
     }
@@ -47,6 +47,7 @@ export default function Register() {
         email: dataForm.email,
         password: dataForm.password,
         fullName: dataForm.name,
+        phone: dataForm.phone,
         role: "Member",
       });
     } catch (err) {
@@ -111,6 +112,20 @@ export default function Register() {
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 transition-all"
               />
             </div>
+          </div>
+          
+          {/* No. Telepon */}
+          <div>
+            <label className="text-xs font-semibold text-gray-600 mb-1.5 block">No. Telepon</label>
+            <input
+              type="tel"
+              name="phone"
+              value={dataForm.phone}
+              onChange={handleChange}
+              placeholder="08xxxxxxxxxx"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#2940D3] focus:ring-2 focus:ring-[#2940D3]/20 transition-all"
+              required
+            />
           </div>
 
           {/* Password & Konfirmasi Password */}

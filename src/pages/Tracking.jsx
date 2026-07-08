@@ -6,6 +6,7 @@ import Badge from "../components/Badge";
 import Card from "../components/Card";
 import EmptyState from "../components/EmptyState";
 import { useAuth } from "../hooks/useAuth";
+import { supabase } from "../services/supabaseClient";
 import { getTransactions, updateTransaction } from "../services/TransactionApi";
 import { getTrackingHistory, updateTracking } from "../services/TrackingApi";
 
@@ -41,12 +42,29 @@ export default function Tracking() {
   const fetchOrders = async () => {
     try {
       const data = await getTransactions();
+
+      // Fetch all tracking records to map currentStatus accurately
+      const { data: trackingList, error: trackErr } = await supabase
+        .from("tracking")
+        .select("transactionId, currentStatus");
+        
+      if (trackErr) console.error("Error fetching tracking statuses:", trackErr.message);
+      
+      const trackingMap = {};
+      if (trackingList) {
+        trackingList.forEach(t => {
+          trackingMap[t.transactionId] = t.currentStatus;
+        });
+      }
+
       // Map base steps for each transaction list item based on status
       const mapped = data.map(o => {
         const lowerStatus = (o.status || "").toLowerCase();
-        let lastDoneIdx = 0;
-        if (lowerStatus === "selesai") lastDoneIdx = 6;
-        else if (lowerStatus === "diproses") lastDoneIdx = 3;
+        
+        // Use currentStatus from tracking if available, fallback to status mapping
+        const currentTrackingStatus = trackingMap[o.id] || (lowerStatus === "selesai" ? "Selesai" : "Pesanan Diterima");
+        
+        const lastDoneIdx = constantSteps.indexOf(currentTrackingStatus);
         
         return {
           ...o,
@@ -54,7 +72,7 @@ export default function Tracking() {
           currentStatus: lowerStatus,
           steps: constantSteps.map((step, i) => ({
             step,
-            done: i <= lastDoneIdx
+            done: i <= lastDoneIdx && lastDoneIdx !== -1
           }))
         };
       });
@@ -244,8 +262,8 @@ export default function Tracking() {
                       <div className="flex items-center justify-between">
                         <p className={`text-sm font-semibold ${step.done ? "text-gray-800" : "text-gray-400"}`}>{step.step}</p>
                         <button onClick={() => updateStep(selected.id, i)}
-                          disabled={step.done}
-                          className={`text-xs px-2.5 py-1 rounded-lg transition-all ${step.done ? "bg-green-50 text-green-600 cursor-default" : "bg-[#2940D3]/10 text-[#2940D3] hover:bg-[#2940D3]/20"}`}>
+                          disabled={step.done || (i > 0 && !selected.steps[i-1].done)}
+                          className={`text-xs px-2.5 py-1 rounded-lg transition-all ${step.done ? "bg-green-50 text-green-600 cursor-default" : (i > 0 && !selected.steps[i-1].done) ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-[#2940D3]/10 text-[#2940D3] hover:bg-[#2940D3]/20"}`}>
                           {step.done ? "Selesai" : "Tandai"}
                         </button>
                       </div>

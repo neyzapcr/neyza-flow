@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Users as UsersIcon, ShieldAlert, ShieldCheck, Search, Loader2, Plus, Pencil, Trash2, Check } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import { usersAPI } from "../services/usersApi";
+import { useAuth } from "../hooks/useAuth";
 import SearchInput from "../components/SearchInput";
 import Card from "../components/Card";
 import Table from "../components/Table";
@@ -32,6 +33,7 @@ const toast = (type, title, desc) =>
   window.dispatchEvent(new CustomEvent("addToast", { detail: { type, title, desc } }));
 
 export default function Users() {
+  const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -43,8 +45,6 @@ export default function Users() {
   const [localForm, setLocalForm] = useState({ fullname: "", email: "", password: "", role: "member" });
   const [formError, setFormError] = useState("");
   const [saveLoading, setSaveLoading] = useState(false);
-
-  const userSession = JSON.parse(localStorage.getItem("netto_user") || "null");
 
   const fetchUsersData = async () => {
     setLoading(true);
@@ -275,7 +275,7 @@ export default function Users() {
                           <Pencil size={14} />
                         </button>
                         <button 
-                          disabled={u.id === userSession?.id}
+                          disabled={u.id === user?.id}
                           onClick={() => setDeleteConfirm(u)} 
                           className="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                           title="Hapus"

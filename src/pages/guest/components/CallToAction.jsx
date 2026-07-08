@@ -8,6 +8,7 @@ import {
   Map,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../../hooks/useAuth";
 import BackgroundBubbles from "./BackgroundBubbles";
 import ScrollReveal from "./ScrollReveal";
 import { useSettings } from "../../../hooks/useSettings";
@@ -28,7 +29,7 @@ function formatTime(t) {
 }
 
 export default function CallToAction() {
-  const userSession = JSON.parse(localStorage.getItem("netto_user") || "null");
+  const { isAuthenticated, role } = useAuth();
   const { settings } = useSettings();
 
   const waNumber = toWaNumber(settings.phone);
@@ -77,9 +78,9 @@ export default function CallToAction() {
             {/* CTA Buttons */}
             <ScrollReveal variant="slide-up" delay={200}>
               <div className="flex flex-row items-center gap-3">
-                {userSession ? (
+                {isAuthenticated ? (
                   <Link 
-                    to={userSession.role === "admin" ? "/dashboard" : "/"}
+                    to={role === "Admin" || role === "Karyawan" ? "/dashboard" : "/member/dashboard"}
                     className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 sm:px-8 sm:py-3.5 text-[9.5px] sm:text-[10.5px] font-black text-white bg-[#3957ED] rounded-2xl hover:bg-[#3957ED]/90 hover:shadow-xl hover:translate-y-[-1px] transition-all duration-200"
                   >
                     Dashboard Anda
