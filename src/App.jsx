@@ -37,6 +37,7 @@ const MemberTransactions = lazy(() => import("./pages/member/MemberTransactions"
 const MemberLoyalty      = lazy(() => import("./pages/member/MemberLoyalty"));
 const MemberPromos       = lazy(() => import("./pages/member/MemberPromos"));
 const MemberProfile      = lazy(() => import("./pages/member/MemberProfile"));
+const MemberNotifications = lazy(() => import("./pages/member/MemberNotifications"));
 
 // Lazy-loaded pages — Guest / Public
 const Landing       = lazy(() => import("./pages/guest/Landing"));
@@ -115,6 +116,7 @@ export default function App() {
           <Route path="/member/loyalty"       element={<MemberLoyalty />} />
           <Route path="/member/promos"        element={<MemberPromos />} />
           <Route path="/member/profile"       element={<MemberProfile />} />
+          <Route path="/member/notifications" element={<MemberNotifications />} />
         </Route>
 
         {/* ── 404 ── */}

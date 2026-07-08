@@ -312,10 +312,10 @@ export async function updateTransaction(id, data) {
         if (data.paymentMethod !== undefined) payload.paymentMethod = data.paymentMethod;
         if (data.notes !== undefined) payload.notes = data.notes;
 
-        // Fetch transaction customerId before updating so we know whose stats to sync
+        // Fetch transaction details before update to compare status and get customer name
         const { data: oldTrx } = await supabase
             .from("transactions")
-            .select("customerId")
+            .select("customerId, status, transactionCode, customers(customerName)")
             .eq("id", id)
             .maybeSingle();
 
@@ -327,9 +327,44 @@ export async function updateTransaction(id, data) {
 
         if (error) throw error;
 
+        const updated = result?.[0];
+
         if (oldTrx && oldTrx.customerId) {
             // Trigger customer stats and loyalty point sync immediately
             await syncCustomerStats(oldTrx.customerId);
+            
+            // Check status transition for notifications
+            if (updated && payload.status && oldTrx.status !== payload.status) {
+                const customerName = oldTrx.customers?.customerName || "Pelanggan";
+                const trxCode = oldTrx.transactionCode || updated.transactionCode || id;
+                let title = "";
+                let message = "";
+                let type = "Tracking";
+                const statusLower = payload.status.toLowerCase();
+
+                if (statusLower === "diproses") {
+                    title = "Cucian Sedang Diproses";
+                    message = `Halo ${customerName}, pesanan laundry Anda dengan kode ${trxCode} sedang mulai diproses.`;
+                } else if (statusLower === "siap diambil") {
+                    title = "Cucian Siap Diambil";
+                    message = `${trxCode} - Halo ${customerName}, cucian Anda sudah selesai dan siap diambil di Netto Laundry. Terima kasih telah mempercayakan cucian Anda kepada kami.`;
+                } else if (statusLower === "selesai") {
+                    title = "Transaksi Selesai";
+                    message = `Halo ${customerName}, terima kasih telah mempercayakan pakaian Anda di Netto Express. Transaksi dengan kode ${trxCode} telah selesai diambil.`;
+                }
+
+                if (title && message) {
+                    await supabase
+                        .from("notifications")
+                        .insert([{
+                            customerId: oldTrx.customerId,
+                            transactionId: id,
+                            title,
+                            message,
+                            type
+                        }]);
+                }
+            }
         }
 
         return mapTransactionFromDB(result?.[0]) ?? null;

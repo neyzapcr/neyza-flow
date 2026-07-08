@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import {
-  LayoutDashboard, ClipboardList, History, Gift, Ticket, User, LogOut, X
+  LayoutDashboard, ClipboardList, History, Gift, Ticket, User, LogOut, X, Bell
 } from "lucide-react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useSettings } from "../../../hooks/useSettings";
@@ -11,6 +11,7 @@ const navItems = [
   { to: "/member/transactions", label: "Transaksi", icon: History },
   { to: "/member/loyalty",   label: "Loyalty",    icon: Gift },
   { to: "/member/promos",    label: "Promo",      icon: Ticket, promoKey: true },
+  { to: "/member/notifications", label: "Notifikasi", icon: Bell },
   { to: "/member/profile",   label: "Profil",     icon: User },
 ];
 

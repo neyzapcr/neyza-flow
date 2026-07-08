@@ -81,6 +81,16 @@ export default function MemberLoyalty() {
       await syncCustomerStats(customerProfile.id);
       await refreshProfile();
 
+      // Create a notification for promo redeemed
+      await supabase.from("notifications").insert([
+        {
+          customerId: customerProfile.id,
+          title: "Promo Berhasil Ditukarkan",
+          message: `Klaim Reward berhasil: ${reward.name}. Kode Voucher Anda adalah ${code}. Gunakan kode ini saat transaksi.`,
+          type: "Promo"
+        }
+      ]);
+ 
       toast("success", "Reward Berhasil Ditukar!", `Kode voucher Anda: ${code}. Cek di halaman Dashboard.`);
       
       // Reload loyalty history list
